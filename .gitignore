@@ -397,3 +397,12 @@ $RECYCLE.BIN/
 # .pnp.*
 
 # End of https://www.toptal.com/developers/gitignore/api/yarn,node,nextjs,windows,linux,macos,jetbrains,visualstudiocode,dotenv
+
+# Ignore OpenCode workspace by default
+/.opencode/**/*
+/.tmp/**/*
+
+# Keep tracked Project Intelligence context files
+!/.opencode/context/
+!/.opencode/context/project-intelligence/
+!/.opencode/context/project-intelligence/*.md
