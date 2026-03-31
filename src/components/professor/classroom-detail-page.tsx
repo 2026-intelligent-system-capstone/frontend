@@ -2,6 +2,8 @@
 
 import { Card, Spinner, Tabs } from '@heroui/react';
 
+import { ClassroomMaterialsPanel } from '@/components/professor/classroom-materials-panel';
+import { ClassroomStudentsPanel } from '@/components/professor/classroom-students-panel';
 import {
 	useClassroomDetail,
 	useClassroomExams,
@@ -28,7 +30,7 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 
 	if (classroomQuery.isLoading) {
 		return (
-			<div className="min-h-screen bg-slate-50 px-6 py-10">
+			<div className="bg-slate-50 px-6 py-10">
 				<Card className="mx-auto max-w-6xl">
 					<Card.Content className="flex items-center gap-3 py-10 text-sm text-slate-500">
 						<Spinner size="sm" />
@@ -41,7 +43,7 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 
 	if (classroomQuery.isError || !classroomQuery.data) {
 		return (
-			<div className="min-h-screen bg-slate-50 px-6 py-10">
+			<div className="bg-slate-50 px-6 py-10">
 				<Card className="mx-auto max-w-6xl">
 					<Card.Content className="py-10 text-sm text-red-600">강의실 정보를 불러오지 못했습니다.</Card.Content>
 				</Card>
@@ -57,7 +59,7 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 	const exams = examsQuery.data ?? [];
 
 	return (
-		<div className="min-h-screen bg-slate-50 px-6 py-10">
+		<div className="bg-slate-50 px-6 py-10">
 			<div className="mx-auto flex max-w-6xl flex-col gap-6">
 				<Card>
 					<Card.Header className="gap-3">
@@ -126,28 +128,12 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 							</Tabs.ListContainer>
 
 							<Tabs.Panel id="materials" className="pt-6">
-								<div className="space-y-4">
-									<h2 className="text-lg font-semibold text-slate-900">강의 자료</h2>
-									{materialsQuery.isLoading ? (
-										<div className="flex items-center gap-2 text-sm text-slate-500">
-											<Spinner size="sm" /> 자료를 불러오는 중입니다.
-										</div>
-									) : materials.length === 0 ? (
-										<p className="text-sm text-slate-500">등록된 자료가 없습니다.</p>
-									) : (
-										<div className="grid gap-3">
-											{materials.map((material) => (
-												<Card key={material.id} className="border border-slate-200 bg-slate-50">
-													<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-														<p className="font-medium text-slate-900">{material.title}</p>
-														<p>{material.description ?? '설명 없음'}</p>
-														<p>주차: {material.week}주차</p>
-													</Card.Content>
-												</Card>
-											))}
-										</div>
-									)}
-								</div>
+								<ClassroomMaterialsPanel
+									classroomId={classroomId}
+									materials={materials}
+									isError={materialsQuery.isError}
+									isLoading={materialsQuery.isLoading}
+								/>
 							</Tabs.Panel>
 
 							<Tabs.Panel id="exams" className="pt-6">
@@ -179,28 +165,12 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 							</Tabs.Panel>
 
 							<Tabs.Panel id="students" className="pt-6">
-								<div className="space-y-4">
-									<h2 className="text-lg font-semibold text-slate-900">학생 관리</h2>
-									{usersQuery.isLoading ? (
-										<div className="flex items-center gap-2 text-sm text-slate-500">
-											<Spinner size="sm" /> 구성원을 불러오는 중입니다.
-										</div>
-									) : students.length === 0 ? (
-										<p className="text-sm text-slate-500">초대된 학생이 없습니다.</p>
-									) : (
-										<div className="grid gap-3 md:grid-cols-2">
-											{students.map((student) => (
-												<Card key={student.id} className="border border-slate-200 bg-slate-50">
-													<Card.Content className="space-y-1 py-4 text-sm text-slate-600">
-														<p className="font-medium text-slate-900">{student.name}</p>
-														<p>{student.login_id}</p>
-														<p>{student.email ?? '이메일 없음'}</p>
-													</Card.Content>
-												</Card>
-											))}
-										</div>
-									)}
-								</div>
+								<ClassroomStudentsPanel
+									classroomId={classroomId}
+									students={students}
+									users={users}
+									isLoading={usersQuery.isLoading}
+								/>
 							</Tabs.Panel>
 						</Tabs>
 					</Card.Content>

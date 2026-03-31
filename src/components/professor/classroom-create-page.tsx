@@ -6,7 +6,7 @@ import { ClassroomForm } from '@/components/professor/classroom-form';
 
 export function ClassroomCreatePage() {
 	return (
-		<div className="min-h-screen bg-slate-50 px-6 py-10">
+		<div className="bg-slate-50 px-6 py-10">
 			<div className="mx-auto max-w-4xl">
 				<Card>
 					<Card.Header className="gap-2">
