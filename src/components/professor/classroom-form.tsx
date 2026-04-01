@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Checkbox, Input, Label, TextArea, TextField } from '@heroui/react';
+import { Button, Checkbox, ErrorMessage, Input, Label, TextArea, TextField } from '@heroui/react';
 
 import { dayjs, SEOUL_TIME_ZONE } from '@/lib/dayjs';
 import { useRouter } from 'next/navigation';
@@ -111,7 +111,7 @@ export function ClassroomForm() {
 				</Checkbox.Content>
 			</Checkbox>
 
-			{errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+			{errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
 
 			<div className="flex flex-wrap items-center gap-3">
 				<Button isPending={isPending} type="submit" variant="primary">

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input, Label, Modal, TextArea, TextField } from '@heroui/react';
+import { Button, ErrorMessage, Input, Label, Modal, TextArea, TextField } from '@heroui/react';
 import { useId, useState } from 'react';
 
 import { useCreateClassroomMaterial } from '@/lib/hooks/use-classrooms';
@@ -104,7 +104,7 @@ export function MaterialUploadModal({ classroomId }: MaterialUploadModalProps) {
 											<TextArea id={descriptionId} className="min-h-28" placeholder="자료 설명이나 학습 포인트를 입력하세요." />
 										</TextField>
 
-										{errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+										{errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
 
 										<div className="flex justify-end gap-3">
 											<Button type="button" variant="secondary" onPress={close}>

@@ -1,15 +1,17 @@
 'use client';
 
-import type { Key } from '@heroui/react';
-
-import { Button, Card, Form, Input, Label, ListBox, Select, TextField } from '@heroui/react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+import { useRouter } from 'next/navigation';
+
+import type { Key } from '@heroui/react';
+import { Button, Card, ErrorMessage, Form, Input, Label, ListBox, Select, TextField } from '@heroui/react';
+
+import { ApiClientError } from '@/types/api';
+import type { Organization } from '@/types/organization';
 
 import { getDefaultRouteByRole } from '@/lib/auth/routes';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { ApiClientError } from '@/types/api';
-import type { Organization } from '@/types/organization';
 
 interface LoginFormProps {
 	initialOrganizations: Organization[];
@@ -88,10 +90,13 @@ export function LoginForm({ initialOrganizations, organizationsLoadFailed }: Log
 						<Select.Popover>
 							<ListBox>
 								{initialOrganizations.map((organization) => (
-									<ListBox.Item key={organization.id} id={organization.code} textValue={organization.name}>
+									<ListBox.Item
+										key={organization.id}
+										id={organization.code}
+										textValue={organization.name}
+									>
 										<div className="flex flex-col items-start">
 											<span className="font-medium">{organization.name}</span>
-											<span className="text-xs text-slate-500">{organization.code}</span>
 										</div>
 										<ListBox.ItemIndicator />
 									</ListBox.Item>
@@ -99,7 +104,7 @@ export function LoginForm({ initialOrganizations, organizationsLoadFailed }: Log
 							</ListBox>
 						</Select.Popover>
 					</Select>
-					{organizationsLoadFailed ? <p className="text-sm text-red-600">학교 목록을 불러오지 못했습니다.</p> : null}
+					{organizationsLoadFailed ? <ErrorMessage>학교 목록을 불러오지 못했습니다.</ErrorMessage> : null}
 					{!organizationsLoadFailed && initialOrganizations.length === 0 ? (
 						<p className="text-sm text-slate-500">선택 가능한 학교가 없습니다.</p>
 					) : null}
@@ -115,7 +120,7 @@ export function LoginForm({ initialOrganizations, organizationsLoadFailed }: Log
 					<Input placeholder="비밀번호를 입력하세요" />
 				</TextField>
 
-				{errorMessage ? <p className="w-full text-sm text-red-600">{errorMessage}</p> : null}
+				{errorMessage ? <ErrorMessage className="w-full">{errorMessage}</ErrorMessage> : null}
 
 				<Button className="w-full" isPending={loginPending} type="submit">
 					로그인
