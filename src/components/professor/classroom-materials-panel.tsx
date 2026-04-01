@@ -2,10 +2,13 @@
 
 import { Button, Card, Skeleton } from '@heroui/react';
 
-import { MaterialUploadModal } from '@/components/professor/material-upload-modal';
-import { classroomsApi } from '@/lib/api/classrooms';
-import { useDeleteClassroomMaterial } from '@/lib/hooks/use-classrooms';
 import type { ClassroomMaterial } from '@/types/classroom';
+
+import { classroomsApi } from '@/lib/api/classrooms';
+import { SEOUL_TIME_ZONE, dayjs } from '@/lib/dayjs';
+import { useDeleteClassroomMaterial } from '@/lib/hooks/use-classrooms';
+
+import { MaterialUploadModal } from '@/components/professor/material-upload-modal';
 
 interface ClassroomMaterialsPanelProps {
 	classroomId: string;
@@ -20,10 +23,7 @@ const formatDateTime = (value: string | null) => {
 		return '업로드 시각 없음';
 	}
 
-	return new Intl.DateTimeFormat('ko-KR', {
-		dateStyle: 'medium',
-		timeStyle: 'short',
-	}).format(new Date(value));
+	return dayjs.utc(value).tz(SEOUL_TIME_ZONE).format('YYYY.MM.DD HH:mm');
 };
 
 const formatFileSize = (value: number) => {
@@ -101,20 +101,28 @@ export function ClassroomMaterialsPanel({
 								<div className="flex flex-wrap items-start justify-between gap-3">
 									<div className="space-y-2">
 										<div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-											<span className="rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">{material.week}주차</span>
-											<span className="rounded-full bg-slate-200 px-2.5 py-1 text-slate-700">{material.file.file_extension.toUpperCase()}</span>
+											<span className="rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">
+												{material.week}주차
+											</span>
+											<span className="rounded-full bg-slate-200 px-2.5 py-1 text-slate-700">
+												{material.file.file_extension.toUpperCase()}
+											</span>
 										</div>
 										<p className="text-base font-semibold text-slate-900">{material.title}</p>
 										<p className="text-sm text-slate-600">{material.description ?? '설명 없음'}</p>
 									</div>
 									<div className="flex flex-wrap gap-2">
-										<Button size="sm" variant="secondary" onPress={() => handleDownload(material.id)}>
+										<Button
+											size="sm"
+											variant="secondary"
+											onPress={() => handleDownload(material.id)}
+										>
 											다운로드
 										</Button>
 										{canManageMaterials ? (
 											<Button
 												size="sm"
-												variant="ghost"
+												variant="danger-soft"
 												isPending={deletePending}
 												onPress={() => deleteMaterial(material.id)}
 											>

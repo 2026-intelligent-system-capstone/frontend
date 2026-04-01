@@ -1,6 +1,8 @@
 'use client';
 
 import { Button, Checkbox, Input, Label, TextArea, TextField } from '@heroui/react';
+
+import { dayjs, SEOUL_TIME_ZONE } from '@/lib/dayjs';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
@@ -18,8 +20,8 @@ export function ClassroomForm() {
 	const [allowStudentMaterialAccess, setAllowStudentMaterialAccess] = useState(false);
 
 	const defaultSemester = useMemo(() => {
-		const now = new Date();
-		return now.getMonth() < 6 ? '1학기' : '2학기';
+		const now = dayjs().tz(SEOUL_TIME_ZONE);
+		return now.month() < 6 ? '1학기' : '2학기';
 	}, []);
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

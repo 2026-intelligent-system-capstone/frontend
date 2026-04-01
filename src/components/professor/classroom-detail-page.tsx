@@ -2,6 +2,8 @@
 
 import { Card, Skeleton, Tabs } from '@heroui/react';
 
+import { dayjs, SEOUL_TIME_ZONE } from '@/lib/dayjs';
+
 import { ClassroomMaterialsPanel } from '@/components/professor/classroom-materials-panel';
 import { ClassroomStudentsPanel } from '@/components/professor/classroom-students-panel';
 import {
@@ -28,10 +30,7 @@ interface ClassroomDetailPageProps {
 }
 
 const formatDateTime = (value: string) => {
-	return new Intl.DateTimeFormat('ko-KR', {
-		dateStyle: 'medium',
-		timeStyle: 'short',
-	}).format(new Date(value));
+	return dayjs.utc(value).tz(SEOUL_TIME_ZONE).format('YYYY.MM.DD HH:mm');
 };
 
 export function ClassroomDetailPage({
