@@ -10,11 +10,20 @@ import type {
 	CreateClassroomRequest,
 	InviteClassroomStudentsRequest,
 } from '@/types/classroom';
+import type {
+	CreateExamQuestionRequest,
+	CreateExamRequest,
+	GenerateExamQuestionsRequest,
+	UpdateExamQuestionRequest,
+} from '@/types/exam';
 
 const CLASSROOMS_QUERY_KEY = ['classrooms'] as const;
 const CLASSROOM_USERS_QUERY_KEY = ['users'] as const;
 
 const getClassroomMaterialsQueryKey = (classroomId: string) => [...CLASSROOMS_QUERY_KEY, classroomId, 'materials'] as const;
+const getClassroomExamsQueryKey = (classroomId: string) => [...CLASSROOMS_QUERY_KEY, classroomId, 'exams'] as const;
+const getClassroomExamDetailQueryKey = (classroomId: string, examId: string) =>
+	[...CLASSROOMS_QUERY_KEY, classroomId, 'exams', examId] as const;
 
 export const useClassrooms = (initialData?: Awaited<ReturnType<typeof classroomsApi.listClassrooms>>) => {
 	return useQuery({
@@ -80,7 +89,7 @@ export const useClassroomExams = (
 	initialData?: Awaited<ReturnType<typeof examsApi.listExams>>,
 ) => {
 	return useQuery({
-		queryKey: [...CLASSROOMS_QUERY_KEY, classroomId, 'exams'] as const,
+		queryKey: getClassroomExamsQueryKey(classroomId),
 		queryFn: () => examsApi.listExams(classroomId),
 		enabled: Boolean(classroomId),
 		initialData,
@@ -94,6 +103,67 @@ export const useUsers = (initialData?: Awaited<ReturnType<typeof usersApi.listUs
 		queryFn: usersApi.listUsers,
 		initialData,
 		staleTime: 60 * 1000,
+	});
+};
+
+export const useCreateExam = (classroomId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: CreateExamRequest) => examsApi.createExam(classroomId, payload),
+		onSuccess: async (exam) => {
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamsQueryKey(classroomId) });
+			queryClient.setQueryData(getClassroomExamDetailQueryKey(classroomId, exam.id), exam);
+		},
+	});
+};
+
+export const useGenerateExamQuestions = (classroomId: string, examId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: GenerateExamQuestionsRequest) => examsApi.generateQuestions(classroomId, examId, payload),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamsQueryKey(classroomId) });
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamDetailQueryKey(classroomId, examId) });
+		},
+	});
+};
+
+export const useCreateExamQuestion = (classroomId: string, examId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: CreateExamQuestionRequest) => examsApi.createQuestion(classroomId, examId, payload),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamsQueryKey(classroomId) });
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamDetailQueryKey(classroomId, examId) });
+		},
+	});
+};
+
+export const useUpdateExamQuestion = (classroomId: string, examId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ questionId, payload }: { questionId: string; payload: UpdateExamQuestionRequest }) =>
+			examsApi.updateQuestion(classroomId, examId, questionId, payload),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamsQueryKey(classroomId) });
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamDetailQueryKey(classroomId, examId) });
+		},
+	});
+};
+
+export const useDeleteExamQuestion = (classroomId: string, examId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (questionId: string) => examsApi.deleteQuestion(classroomId, examId, questionId),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamsQueryKey(classroomId) });
+			await queryClient.invalidateQueries({ queryKey: getClassroomExamDetailQueryKey(classroomId, examId) });
+		},
 	});
 };
 

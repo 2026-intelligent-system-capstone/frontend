@@ -36,6 +36,16 @@ export interface ClassroomMaterialFile {
 	mime_type: string;
 }
 
+export interface ClassroomMaterialScopeCandidate {
+	label: string;
+	scope_text: string;
+	keywords: string[];
+	week_range: string | null;
+	confidence: number | null;
+}
+
+export type ClassroomMaterialIngestStatus = 'pending' | 'completed' | 'failed';
+
 export interface ClassroomMaterial {
 	id: string;
 	classroom_id: string;
@@ -44,6 +54,9 @@ export interface ClassroomMaterial {
 	description: string | null;
 	uploaded_by: string;
 	uploaded_at: string | null;
+	ingest_status: ClassroomMaterialIngestStatus;
+	ingest_error: string | null;
+	scope_candidates: ClassroomMaterialScopeCandidate[];
 	file: ClassroomMaterialFile;
 }
 

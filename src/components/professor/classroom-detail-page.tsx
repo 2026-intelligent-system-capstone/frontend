@@ -2,8 +2,7 @@
 
 import { Card, Skeleton, Tabs } from '@heroui/react';
 
-import { dayjs, SEOUL_TIME_ZONE } from '@/lib/dayjs';
-
+import { ClassroomExamsPanel } from '@/components/professor/classroom-exams-panel';
 import { ClassroomMaterialsPanel } from '@/components/professor/classroom-materials-panel';
 import { ClassroomStudentsPanel } from '@/components/professor/classroom-students-panel';
 import {
@@ -28,10 +27,6 @@ interface ClassroomDetailPageProps {
 	isExamsError: boolean;
 	isUsersError: boolean;
 }
-
-const formatDateTime = (value: string) => {
-	return dayjs.utc(value).tz(SEOUL_TIME_ZONE).format('YYYY.MM.DD HH:mm');
-};
 
 export function ClassroomDetailPage({
 	classroomId,
@@ -92,7 +87,6 @@ export function ClassroomDetailPage({
 	const students = users.filter((user) => classroom.student_ids.includes(user.id));
 	const materials = materialsQuery.data ?? [];
 	const exams = examsQuery.data ?? [];
-	const showExamSkeleton = examsQuery.isLoading && exams.length === 0;
 
 	return (
 		<div className="bg-slate-50 px-6 py-10">
@@ -174,42 +168,14 @@ export function ClassroomDetailPage({
 							</Tabs.Panel>
 
 							<Tabs.Panel id="exams" className="pt-6">
-								<div className="space-y-4">
-									<h2 className="text-lg font-semibold text-slate-900">시험 목록</h2>
-									{showExamSkeleton ? (
-										<div className="space-y-3">
-											{Array.from({ length: 2 }).map((_, index) => (
-												<Card key={index} className="border border-slate-200 bg-slate-50">
-													<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-														<Skeleton className="h-5 w-40 rounded-lg" />
-														<Skeleton className="h-4 w-56 rounded-lg" />
-														<Skeleton className="h-4 w-48 rounded-lg" />
-														<Skeleton className="h-4 w-44 rounded-lg" />
-													</Card.Content>
-												</Card>
-											))}
-										</div>
-									) : isExamsError || examsQuery.isError ? (
-										<p className="text-sm text-red-600">시험 목록을 불러오지 못했습니다.</p>
-									) : exams.length === 0 ? (
-										<p className="text-sm text-slate-500">생성된 시험이 없습니다.</p>
-									) : (
-										<div className="grid gap-3">
-											{exams.map((exam) => (
-												<Card key={exam.id} className="border border-slate-200 bg-slate-50">
-													<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-														<p className="font-medium text-slate-900">{exam.title}</p>
-														<p>{exam.description ?? '설명 없음'}</p>
-														<p>
-															{exam.exam_type} · {exam.duration_minutes}분 · {exam.status}
-														</p>
-														<p>시작: {formatDateTime(exam.starts_at)}</p>
-													</Card.Content>
-												</Card>
-											))}
-										</div>
-									)}
-								</div>
+								<ClassroomExamsPanel
+									classroomId={classroomId}
+									exams={exams}
+									materials={materials}
+									isError={isExamsError || examsQuery.isError}
+									isLoading={examsQuery.isLoading}
+									canManageExams={canManageClassroom}
+								/>
 							</Tabs.Panel>
 
 							<Tabs.Panel id="students" className="pt-6">

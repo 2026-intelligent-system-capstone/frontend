@@ -1,5 +1,8 @@
 export type ExamType = 'quiz' | 'midterm' | 'final' | 'mock';
 export type ExamStatus = 'ready' | 'in_progress' | 'closed';
+export type ExamDifficulty = 'easy' | 'medium' | 'hard';
+export type BloomLevel = 'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create';
+export type ExamQuestionStatus = 'generated' | 'reviewed' | 'deleted';
 export type ExamSessionStatus = 'ready' | 'in_progress' | 'completed' | 'expired' | 'cancelled';
 export type ExamTurnRole = 'student' | 'assistant' | 'system';
 export type ExamTurnEventType =
@@ -23,6 +26,21 @@ export interface ExamCriterion {
 	poor_definition: string | null;
 }
 
+export interface ExamQuestion {
+	id: string;
+	exam_id: string;
+	question_number: number;
+	bloom_level: BloomLevel;
+	difficulty: ExamDifficulty;
+	question_text: string;
+	scope_text: string;
+	evaluation_objective: string;
+	answer_key: string;
+	scoring_criteria: string;
+	source_material_ids: string[];
+	status: ExamQuestionStatus;
+}
+
 export interface Exam {
 	id: string;
 	classroom_id: string;
@@ -35,6 +53,7 @@ export interface Exam {
 	ends_at: string;
 	allow_retake: boolean;
 	criteria: ExamCriterion[];
+	questions: ExamQuestion[];
 }
 
 export interface CreateExamCriterionRequest {
@@ -56,6 +75,44 @@ export interface CreateExamRequest {
 	ends_at: string;
 	allow_retake?: boolean;
 	criteria: CreateExamCriterionRequest[];
+}
+
+export interface ExamQuestionBloomRatioRequest {
+	bloom_level: BloomLevel;
+	percentage: number;
+}
+
+export interface GenerateExamQuestionsRequest {
+	scope_text: string;
+	total_questions: number;
+	max_follow_ups: number;
+	difficulty: ExamDifficulty;
+	source_material_ids: string[];
+	bloom_ratios: ExamQuestionBloomRatioRequest[];
+}
+
+export interface CreateExamQuestionRequest {
+	question_number: number;
+	bloom_level: BloomLevel;
+	difficulty: ExamDifficulty;
+	question_text: string;
+	scope_text: string;
+	evaluation_objective: string;
+	answer_key: string;
+	scoring_criteria: string;
+	source_material_ids: string[];
+}
+
+export interface UpdateExamQuestionRequest {
+	question_number?: number;
+	bloom_level?: BloomLevel;
+	difficulty?: ExamDifficulty;
+	question_text?: string;
+	scope_text?: string;
+	evaluation_objective?: string;
+	answer_key?: string;
+	scoring_criteria?: string;
+	source_material_ids?: string[];
 }
 
 export interface ExamSession {
