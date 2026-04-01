@@ -22,7 +22,7 @@ const toMaterialFormData = (
 	if (payload.week !== undefined) {
 		formData.set('week', String(payload.week));
 	}
-	if (payload.description !== undefined && payload.description !== null) {
+	if (payload.description !== undefined && payload.description !== null && payload.description !== '') {
 		formData.set('description', payload.description);
 	}
 	if (payload.description === null) {

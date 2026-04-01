@@ -43,7 +43,7 @@ export function ClassroomMaterialsPanel({ classroomId, materials, isLoading, isE
 	const { mutate: deleteMaterial, isPending: deletePending } = useDeleteClassroomMaterial(classroomId);
 
 	const handleDownload = (materialId: string) => {
-		window.location.href = classroomsApi.getMaterialDownloadUrl(classroomId, materialId);
+		window.open(classroomsApi.getMaterialDownloadUrl(classroomId, materialId), '_self');
 	};
 
 	return (

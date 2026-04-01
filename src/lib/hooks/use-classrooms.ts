@@ -47,9 +47,9 @@ export const useCreateClassroomMaterial = (classroomId: string) => {
 
 	return useMutation({
 		mutationFn: (payload: CreateClassroomMaterialRequest) => classroomsApi.createMaterial(classroomId, payload),
-		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: getClassroomMaterialsQueryKey(classroomId) });
-			await queryClient.invalidateQueries({ queryKey: [...CLASSROOMS_QUERY_KEY, classroomId, 'detail'] as const });
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: getClassroomMaterialsQueryKey(classroomId) });
+			void queryClient.invalidateQueries({ queryKey: [...CLASSROOMS_QUERY_KEY, classroomId, 'detail'] as const });
 		},
 	});
 };
