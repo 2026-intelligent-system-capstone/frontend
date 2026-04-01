@@ -17,5 +17,5 @@ export default async function StudentLayout({ children }: Readonly<{ children: R
 		redirect('/professor/classrooms');
 	}
 
-	return <AppShell role="student">{children}</AppShell>;
+	return <AppShell currentUser={user} role="student">{children}</AppShell>;
 }

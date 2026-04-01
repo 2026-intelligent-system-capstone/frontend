@@ -16,28 +16,37 @@ const CLASSROOM_USERS_QUERY_KEY = ['users'] as const;
 
 const getClassroomMaterialsQueryKey = (classroomId: string) => [...CLASSROOMS_QUERY_KEY, classroomId, 'materials'] as const;
 
-export const useClassrooms = () => {
+export const useClassrooms = (initialData?: Awaited<ReturnType<typeof classroomsApi.listClassrooms>>) => {
 	return useQuery({
 		queryKey: CLASSROOMS_QUERY_KEY,
 		queryFn: classroomsApi.listClassrooms,
+		initialData,
 		staleTime: 60 * 1000,
 	});
 };
 
-export const useClassroomDetail = (classroomId: string) => {
+export const useClassroomDetail = (
+	classroomId: string,
+	initialData?: Awaited<ReturnType<typeof classroomsApi.getClassroom>>,
+) => {
 	return useQuery({
 		queryKey: [...CLASSROOMS_QUERY_KEY, classroomId, 'detail'] as const,
 		queryFn: () => classroomsApi.getClassroom(classroomId),
 		enabled: Boolean(classroomId),
+		initialData,
 		staleTime: 60 * 1000,
 	});
 };
 
-export const useClassroomMaterials = (classroomId: string) => {
+export const useClassroomMaterials = (
+	classroomId: string,
+	initialData?: Awaited<ReturnType<typeof classroomsApi.listMaterials>>,
+) => {
 	return useQuery({
 		queryKey: getClassroomMaterialsQueryKey(classroomId),
 		queryFn: () => classroomsApi.listMaterials(classroomId),
 		enabled: Boolean(classroomId),
+		initialData,
 		staleTime: 60 * 1000,
 	});
 };
@@ -66,19 +75,24 @@ export const useDeleteClassroomMaterial = (classroomId: string) => {
 	});
 };
 
-export const useClassroomExams = (classroomId: string) => {
+export const useClassroomExams = (
+	classroomId: string,
+	initialData?: Awaited<ReturnType<typeof examsApi.listExams>>,
+) => {
 	return useQuery({
 		queryKey: [...CLASSROOMS_QUERY_KEY, classroomId, 'exams'] as const,
 		queryFn: () => examsApi.listExams(classroomId),
 		enabled: Boolean(classroomId),
+		initialData,
 		staleTime: 60 * 1000,
 	});
 };
 
-export const useUsers = () => {
+export const useUsers = (initialData?: Awaited<ReturnType<typeof usersApi.listUsers>>) => {
 	return useQuery({
 		queryKey: CLASSROOM_USERS_QUERY_KEY,
 		queryFn: usersApi.listUsers,
+		initialData,
 		staleTime: 60 * 1000,
 	});
 };

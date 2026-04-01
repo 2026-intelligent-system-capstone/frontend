@@ -4,8 +4,14 @@ import { Button } from '@heroui/react';
 import Link from 'next/link';
 
 import { ClassroomList } from '@/components/professor/classroom-list';
+import type { Classroom } from '@/types/classroom';
 
-export function ClassroomListPage() {
+interface ClassroomListPageProps {
+	classrooms: Classroom[];
+	isError: boolean;
+}
+
+export function ClassroomListPage({ classrooms, isError }: ClassroomListPageProps) {
 	return (
 		<div className="bg-slate-50 px-6 py-10">
 			<div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -22,7 +28,7 @@ export function ClassroomListPage() {
 					</Link>
 				</div>
 
-				<ClassroomList />
+				<ClassroomList classrooms={classrooms} isError={isError} />
 			</div>
 		</div>
 	);

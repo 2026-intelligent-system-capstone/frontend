@@ -1,24 +1,16 @@
 'use client';
 
-import { Button, Card, Spinner } from '@heroui/react';
+import { Button, Card } from '@heroui/react';
 import Link from 'next/link';
 
-import { useClassrooms } from '@/lib/hooks/use-classrooms';
+import type { Classroom } from '@/types/classroom';
 
-export function ClassroomList() {
-	const { data: classrooms = [], isError, isLoading } = useClassrooms();
+interface ClassroomListProps {
+	classrooms: Classroom[];
+	isError: boolean;
+}
 
-	if (isLoading) {
-		return (
-			<Card>
-				<Card.Content className="flex items-center gap-3 py-10 text-sm text-slate-500">
-					<Spinner size="sm" />
-					강의실 목록을 불러오는 중입니다.
-				</Card.Content>
-			</Card>
-		);
-	}
-
+export function ClassroomList({ classrooms, isError }: ClassroomListProps) {
 	if (isError) {
 		return (
 			<Card>

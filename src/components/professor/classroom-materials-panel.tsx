@@ -1,11 +1,10 @@
 'use client';
 
-import { Button, Card, Spinner } from '@heroui/react';
+import { Button, Card, Skeleton } from '@heroui/react';
 
 import { MaterialUploadModal } from '@/components/professor/material-upload-modal';
 import { classroomsApi } from '@/lib/api/classrooms';
 import { useDeleteClassroomMaterial } from '@/lib/hooks/use-classrooms';
-import { useAuth } from '@/lib/hooks/use-auth';
 import type { ClassroomMaterial } from '@/types/classroom';
 
 interface ClassroomMaterialsPanelProps {
@@ -13,6 +12,7 @@ interface ClassroomMaterialsPanelProps {
 	materials: ClassroomMaterial[];
 	isLoading: boolean;
 	isError: boolean;
+	canManageMaterials: boolean;
 }
 
 const formatDateTime = (value: string | null) => {
@@ -37,9 +37,13 @@ const formatFileSize = (value: number) => {
 	return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-export function ClassroomMaterialsPanel({ classroomId, materials, isLoading, isError }: ClassroomMaterialsPanelProps) {
-	const { user } = useAuth();
-	const canManageMaterials = user?.role === 'professor' || user?.role === 'admin';
+export function ClassroomMaterialsPanel({
+	classroomId,
+	materials,
+	isLoading,
+	isError,
+	canManageMaterials,
+}: ClassroomMaterialsPanelProps) {
 	const { mutate: deleteMaterial, isPending: deletePending } = useDeleteClassroomMaterial(classroomId);
 
 	const handleDownload = (materialId: string) => {
@@ -56,9 +60,30 @@ export function ClassroomMaterialsPanel({ classroomId, materials, isLoading, isE
 				{canManageMaterials ? <MaterialUploadModal classroomId={classroomId} /> : null}
 			</div>
 
-			{isLoading ? (
-				<div className="flex items-center gap-2 text-sm text-slate-500">
-					<Spinner size="sm" /> 자료를 불러오는 중입니다.
+			{isLoading && materials.length === 0 ? (
+				<div className="space-y-3">
+					{Array.from({ length: 2 }).map((_, index) => (
+						<Card key={index} className="border border-slate-200 bg-slate-50">
+							<Card.Content className="space-y-4 py-4">
+								<div className="flex flex-wrap items-start justify-between gap-3">
+									<div className="space-y-2">
+										<div className="flex gap-2">
+											<Skeleton className="h-6 w-16 rounded-full" />
+											<Skeleton className="h-6 w-14 rounded-full" />
+										</div>
+										<Skeleton className="h-6 w-40 rounded-lg" />
+										<Skeleton className="h-4 w-64 rounded-lg" />
+									</div>
+									<Skeleton className="h-8 w-20 rounded-lg" />
+								</div>
+								<div className="grid gap-2 md:grid-cols-3">
+									<Skeleton className="h-4 w-full rounded-lg" />
+									<Skeleton className="h-4 w-full rounded-lg" />
+									<Skeleton className="h-4 w-full rounded-lg" />
+								</div>
+							</Card.Content>
+						</Card>
+					))}
 				</div>
 			) : isError ? (
 				<p className="text-sm text-red-600">자료 목록을 불러오지 못했습니다.</p>

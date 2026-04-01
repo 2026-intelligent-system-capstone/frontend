@@ -1,10 +1,9 @@
 'use client';
 
-import { Button, Card, Input, Label, Modal, TextField } from '@heroui/react';
+import { Button, Card, Input, Label, Modal, Skeleton, TextField } from '@heroui/react';
 import { useMemo, useState } from 'react';
 
 import { useInviteClassroomStudents, useRemoveClassroomStudent } from '@/lib/hooks/use-classrooms';
-import { useAuth } from '@/lib/hooks/use-auth';
 import { ApiClientError } from '@/types/api';
 import type { User } from '@/types/user';
 
@@ -13,11 +12,18 @@ interface ClassroomStudentsPanelProps {
 	students: User[];
 	users: User[];
 	isLoading: boolean;
+	isError: boolean;
+	canManageStudents: boolean;
 }
 
-export function ClassroomStudentsPanel({ classroomId, students, users, isLoading }: ClassroomStudentsPanelProps) {
-	const { user } = useAuth();
-	const canManageStudents = user?.role === 'professor' || user?.role === 'admin';
+export function ClassroomStudentsPanel({
+	classroomId,
+	students,
+	users,
+	isLoading,
+	isError,
+	canManageStudents,
+}: ClassroomStudentsPanelProps) {
 	const [isInviteOpen, setIsInviteOpen] = useState(false);
 	const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -129,8 +135,25 @@ export function ClassroomStudentsPanel({ classroomId, students, users, isLoading
 				) : null}
 			</div>
 
-			{isLoading ? (
-				<p className="text-sm text-slate-500">구성원을 불러오는 중입니다.</p>
+			{isLoading && students.length === 0 ? (
+				<div className="grid gap-3 md:grid-cols-2">
+					{Array.from({ length: 2 }).map((_, index) => (
+						<Card key={index} className="border border-slate-200 bg-slate-50">
+							<Card.Content className="space-y-3 py-4 text-sm text-slate-600">
+								<div className="flex items-start justify-between gap-3">
+									<div className="flex-1 space-y-2">
+										<Skeleton className="h-5 w-24 rounded-lg" />
+										<Skeleton className="h-4 w-20 rounded-lg" />
+										<Skeleton className="h-4 w-32 rounded-lg" />
+									</div>
+									<Skeleton className="h-8 w-16 rounded-lg" />
+								</div>
+							</Card.Content>
+						</Card>
+					))}
+				</div>
+			) : isError ? (
+				<p className="text-sm text-red-600">구성원 목록을 불러오지 못했습니다.</p>
 			) : students.length === 0 ? (
 				<Card className="border border-dashed border-slate-200 bg-slate-50">
 					<Card.Content className="py-8 text-center text-sm text-slate-500">초대된 학생이 없습니다.</Card.Content>

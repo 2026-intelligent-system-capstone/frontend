@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Spinner, Tabs } from '@heroui/react';
+import { Card, Skeleton, Tabs } from '@heroui/react';
 
 import { ClassroomMaterialsPanel } from '@/components/professor/classroom-materials-panel';
 import { ClassroomStudentsPanel } from '@/components/professor/classroom-students-panel';
@@ -10,9 +10,21 @@ import {
 	useClassroomMaterials,
 	useUsers,
 } from '@/lib/hooks/use-classrooms';
+import type { Classroom, ClassroomMaterial } from '@/types/classroom';
+import type { Exam } from '@/types/exam';
+import type { User } from '@/types/user';
 
 interface ClassroomDetailPageProps {
 	classroomId: string;
+	initialClassroom: Classroom | null;
+	initialMaterials: ClassroomMaterial[];
+	initialExams: Exam[];
+	initialUsers: User[];
+	canManageClassroom: boolean;
+	isClassroomError: boolean;
+	isMaterialsError: boolean;
+	isExamsError: boolean;
+	isUsersError: boolean;
 }
 
 const formatDateTime = (value: string) => {
@@ -22,26 +34,51 @@ const formatDateTime = (value: string) => {
 	}).format(new Date(value));
 };
 
-export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
-	const classroomQuery = useClassroomDetail(classroomId);
-	const materialsQuery = useClassroomMaterials(classroomId);
-	const examsQuery = useClassroomExams(classroomId);
-	const usersQuery = useUsers();
+export function ClassroomDetailPage({
+	classroomId,
+	initialClassroom,
+	initialMaterials,
+	initialExams,
+	initialUsers,
+	canManageClassroom,
+	isClassroomError,
+	isMaterialsError,
+	isExamsError,
+	isUsersError,
+}: ClassroomDetailPageProps) {
+	const classroomQuery = useClassroomDetail(classroomId, initialClassroom ?? undefined);
+	const materialsQuery = useClassroomMaterials(classroomId, initialMaterials);
+	const examsQuery = useClassroomExams(classroomId, initialExams);
+	const usersQuery = useUsers(initialUsers);
 
-	if (classroomQuery.isLoading) {
+	if ((classroomQuery.isLoading && !initialClassroom) || (!classroomQuery.data && !isClassroomError && !initialClassroom)) {
 		return (
 			<div className="bg-slate-50 px-6 py-10">
 				<Card className="mx-auto max-w-6xl">
-					<Card.Content className="flex items-center gap-3 py-10 text-sm text-slate-500">
-						<Spinner size="sm" />
-						강의실 정보를 불러오는 중입니다.
+					<Card.Content className="space-y-6 py-8">
+						<div className="space-y-3">
+							<Skeleton className="h-4 w-32 rounded-lg" />
+							<Skeleton className="h-8 w-56 rounded-lg" />
+							<Skeleton className="h-4 w-40 rounded-lg" />
+						</div>
+						<div className="grid gap-4 md:grid-cols-3">
+							{Array.from({ length: 3 }).map((_, index) => (
+								<Card key={index} className="border border-slate-200 bg-slate-50">
+									<Card.Content className="space-y-3 py-6">
+										<Skeleton className="h-5 w-24 rounded-lg" />
+										<Skeleton className="h-4 w-full rounded-lg" />
+										<Skeleton className="h-4 w-4/5 rounded-lg" />
+									</Card.Content>
+								</Card>
+							))}
+						</div>
 					</Card.Content>
 				</Card>
 			</div>
 		);
 	}
 
-	if (classroomQuery.isError || !classroomQuery.data) {
+	if ((isClassroomError && !classroomQuery.isLoading && !classroomQuery.data) || classroomQuery.isError || !classroomQuery.data) {
 		return (
 			<div className="bg-slate-50 px-6 py-10">
 				<Card className="mx-auto max-w-6xl">
@@ -53,10 +90,10 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 
 	const classroom = classroomQuery.data;
 	const users = usersQuery.data ?? [];
-	const professors = users.filter((user) => classroom.professor_ids.includes(user.id));
 	const students = users.filter((user) => classroom.student_ids.includes(user.id));
 	const materials = materialsQuery.data ?? [];
 	const exams = examsQuery.data ?? [];
+	const showExamSkeleton = examsQuery.isLoading && exams.length === 0;
 
 	return (
 		<div className="bg-slate-50 px-6 py-10">
@@ -103,8 +140,8 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 								<Card.Title className="text-base">구성원</Card.Title>
 							</Card.Header>
 							<Card.Content className="space-y-2 text-sm text-slate-600">
-								<p>교수자 {professors.length}명</p>
-								<p>학생 {students.length}명</p>
+								<p>교수자 {classroom.professor_ids.length}명</p>
+								<p>학생 {classroom.student_ids.length}명</p>
 							</Card.Content>
 						</Card>
 					</Card.Content>
@@ -131,18 +168,30 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 								<ClassroomMaterialsPanel
 									classroomId={classroomId}
 									materials={materials}
-									isError={materialsQuery.isError}
+									isError={isMaterialsError || materialsQuery.isError}
 									isLoading={materialsQuery.isLoading}
+									canManageMaterials={canManageClassroom}
 								/>
 							</Tabs.Panel>
 
 							<Tabs.Panel id="exams" className="pt-6">
 								<div className="space-y-4">
 									<h2 className="text-lg font-semibold text-slate-900">시험 목록</h2>
-									{examsQuery.isLoading ? (
-										<div className="flex items-center gap-2 text-sm text-slate-500">
-											<Spinner size="sm" /> 시험을 불러오는 중입니다.
+									{showExamSkeleton ? (
+										<div className="space-y-3">
+											{Array.from({ length: 2 }).map((_, index) => (
+												<Card key={index} className="border border-slate-200 bg-slate-50">
+													<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
+														<Skeleton className="h-5 w-40 rounded-lg" />
+														<Skeleton className="h-4 w-56 rounded-lg" />
+														<Skeleton className="h-4 w-48 rounded-lg" />
+														<Skeleton className="h-4 w-44 rounded-lg" />
+													</Card.Content>
+												</Card>
+											))}
 										</div>
+									) : isExamsError || examsQuery.isError ? (
+										<p className="text-sm text-red-600">시험 목록을 불러오지 못했습니다.</p>
 									) : exams.length === 0 ? (
 										<p className="text-sm text-slate-500">생성된 시험이 없습니다.</p>
 									) : (
@@ -170,6 +219,8 @@ export function ClassroomDetailPage({ classroomId }: ClassroomDetailPageProps) {
 									students={students}
 									users={users}
 									isLoading={usersQuery.isLoading}
+									isError={isUsersError || usersQuery.isError}
+									canManageStudents={canManageClassroom}
 								/>
 							</Tabs.Panel>
 						</Tabs>

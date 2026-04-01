@@ -17,5 +17,5 @@ export default async function ProfessorLayout({ children }: Readonly<{ children:
 		redirect('/student/exams');
 	}
 
-	return <AppShell role={user.role === 'admin' ? 'admin' : 'professor'}>{children}</AppShell>;
+	return <AppShell currentUser={user} role={user.role === 'admin' ? 'admin' : 'professor'}>{children}</AppShell>;
 }

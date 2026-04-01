@@ -1,17 +1,24 @@
 'use client';
 
-import { Button, Card, Form, Input, Label, Spinner, TextField } from '@heroui/react';
+import type { Key } from '@heroui/react';
+
+import { Button, Card, Form, Input, Label, ListBox, Select, TextField } from '@heroui/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { getDefaultRouteByRole } from '@/lib/auth/routes';
-import { useAuth, useOrganizations } from '@/lib/hooks/use-auth';
+import { useAuth } from '@/lib/hooks/use-auth';
 import { ApiClientError } from '@/types/api';
+import type { Organization } from '@/types/organization';
 
-export function LoginForm() {
+interface LoginFormProps {
+	initialOrganizations: Organization[];
+	organizationsLoadFailed: boolean;
+}
+
+export function LoginForm({ initialOrganizations, organizationsLoadFailed }: LoginFormProps) {
 	const router = useRouter();
 	const { login, loginPending } = useAuth();
-	const { data: organizations = [], isLoading, isError } = useOrganizations();
 	const [selectedOrganizationCode, setSelectedOrganizationCode] = useState<string>('');
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -63,34 +70,39 @@ export function LoginForm() {
 
 			<Form className="flex flex-col gap-6" onSubmit={handleSubmit}>
 				<div className="flex w-full flex-col gap-3">
-					<div className="text-sm font-medium text-slate-700">학교 선택</div>
-					{isLoading ? (
-						<div className="flex items-center gap-2 text-sm text-slate-500">
-							<Spinner size="sm" />
-							학교 목록을 불러오는 중...
-						</div>
+					<Select
+						isRequired
+						className="w-full"
+						isDisabled={initialOrganizations.length === 0}
+						name="organization_code"
+						placeholder="학교를 선택하세요"
+						value={selectedOrganizationCode || null}
+						variant="secondary"
+						onChange={(value) => setSelectedOrganizationCode((value as Key | null)?.toString() ?? '')}
+					>
+						<Label>학교 선택</Label>
+						<Select.Trigger>
+							<Select.Value />
+							<Select.Indicator />
+						</Select.Trigger>
+						<Select.Popover>
+							<ListBox>
+								{initialOrganizations.map((organization) => (
+									<ListBox.Item key={organization.id} id={organization.code} textValue={organization.name}>
+										<div className="flex flex-col items-start">
+											<span className="font-medium">{organization.name}</span>
+											<span className="text-xs text-slate-500">{organization.code}</span>
+										</div>
+										<ListBox.ItemIndicator />
+									</ListBox.Item>
+								))}
+							</ListBox>
+						</Select.Popover>
+					</Select>
+					{organizationsLoadFailed ? <p className="text-sm text-red-600">학교 목록을 불러오지 못했습니다.</p> : null}
+					{!organizationsLoadFailed && initialOrganizations.length === 0 ? (
+						<p className="text-sm text-slate-500">선택 가능한 학교가 없습니다.</p>
 					) : null}
-					{isError ? <p className="text-sm text-red-600">학교 목록을 불러오지 못했습니다.</p> : null}
-					<div className="grid w-full gap-2 sm:grid-cols-2">
-						{organizations.map((organization) => {
-							const isSelected = selectedOrganizationCode === organization.code;
-
-							return (
-								<Button
-									key={organization.id}
-									className="justify-start"
-									type="button"
-									variant={isSelected ? 'primary' : 'secondary'}
-									onPress={() => setSelectedOrganizationCode(organization.code)}
-								>
-									<div className="flex flex-col items-start">
-										<span className="font-medium">{organization.name}</span>
-										<span className="text-xs opacity-70">{organization.code}</span>
-									</div>
-								</Button>
-							);
-						})}
-					</div>
 				</div>
 
 				<TextField isRequired className="w-full" name="login_id">
