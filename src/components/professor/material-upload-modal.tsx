@@ -26,7 +26,8 @@ export function MaterialUploadModal({ classroomId }: MaterialUploadModalProps) {
 		event.preventDefault();
 		setErrorMessage(null);
 
-		const formData = new FormData(event.currentTarget);
+		const form = event.currentTarget;
+		const formData = new FormData(form);
 		const title = String(formData.get('title') ?? '').trim();
 		const week = Number(formData.get('week'));
 		const descriptionValue = String(formData.get('description') ?? '').trim();
@@ -45,7 +46,7 @@ export function MaterialUploadModal({ classroomId }: MaterialUploadModalProps) {
 				uploaded_file: uploadedFile,
 			});
 
-			event.currentTarget.reset();
+			form.reset();
 			close();
 		} catch (error) {
 			if (error instanceof ApiClientError) {
