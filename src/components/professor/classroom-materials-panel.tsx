@@ -1,14 +1,15 @@
 'use client';
 
-import { Button, Card, Skeleton } from '@heroui/react';
+import type { SVGProps } from 'react';
+
+import { Button, ButtonGroup, Card, Chip, Skeleton, Table, Tooltip } from '@heroui/react';
 
 import type { ClassroomMaterial } from '@/types/classroom';
 
+import { MaterialUploadModal } from '@/components/professor/material-upload-modal';
 import { classroomsApi } from '@/lib/api/classrooms';
 import { SEOUL_TIME_ZONE, dayjs } from '@/lib/dayjs';
 import { useDeleteClassroomMaterial } from '@/lib/hooks/use-classrooms';
-
-import { MaterialUploadModal } from '@/components/professor/material-upload-modal';
 
 interface ClassroomMaterialsPanelProps {
 	classroomId: string;
@@ -36,6 +37,119 @@ const formatFileSize = (value: number) => {
 
 	return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 };
+
+const getFileChipColor = (extension: string) => {
+	switch (extension.toLowerCase()) {
+		case 'pdf':
+			return 'danger';
+		case 'ppt':
+		case 'pptx':
+			return 'accent';
+		case 'doc':
+		case 'docx':
+			return 'warning';
+		default:
+			return 'default';
+	}
+};
+
+const PdfIcon = (props: SVGProps<SVGSVGElement>) => (
+	<svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
+		<path
+			d="M7 3.75h7.5L19.25 8.5V19A2.25 2.25 0 0 1 17 21.25H7A2.25 2.25 0 0 1 4.75 19V6A2.25 2.25 0 0 1 7 3.75Z"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path
+			d="M14.5 3.75V8.5h4.75"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path
+			d="M7.75 15.75h1.1a1.4 1.4 0 1 0 0-2.8h-1.1v4.3"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path
+			d="M12 17.25c.9 0 1.6-.7 1.6-1.55v-1.2c0-.85-.7-1.55-1.6-1.55h-.75v4.3H12Z"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path
+			d="M16.25 17.25v-4.3h2.25"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path
+			d="M16.25 15.1h1.8"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+	</svg>
+);
+
+const FileIcon = (props: SVGProps<SVGSVGElement>) => (
+	<svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
+		<path
+			d="M7 3.75h7.5L19.25 8.5V19A2.25 2.25 0 0 1 17 21.25H7A2.25 2.25 0 0 1 4.75 19V6A2.25 2.25 0 0 1 7 3.75Z"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path
+			d="M14.5 3.75V8.5h4.75"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path d="M8.75 13.25h6.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+		<path d="M8.75 16.75h6.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+	</svg>
+);
+
+const DownloadIcon = (props: SVGProps<SVGSVGElement>) => (
+	<svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
+		<path d="M12 4.75v9.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+		<path
+			d="m8.25 10.75 3.75 3.75 3.75-3.75"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path d="M5.75 18.25h12.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+	</svg>
+);
+
+const TrashIcon = (props: SVGProps<SVGSVGElement>) => (
+	<svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
+		<path d="M9.25 4.75h5.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+		<path d="M5.75 7.75h12.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+		<path
+			d="M8.25 7.75v10a1.5 1.5 0 0 0 1.5 1.5h4.5a1.5 1.5 0 0 0 1.5-1.5v-10"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path d="M10.25 10.5v5.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+		<path d="M13.75 10.5v5.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+	</svg>
+);
 
 export function ClassroomMaterialsPanel({
 	classroomId,
@@ -94,53 +208,113 @@ export function ClassroomMaterialsPanel({
 					</Card.Content>
 				</Card>
 			) : (
-				<div className="grid gap-3">
-					{materials.map((material) => (
-						<Card key={material.id} className="border border-slate-200 bg-slate-50">
-							<Card.Content className="space-y-4 py-4">
-								<div className="flex flex-wrap items-start justify-between gap-3">
-									<div className="space-y-2">
-										<div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-											<span className="rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">
-												{material.week}주차
-											</span>
-											<span className="rounded-full bg-slate-200 px-2.5 py-1 text-slate-700">
-												{material.file.file_extension.toUpperCase()}
-											</span>
-										</div>
-										<p className="text-base font-semibold text-slate-900">{material.title}</p>
-										<p className="text-sm text-slate-600">{material.description ?? '설명 없음'}</p>
-									</div>
-									<div className="flex flex-wrap gap-2">
-										<Button
-											size="sm"
-											variant="secondary"
-											onPress={() => handleDownload(material.id)}
-										>
-											다운로드
-										</Button>
-										{canManageMaterials ? (
-											<Button
-												size="sm"
-												variant="danger-soft"
-												isPending={deletePending}
-												onPress={() => deleteMaterial(material.id)}
-											>
-												삭제
-											</Button>
-										) : null}
-									</div>
-								</div>
+				<Table>
+					<Table.ScrollContainer>
+						<Table.Content aria-label="강의 자료 목록" className="min-w-[960px] table-fixed">
+							<Table.Header>
+								<Table.Column isRowHeader className="w-[96px]">주차</Table.Column>
+								<Table.Column className="w-[240px]">제목</Table.Column>
+								<Table.Column className="w-[260px]">파일</Table.Column>
+								<Table.Column className="w-[110px]">크기</Table.Column>
+								<Table.Column className="w-[160px]">업로드 시각</Table.Column>
+								<Table.Column className="w-[94px]">작업</Table.Column>
+							</Table.Header>
+							<Table.Body>
+								{materials.map((material) => {
+									const extension = material.file.file_extension.toUpperCase();
+									const fileChipColor = getFileChipColor(material.file.file_extension);
 
-								<div className="grid gap-2 text-sm text-slate-600 md:grid-cols-3">
-									<p>파일명: {material.file.file_name}</p>
-									<p>크기: {formatFileSize(material.file.file_size)}</p>
-									<p>업로드: {formatDateTime(material.uploaded_at)}</p>
-								</div>
-							</Card.Content>
-						</Card>
-					))}
-				</div>
+									return (
+										<Table.Row key={material.id}>
+											<Table.Cell>
+												<Chip color="accent" size="sm" variant="soft">
+													<Chip.Label>{material.week}주차</Chip.Label>
+												</Chip>
+											</Table.Cell>
+											<Table.Cell>
+												<div className="w-[240px] space-y-1 overflow-hidden">
+													<p className="truncate font-medium text-slate-900">{material.title}</p>
+													<p className="truncate text-sm text-slate-600">
+														{material.description ?? '설명 없음'}
+													</p>
+												</div>
+											</Table.Cell>
+											<Table.Cell>
+												<div className="flex w-[260px] items-center gap-2 overflow-hidden">
+													<Chip className="shrink-0" color={fileChipColor} size="sm" variant="soft">
+														{material.file.file_extension.toLowerCase() === 'pdf' ? (
+															<PdfIcon className="size-3.5" />
+														) : (
+															<FileIcon className="size-3.5" />
+														)}
+														<Chip.Label>{extension}</Chip.Label>
+													</Chip>
+													<p className="truncate text-sm font-medium text-slate-900">
+														{material.file.file_name}
+													</p>
+												</div>
+											</Table.Cell>
+											<Table.Cell>
+												<span className="block w-[110px] truncate font-medium text-slate-700">
+													{formatFileSize(material.file.file_size)}
+												</span>
+											</Table.Cell>
+											<Table.Cell>
+												<div className="w-[160px] space-y-1 overflow-hidden text-sm">
+													<p className="truncate font-medium text-slate-700">
+														{formatDateTime(material.uploaded_at)}
+													</p>
+												</div>
+											</Table.Cell>
+											<Table.Cell>
+												<div className="w-[94px] overflow-hidden">
+													<ButtonGroup size="md">
+														<Button
+															aria-label={`${material.title} 다운로드`}
+															isIconOnly
+															variant="secondary"
+															onPress={() => handleDownload(material.id)}
+														>
+															<Tooltip delay={0}>
+																<Tooltip.Trigger aria-label="다운로드" className="contents">
+																	<DownloadIcon className="size-5" />
+																</Tooltip.Trigger>
+																<Tooltip.Content showArrow>
+																	<Tooltip.Arrow />
+																	<p>다운로드</p>
+																</Tooltip.Content>
+															</Tooltip>
+														</Button>
+														{canManageMaterials ? (
+															<Button
+																aria-label={`${material.title} 삭제`}
+																isIconOnly
+																isPending={deletePending}
+																variant="danger-soft"
+																onPress={() => deleteMaterial(material.id)}
+															>
+																<ButtonGroup.Separator />
+																<Tooltip delay={0}>
+																	<Tooltip.Trigger aria-label="삭제" className="contents">
+																		<TrashIcon className="size-5" />
+																	</Tooltip.Trigger>
+																	<Tooltip.Content showArrow>
+																		<Tooltip.Arrow />
+																		<p>삭제</p>
+																	</Tooltip.Content>
+																</Tooltip>
+															</Button>
+														) : null}
+													</ButtonGroup>
+												</div>
+											</Table.Cell>
+										</Table.Row>
+									);
+								})}
+							</Table.Body>
+						</Table.Content>
+					</Table.ScrollContainer>
+				</Table>
 			)}
 		</div>
 	);
