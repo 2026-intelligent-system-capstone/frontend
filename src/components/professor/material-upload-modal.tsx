@@ -1,35 +1,33 @@
 'use client';
 
-import { Button, ErrorMessage, Input, Label, Modal, TextArea, TextField } from '@heroui/react';
 import { useId, useState } from 'react';
 
-import { useCreateClassroomMaterial } from '@/lib/hooks/use-classrooms';
+import { Button, ErrorMessage, Input, Label, Modal, TextArea, TextField } from '@heroui/react';
+
 import { ApiClientError } from '@/types/api';
+
+import { useCreateClassroomMaterial } from '@/lib/hooks/use-classrooms';
 
 interface MaterialUploadModalProps {
 	classroomId: string;
+	week: number;
 }
 
-export function MaterialUploadModal({ classroomId }: MaterialUploadModalProps) {
+export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalProps) {
 	const titleId = useId();
-	const weekId = useId();
 	const descriptionId = useId();
 	const fileId = useId();
 	const [isOpen, setIsOpen] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const { mutateAsync: createMaterial, isPending } = useCreateClassroomMaterial(classroomId);
 
-	const handleSubmit = async (
-		event: React.FormEvent<HTMLFormElement>,
-		close: () => void,
-	) => {
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>, close: () => void) => {
 		event.preventDefault();
 		setErrorMessage(null);
 
 		const form = event.currentTarget;
 		const formData = new FormData(form);
 		const title = String(formData.get('title') ?? '').trim();
-		const week = Number(formData.get('week'));
 		const descriptionValue = String(formData.get('description') ?? '').trim();
 		const uploadedFile = formData.get('uploaded_file');
 
@@ -71,9 +69,6 @@ export function MaterialUploadModal({ classroomId }: MaterialUploadModalProps) {
 								<Modal.CloseTrigger />
 								<Modal.Header>
 									<Modal.Heading>강의 자료 업로드</Modal.Heading>
-									<p className="mt-1 text-sm text-slate-500">
-										이 강의실에 연결된 자료만 등록됩니다.
-									</p>
 								</Modal.Header>
 								<Modal.Body className="p-6">
 									<form className="space-y-4" onSubmit={(event) => handleSubmit(event, close)}>
@@ -82,26 +77,26 @@ export function MaterialUploadModal({ classroomId }: MaterialUploadModalProps) {
 											<Input id={titleId} placeholder="예: 1주차 강의 자료" />
 										</TextField>
 
-										<div className="grid gap-4 md:grid-cols-2">
-											<TextField isRequired className="w-full" defaultValue="1" name="week">
-												<Label htmlFor={weekId}>주차</Label>
-												<Input id={weekId} min={1} step={1} type="number" />
-											</TextField>
-
-											<div className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-												<Label htmlFor={fileId}>파일</Label>
-												<input
-													id={fileId}
-													name="uploaded_file"
-													type="file"
-													className="block h-10 w-full rounded-medium border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 file:mr-3 file:rounded-medium file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700"
-												/>
-											</div>
+										<div className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+											<Label htmlFor={fileId}>파일</Label>
+											<input
+												id={fileId}
+												name="uploaded_file"
+												type="file"
+												className="rounded-medium file:rounded-medium block h-10 w-full border
+													border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 file:mr-3
+													file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm
+													file:font-medium file:text-slate-700"
+											/>
 										</div>
 
 										<TextField className="w-full" name="description">
 											<Label htmlFor={descriptionId}>설명</Label>
-											<TextArea id={descriptionId} className="min-h-28" placeholder="자료 설명이나 학습 포인트를 입력하세요." />
+											<TextArea
+												id={descriptionId}
+												className="min-h-28"
+												placeholder="자료 설명이나 학습 포인트를 입력하세요."
+											/>
 										</TextField>
 
 										{errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}

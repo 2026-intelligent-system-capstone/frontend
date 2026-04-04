@@ -1,19 +1,16 @@
 'use client';
 
-import { Card, Skeleton, Tabs } from '@heroui/react';
+import { Card, Skeleton } from '@heroui/react';
 
-import { ClassroomExamsPanel } from '@/components/professor/classroom-exams-panel';
-import { ClassroomMaterialsPanel } from '@/components/professor/classroom-materials-panel';
-import { ClassroomStudentsPanel } from '@/components/professor/classroom-students-panel';
-import {
-	useClassroomDetail,
-	useClassroomExams,
-	useClassroomMaterials,
-	useUsers,
-} from '@/lib/hooks/use-classrooms';
 import type { Classroom, ClassroomMaterial } from '@/types/classroom';
 import type { Exam } from '@/types/exam';
 import type { User } from '@/types/user';
+
+import { useClassroomDetail, useClassroomExams, useClassroomMaterials, useUsers } from '@/lib/hooks/use-classrooms';
+
+import { ClassroomOverviewCard } from '@/components/professor/classroom-detail/classroom-overview-card';
+import { ClassroomWeekSections } from '@/components/professor/classroom-detail/classroom-week-sections';
+import { ClassroomStudentsPanel } from '@/components/professor/classroom-students-panel';
 
 interface ClassroomDetailPageProps {
 	classroomId: string;
@@ -27,6 +24,8 @@ interface ClassroomDetailPageProps {
 	isExamsError: boolean;
 	isUsersError: boolean;
 }
+
+const COURSE_WEEKS = 16;
 
 export function ClassroomDetailPage({
 	classroomId,
@@ -44,8 +43,12 @@ export function ClassroomDetailPage({
 	const materialsQuery = useClassroomMaterials(classroomId, initialMaterials);
 	const examsQuery = useClassroomExams(classroomId, initialExams);
 	const usersQuery = useUsers(initialUsers);
+	const classroom = classroomQuery.data;
+	const users = usersQuery.data ?? [];
+	const materials = materialsQuery.data ?? [];
+	const exams = examsQuery.data ?? [];
 
-	if ((classroomQuery.isLoading && !initialClassroom) || (!classroomQuery.data && !isClassroomError && !initialClassroom)) {
+	if ((classroomQuery.isLoading && !initialClassroom) || (!classroom && !isClassroomError && !initialClassroom)) {
 		return (
 			<div className="bg-slate-50 px-6 py-10">
 				<Card className="mx-auto max-w-6xl">
@@ -72,123 +75,52 @@ export function ClassroomDetailPage({
 		);
 	}
 
-	if ((isClassroomError && !classroomQuery.isLoading && !classroomQuery.data) || classroomQuery.isError || !classroomQuery.data) {
+	if ((isClassroomError && !classroomQuery.isLoading && !classroom) || classroomQuery.isError || !classroom) {
 		return (
 			<div className="bg-slate-50 px-6 py-10">
 				<Card className="mx-auto max-w-6xl">
-					<Card.Content className="py-10 text-sm text-red-600">강의실 정보를 불러오지 못했습니다.</Card.Content>
+					<Card.Content className="py-10 text-sm text-red-600">
+						강의실 정보를 불러오지 못했습니다.
+					</Card.Content>
 				</Card>
 			</div>
 		);
 	}
 
-	const classroom = classroomQuery.data;
-	const users = usersQuery.data ?? [];
 	const students = users.filter((user) => classroom.student_ids.includes(user.id));
-	const materials = materialsQuery.data ?? [];
-	const exams = examsQuery.data ?? [];
 
 	return (
 		<div className="bg-slate-50 px-6 py-10">
 			<div className="mx-auto flex max-w-6xl flex-col gap-6">
-				<Card>
-					<Card.Header className="gap-3">
-						<div className="flex flex-wrap items-start justify-between gap-4">
-							<div>
-								<p className="text-sm font-medium text-blue-600">Classroom Detail</p>
-								<Card.Title className="mt-2 text-2xl font-semibold text-slate-900">{classroom.name}</Card.Title>
-								<Card.Description className="mt-2 text-sm text-slate-500">
-									{classroom.grade}학년 · {classroom.semester} · {classroom.section}반
-								</Card.Description>
-							</div>
-							<div className="flex flex-wrap gap-2 text-xs font-medium">
-								<span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">교수자 {classroom.professor_ids.length}명</span>
-								<span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">학생 {classroom.student_ids.length}명</span>
-								<span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
-									자료 열람 {classroom.allow_student_material_access ? '허용' : '제한'}
-								</span>
-							</div>
-						</div>
-					</Card.Header>
-					<Card.Content className="grid gap-4 md:grid-cols-3">
-						<Card className="border border-slate-200 bg-slate-50">
-							<Card.Header>
-								<Card.Title className="text-base">강의실 소개</Card.Title>
-							</Card.Header>
-							<Card.Content className="text-sm text-slate-600">
-								{classroom.description ?? '강의실 설명이 아직 없습니다.'}
-							</Card.Content>
-						</Card>
-						<Card className="border border-slate-200 bg-slate-50">
-							<Card.Header>
-								<Card.Title className="text-base">자료/시험 현황</Card.Title>
-							</Card.Header>
-							<Card.Content className="space-y-2 text-sm text-slate-600">
-								<p>자료 {materials.length}건</p>
-								<p>시험 {exams.length}건</p>
-							</Card.Content>
-						</Card>
-						<Card className="border border-slate-200 bg-slate-50">
-							<Card.Header>
-								<Card.Title className="text-base">구성원</Card.Title>
-							</Card.Header>
-							<Card.Content className="space-y-2 text-sm text-slate-600">
-								<p>교수자 {classroom.professor_ids.length}명</p>
-								<p>학생 {classroom.student_ids.length}명</p>
-							</Card.Content>
-						</Card>
-					</Card.Content>
-				</Card>
+				<ClassroomOverviewCard
+					classroom={classroom}
+					courseWeeks={COURSE_WEEKS}
+					examsCount={exams.length}
+					materialsCount={materials.length}
+				/>
+
+				<ClassroomWeekSections
+					canManageClassroom={canManageClassroom}
+					classroomId={classroomId}
+					courseWeeks={COURSE_WEEKS}
+					exams={exams}
+					isExamsError={isExamsError || examsQuery.isError}
+					isExamsLoading={examsQuery.isLoading}
+					isMaterialsError={isMaterialsError || materialsQuery.isError}
+					isMaterialsLoading={materialsQuery.isLoading}
+					materials={materials}
+				/>
 
 				<Card>
-					<Card.Content>
-						<Tabs>
-							<Tabs.ListContainer>
-								<Tabs.List aria-label="강의실 관리 탭">
-									<Tabs.Tab id="materials">자료</Tabs.Tab>
-									<Tabs.Tab id="exams">
-										<Tabs.Separator />
-										시험
-									</Tabs.Tab>
-									<Tabs.Tab id="students">
-										<Tabs.Separator />
-										학생
-									</Tabs.Tab>
-								</Tabs.List>
-							</Tabs.ListContainer>
-
-							<Tabs.Panel id="materials" className="pt-6">
-								<ClassroomMaterialsPanel
-									classroomId={classroomId}
-									materials={materials}
-									isError={isMaterialsError || materialsQuery.isError}
-									isLoading={materialsQuery.isLoading}
-									canManageMaterials={canManageClassroom}
-								/>
-							</Tabs.Panel>
-
-							<Tabs.Panel id="exams" className="pt-6">
-								<ClassroomExamsPanel
-									classroomId={classroomId}
-									exams={exams}
-									materials={materials}
-									isError={isExamsError || examsQuery.isError}
-									isLoading={examsQuery.isLoading}
-									canManageExams={canManageClassroom}
-								/>
-							</Tabs.Panel>
-
-							<Tabs.Panel id="students" className="pt-6">
-								<ClassroomStudentsPanel
-									classroomId={classroomId}
-									students={students}
-									users={users}
-									isLoading={usersQuery.isLoading}
-									isError={isUsersError || usersQuery.isError}
-									canManageStudents={canManageClassroom}
-								/>
-							</Tabs.Panel>
-						</Tabs>
+					<Card.Content className="pt-6">
+						<ClassroomStudentsPanel
+							canManageStudents={canManageClassroom}
+							classroomId={classroomId}
+							isError={isUsersError || usersQuery.isError}
+							isLoading={usersQuery.isLoading}
+							students={students}
+							users={users}
+						/>
 					</Card.Content>
 				</Card>
 			</div>
