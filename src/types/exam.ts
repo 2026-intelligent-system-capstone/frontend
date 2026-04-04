@@ -49,6 +49,7 @@ export interface Exam {
 	exam_type: ExamType;
 	status: ExamStatus;
 	duration_minutes: number;
+	week: number;
 	starts_at: string;
 	ends_at: string;
 	allow_retake: boolean;
@@ -71,6 +72,7 @@ export interface CreateExamRequest {
 	description?: string | null;
 	exam_type: ExamType;
 	duration_minutes: number;
+	week: number;
 	starts_at: string;
 	ends_at: string;
 	allow_retake?: boolean;
