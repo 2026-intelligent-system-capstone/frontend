@@ -15,6 +15,7 @@ export {
 	useRemoveClassroomStudent,
 } from '@/lib/hooks/classrooms/use-classroom-mutations';
 export {
+	useClassroomExam,
 	useClassroomExams,
 	useCreateExam,
 	useCreateExamQuestion,

@@ -80,7 +80,6 @@ export function ClassroomWeekSections({
 									exams={section.exams}
 									isError={isExamsError}
 									isLoading={isExamsLoading}
-									materials={section.materials}
 									showActions
 								/>
 							</div>

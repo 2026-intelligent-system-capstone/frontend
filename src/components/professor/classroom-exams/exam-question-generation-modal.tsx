@@ -9,9 +9,9 @@ import type { ClassroomMaterial } from '@/types/classroom';
 import type { BloomLevel, ExamDifficulty, GenerateExamQuestionsRequest } from '@/types/exam';
 
 import {
-	createDefaultBloomRatios,
+	createDefaultBloomCounts,
 	createEmptyGenerationForm,
-	parseBloomRatios,
+	parseBloomCounts,
 } from '@/lib/classrooms/exam-presentation';
 import { useGenerateExamQuestions } from '@/lib/hooks/use-classrooms';
 
@@ -31,10 +31,9 @@ export function ExamQuestionGenerationModal({ classroomId, examId, materials }: 
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [difficulty, setDifficulty] = useState<ExamDifficulty>(emptyGenerationForm.difficulty);
 	const [scopeText, setScopeText] = useState(emptyGenerationForm.scopeText);
-	const [totalQuestions, setTotalQuestions] = useState(emptyGenerationForm.totalQuestions);
 	const [maxFollowUps, setMaxFollowUps] = useState(emptyGenerationForm.maxFollowUps);
 	const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>(emptyGenerationForm.selectedMaterialIds);
-	const [bloomRatios, setBloomRatios] = useState<Record<BloomLevel, string>>(createDefaultBloomRatios);
+	const [bloomCounts, setBloomCounts] = useState<Record<BloomLevel, string>>(createDefaultBloomCounts);
 	const generateMutation = useGenerateExamQuestions(classroomId, examId);
 
 	const completedMaterials = useMemo(() => {
@@ -51,10 +50,9 @@ export function ExamQuestionGenerationModal({ classroomId, examId, materials }: 
 			setErrorMessage(null);
 			setDifficulty(emptyGenerationForm.difficulty);
 			setScopeText(emptyGenerationForm.scopeText);
-			setTotalQuestions(emptyGenerationForm.totalQuestions);
 			setMaxFollowUps(emptyGenerationForm.maxFollowUps);
 			setSelectedMaterialIds(emptyGenerationForm.selectedMaterialIds);
-			setBloomRatios(createDefaultBloomRatios());
+			setBloomCounts(createDefaultBloomCounts());
 		}
 	};
 
@@ -62,31 +60,30 @@ export function ExamQuestionGenerationModal({ classroomId, examId, materials }: 
 		event.preventDefault();
 		setErrorMessage(null);
 
-		const { parsedRatios, totalRatio } = parseBloomRatios(bloomRatios);
+		const { parsedCounts, totalCount } = parseBloomCounts(bloomCounts);
 
 		if (!scopeText.trim()) {
 			setErrorMessage('시험 범위를 입력해주세요.');
 			return;
 		}
 
-		if (parsedRatios.length === 0) {
-			setErrorMessage('Bloom 비율을 하나 이상 입력해주세요.');
+		if (parsedCounts.length === 0) {
+			setErrorMessage('Bloom 단계별 문항 수를 하나 이상 입력해주세요.');
 			return;
 		}
 
-		if (totalRatio !== 100) {
-			setErrorMessage('Bloom 비율 합계는 100이어야 합니다.');
+		if (totalCount <= 0) {
+			setErrorMessage('총 문항 수는 1개 이상이어야 합니다.');
 			return;
 		}
 
 		try {
 			await generateMutation.mutateAsync({
-				bloom_ratios: parsedRatios,
+				bloom_counts: parsedCounts,
 				difficulty,
 				max_follow_ups: Number(maxFollowUps),
 				scope_text: scopeText.trim(),
 				source_material_ids: selectedMaterialIds,
-				total_questions: Number(totalQuestions),
 			} satisfies GenerateExamQuestionsRequest);
 			close();
 		} catch (error) {
@@ -106,8 +103,8 @@ export function ExamQuestionGenerationModal({ classroomId, examId, materials }: 
 				AI 문항 생성
 			</Button>
 			<Modal.Backdrop isOpen={isOpen} onOpenChange={handleOpenChange}>
-				<Modal.Container>
-					<Modal.Dialog className="sm:max-w-4xl">
+				<Modal.Container scroll="inside">
+					<Modal.Dialog className="flex max-h-[calc(100vh-5rem)] flex-col overflow-hidden sm:max-w-4xl">
 						{({ close }) => (
 							<>
 								<Modal.CloseTrigger />
@@ -117,21 +114,23 @@ export function ExamQuestionGenerationModal({ classroomId, examId, materials }: 
 										적재 완료된 강의 자료와 추출 범위를 기반으로 문항을 생성합니다.
 									</p>
 								</Modal.Header>
-								<Modal.Body className="p-6">
-									<form className="space-y-5" onSubmit={(event) => handleSubmit(event, close)}>
+								<Modal.Body className="min-h-0 flex-1 overflow-y-auto p-6">
+									<form
+										className="space-y-5"
+										id="exam-question-generation-form"
+										onSubmit={(event) => handleSubmit(event, close)}
+									>
 										<ExamQuestionGenerationSettings
-											bloomRatios={bloomRatios}
+											bloomCounts={bloomCounts}
 											difficulty={difficulty}
 											maxFollowUps={maxFollowUps}
-											onBloomRatioChange={(level, value) =>
-												setBloomRatios((prev) => ({ ...prev, [level]: value }))
+											onBloomCountChange={(level, value) =>
+												setBloomCounts((prev) => ({ ...prev, [level]: value }))
 											}
 											onDifficultyChange={setDifficulty}
 											onMaxFollowUpsChange={setMaxFollowUps}
 											onScopeTextChange={setScopeText}
-											onTotalQuestionsChange={setTotalQuestions}
 											scopeText={scopeText}
-											totalQuestions={totalQuestions}
 										/>
 
 										<ExamQuestionGenerationMaterials
@@ -143,21 +142,21 @@ export function ExamQuestionGenerationModal({ classroomId, examId, materials }: 
 										/>
 
 										{errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
-
-										<div className="flex justify-end gap-3">
-											<Button type="button" variant="secondary" onPress={close}>
-												취소
-											</Button>
-											<Button
-												isPending={generateMutation.isPending}
-												type="submit"
-												variant="primary"
-											>
-												생성
-											</Button>
-										</div>
 									</form>
 								</Modal.Body>
+								<Modal.Footer className="justify-end gap-3 border-t border-slate-200 px-6 py-4">
+									<Button type="button" variant="secondary" onPress={close}>
+										취소
+									</Button>
+									<Button
+										form="exam-question-generation-form"
+										isPending={generateMutation.isPending}
+										type="submit"
+										variant="primary"
+									>
+										생성
+									</Button>
+								</Modal.Footer>
 							</>
 						)}
 					</Modal.Dialog>

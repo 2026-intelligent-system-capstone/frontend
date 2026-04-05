@@ -79,18 +79,17 @@ export interface CreateExamRequest {
 	criteria: CreateExamCriterionRequest[];
 }
 
-export interface ExamQuestionBloomRatioRequest {
+export interface ExamQuestionBloomCountRequest {
 	bloom_level: BloomLevel;
-	percentage: number;
+	count: number;
 }
 
 export interface GenerateExamQuestionsRequest {
 	scope_text: string;
-	total_questions: number;
 	max_follow_ups: number;
 	difficulty: ExamDifficulty;
 	source_material_ids: string[];
-	bloom_ratios: ExamQuestionBloomRatioRequest[];
+	bloom_counts: ExamQuestionBloomCountRequest[];
 }
 
 export interface CreateExamQuestionRequest {

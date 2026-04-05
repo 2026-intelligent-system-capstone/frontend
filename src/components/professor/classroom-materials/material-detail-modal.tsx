@@ -4,13 +4,13 @@ import { Card, Chip, EmptyState, ErrorMessage, Modal, Skeleton } from '@heroui/r
 
 import type { ClassroomMaterial } from '@/types/classroom';
 
-import { useClassroomMaterial } from '@/lib/hooks/use-classrooms';
 import {
 	formatMaterialDateTime,
 	formatMaterialFileSize,
 	getMaterialIngestStatusColor,
 	getMaterialIngestStatusLabel,
 } from '@/lib/classrooms/material-presentation';
+import { useClassroomMaterial } from '@/lib/hooks/use-classrooms';
 
 interface MaterialDetailModalProps {
 	classroomId: string;
@@ -43,7 +43,8 @@ export function MaterialDetailModal({
 									<div className="space-y-2">
 										<Modal.Heading>{resolvedMaterial.title}</Modal.Heading>
 										<p className="text-sm text-slate-500">
-											{getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)} · {resolvedMaterial.week}주차 ·{' '}
+											{getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)} ·{' '}
+											{resolvedMaterial.week}주차 ·{' '}
 											{formatMaterialDateTime(resolvedMaterial.uploaded_at)}
 										</p>
 									</div>
@@ -74,7 +75,9 @@ export function MaterialDetailModal({
 										<Card className="border border-slate-200 bg-slate-50">
 											<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
 												<p className="font-medium text-slate-900">적재 결과</p>
-												<p>상태 {getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)}</p>
+												<p>
+													상태 {getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)}
+												</p>
 												<p>시험 범위 후보 {resolvedMaterial.scope_candidates.length}개</p>
 												<p>오류 {resolvedMaterial.ingest_error ?? '없음'}</p>
 											</Card.Content>
@@ -90,18 +93,32 @@ export function MaterialDetailModal({
 									<div className="space-y-3">
 										<div className="flex items-center justify-between gap-3">
 											<h3 className="text-base font-semibold text-slate-900">시험 범위 후보</h3>
-											<Chip color={getMaterialIngestStatusColor(resolvedMaterial.ingest_status)} size="sm" variant="soft">
-												<Chip.Label>{getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)}</Chip.Label>
+											<Chip
+												color={getMaterialIngestStatusColor(resolvedMaterial.ingest_status)}
+												size="sm"
+												variant="soft"
+											>
+												<Chip.Label>
+													{getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)}
+												</Chip.Label>
 											</Chip>
 										</div>
 										{resolvedMaterial.scope_candidates.length === 0 ? (
-											<EmptyState className="flex w-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-10 text-center">
-												<span className="text-sm text-slate-500">추출된 시험 범위가 없습니다.</span>
+											<EmptyState
+												className="flex w-full flex-col items-center justify-center rounded-xl
+													border border-dashed border-slate-200 py-10 text-center"
+											>
+												<span className="text-sm text-slate-500">
+													추출된 시험 범위가 없습니다.
+												</span>
 											</EmptyState>
 										) : (
 											<div className="space-y-3">
 												{resolvedMaterial.scope_candidates.map((candidate, index) => (
-													<Card key={`${candidate.label}-${index}`} className="border border-slate-200 bg-white">
+													<Card
+														key={`${candidate.label}-${index}`}
+														className="border border-slate-200 bg-white"
+													>
 														<Card.Content className="space-y-3 py-4">
 															<div className="flex flex-wrap items-center gap-2">
 																<Chip color="accent" size="sm" variant="soft">
@@ -114,14 +131,21 @@ export function MaterialDetailModal({
 																) : null}
 																{candidate.confidence !== null ? (
 																	<Chip size="sm" variant="secondary">
-																		<Chip.Label>신뢰도 {(candidate.confidence * 100).toFixed(0)}%</Chip.Label>
+																		<Chip.Label>
+																			신뢰도{' '}
+																			{(candidate.confidence * 100).toFixed(0)}%
+																		</Chip.Label>
 																	</Chip>
 																) : null}
 															</div>
-															<p className="text-sm text-slate-700">{candidate.scope_text}</p>
+															<p className="text-sm text-slate-700">
+																{candidate.scope_text}
+															</p>
 															<div className="flex flex-wrap gap-2">
 																{candidate.keywords.length === 0 ? (
-																	<span className="text-sm text-slate-500">키워드 없음</span>
+																	<span className="text-sm text-slate-500">
+																		키워드 없음
+																	</span>
 																) : (
 																	candidate.keywords.map((keyword) => (
 																		<Chip key={keyword} size="sm" variant="soft">

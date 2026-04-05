@@ -74,13 +74,19 @@ export function MaterialsTable({
 									<Table.Cell>
 										<button
 											type="button"
-											className="flex w-full min-w-0 cursor-pointer flex-col space-y-1 overflow-hidden text-left"
+											className="flex w-full min-w-0 cursor-pointer flex-col space-y-1
+												overflow-hidden text-left"
 											onClick={() => onSelectMaterial(material.id)}
 										>
-											<p className="truncate font-medium text-slate-900 underline-offset-2 hover:underline">
+											<p
+												className="truncate font-medium text-slate-900 underline-offset-2
+													hover:underline"
+											>
 												{material.title}
 											</p>
-											<p className="truncate text-sm text-slate-600">{material.description ?? '설명 없음'}</p>
+											<p className="truncate text-sm text-slate-600">
+												{material.description ?? '설명 없음'}
+											</p>
 										</button>
 									</Table.Cell>
 									<Table.Cell>
@@ -97,8 +103,14 @@ export function MaterialsTable({
 									</Table.Cell>
 									<Table.Cell>
 										<div className="w-28 overflow-hidden">
-											<Chip color={getMaterialIngestStatusColor(material.ingest_status)} size="sm" variant="soft">
-												<Chip.Label>{getMaterialIngestStatusLabel(material.ingest_status)}</Chip.Label>
+											<Chip
+												color={getMaterialIngestStatusColor(material.ingest_status)}
+												size="sm"
+												variant="soft"
+											>
+												<Chip.Label>
+													{getMaterialIngestStatusLabel(material.ingest_status)}
+												</Chip.Label>
 											</Chip>
 										</div>
 									</Table.Cell>
@@ -126,7 +138,10 @@ export function MaterialsTable({
 														onPress={() => void onReingest(material.id)}
 													>
 														<Tooltip delay={0}>
-															<Tooltip.Trigger aria-label="다시 적재" className="contents">
+															<Tooltip.Trigger
+																aria-label="다시 적재"
+																className="contents"
+															>
 																<RefreshIcon className="size-5" />
 															</Tooltip.Trigger>
 															<Tooltip.Content showArrow>

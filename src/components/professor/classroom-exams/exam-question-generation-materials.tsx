@@ -1,4 +1,4 @@
-import { Button, Checkbox, Chip, Label } from '@heroui/react';
+import { Button, Checkbox, Chip } from '@heroui/react';
 
 import type { ClassroomMaterial } from '@/types/classroom';
 
@@ -42,9 +42,7 @@ export function ExamQuestionGenerationMaterials({
 							</Checkbox.Control>
 							<Checkbox.Content className="min-w-0 flex-1">
 								<div className="flex min-w-0 flex-wrap items-center gap-2">
-									<Label className="truncate text-sm font-medium text-slate-900">
-										{material.title}
-									</Label>
+									<p className="truncate text-sm font-medium text-slate-900">{material.title}</p>
 									<Chip
 										color={getMaterialIngestStatusColor(material.ingest_status)}
 										size="sm"
@@ -65,6 +63,7 @@ export function ExamQuestionGenerationMaterials({
 									<Button
 										key={`${material.id}-${candidate.label}`}
 										size="sm"
+										type="button"
 										variant="secondary"
 										onPress={() => onAppendScopeCandidate(candidate.scope_text)}
 									>

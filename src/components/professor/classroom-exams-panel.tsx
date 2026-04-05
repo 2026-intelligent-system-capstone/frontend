@@ -1,21 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Card, Skeleton } from '@heroui/react';
 
-import type { ClassroomMaterial } from '@/types/classroom';
 import type { Exam } from '@/types/exam';
 
-import { ExamDetailModal } from '@/components/professor/classroom-exams/exam-detail-modal';
-import { ExamQuestionManager } from '@/components/professor/classroom-exams/exam-question-manager';
 import { ExamsTable } from '@/components/professor/classroom-exams/exams-table';
 import { ExamCreateModal } from '@/components/professor/exam-create-modal';
 
 interface ClassroomExamsPanelProps {
 	classroomId: string;
 	exams: Exam[];
-	materials: ClassroomMaterial[];
 	isError: boolean;
 	isLoading: boolean;
 	canManageExams: boolean;
@@ -26,17 +22,15 @@ interface ClassroomExamsPanelProps {
 export function ClassroomExamsPanel({
 	classroomId,
 	exams,
-	materials,
 	isError,
 	isLoading,
 	canManageExams,
 	showActions = true,
 	actionWeek,
 }: ClassroomExamsPanelProps) {
+	const router = useRouter();
 	const showExamSkeleton = isLoading && exams.length === 0;
-	const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
-	const selectedExam = exams.find((exam) => exam.id === selectedExamId) ?? null;
-	const openExamDetail = (examId: string) => setSelectedExamId(examId);
+	const openExamDetail = (examId: string) => router.push(`/professor/classrooms/${classroomId}/exams/${examId}`);
 	const canCreateExam = showActions && canManageExams && actionWeek !== undefined;
 
 	return (
@@ -62,28 +56,7 @@ export function ClassroomExamsPanel({
 			) : isError ? (
 				<p className="text-sm text-red-600">시험 목록을 불러오지 못했습니다.</p>
 			) : (
-				<>
-					<ExamsTable exams={exams} onSelectExam={openExamDetail} />
-
-					<ExamDetailModal
-						exam={selectedExam}
-						isOpen={selectedExam !== null}
-						onOpenChange={(isOpen) => {
-							if (!isOpen) {
-								setSelectedExamId(null);
-							}
-						}}
-					>
-						{selectedExam ? (
-							<ExamQuestionManager
-								canManageExams={canManageExams}
-								classroomId={classroomId}
-								exam={selectedExam}
-								materials={materials}
-							/>
-						) : null}
-					</ExamDetailModal>
-				</>
+				<ExamsTable exams={exams} onSelectExam={openExamDetail} />
 			)}
 		</div>
 	);

@@ -1,37 +1,39 @@
-import { Input, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
+import { Description, Input, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
 
 import type { BloomLevel, ExamDifficulty } from '@/types/exam';
 
-import { bloomLevelOptions, difficultyOptions } from '@/lib/classrooms/exam-presentation';
+import { difficultyOptions, parseBloomCounts } from '@/lib/classrooms/exam-presentation';
+
+import { ExamQuestionGenerationBloomRatioEditorList } from '@/components/professor/classroom-exams/exam-question-generation-bloom-ratio-editor-list';
+import { ExamQuestionGenerationBloomRatioPyramidPreview } from '@/components/professor/classroom-exams/exam-question-generation-bloom-ratio-pyramid-preview';
+import { ExamQuestionGenerationBloomRatioSummary } from '@/components/professor/classroom-exams/exam-question-generation-bloom-ratio-summary';
 
 interface ExamQuestionGenerationSettingsProps {
 	difficulty: ExamDifficulty;
-	totalQuestions: string;
 	maxFollowUps: string;
 	scopeText: string;
-	bloomRatios: Record<BloomLevel, string>;
+	bloomCounts: Record<BloomLevel, string>;
 	onDifficultyChange: (value: ExamDifficulty) => void;
-	onTotalQuestionsChange: (value: string) => void;
 	onMaxFollowUpsChange: (value: string) => void;
 	onScopeTextChange: (value: string) => void;
-	onBloomRatioChange: (level: BloomLevel, value: string) => void;
+	onBloomCountChange: (level: BloomLevel, value: string) => void;
 }
 
 export function ExamQuestionGenerationSettings({
 	difficulty,
-	totalQuestions,
 	maxFollowUps,
 	scopeText,
-	bloomRatios,
+	bloomCounts,
 	onDifficultyChange,
-	onTotalQuestionsChange,
 	onMaxFollowUpsChange,
 	onScopeTextChange,
-	onBloomRatioChange,
+	onBloomCountChange,
 }: ExamQuestionGenerationSettingsProps) {
+	const { totalCount } = parseBloomCounts(bloomCounts);
+
 	return (
 		<>
-			<div className="grid gap-4 md:grid-cols-3">
+			<div className="grid gap-4 md:grid-cols-2">
 				<Select
 					className="w-full"
 					value={difficulty}
@@ -53,21 +55,12 @@ export function ExamQuestionGenerationSettings({
 						</ListBox>
 					</Select.Popover>
 				</Select>
-				<TextField isRequired className="w-full" name="total_questions">
-					<Label>문항 수</Label>
-					<Input
-						min={1}
-						max={100}
-						type="number"
-						value={totalQuestions}
-						onChange={(event) => onTotalQuestionsChange(event.target.value)}
-					/>
-				</TextField>
 				<TextField isRequired className="w-full" name="max_follow_ups">
 					<Label>최대 꼬리질문 수</Label>
 					<Input
 						min={0}
 						max={20}
+						step={1}
 						type="number"
 						value={maxFollowUps}
 						onChange={(event) => onMaxFollowUpsChange(event.target.value)}
@@ -85,27 +78,18 @@ export function ExamQuestionGenerationSettings({
 				/>
 			</TextField>
 
-			<div className="rounded-large space-y-3 border border-slate-200 bg-slate-50 p-4">
-				<div>
-					<p className="text-sm font-medium text-slate-800">Bloom 비율</p>
-					<p className="mt-1 text-xs text-slate-500">
-						0을 입력한 단계는 생성 요청에서 제외됩니다. 합계는 100이어야 합니다.
-					</p>
+			<div className="rounded-large space-y-4 border border-slate-200 bg-slate-50 p-4">
+				<ExamQuestionGenerationBloomRatioSummary totalCount={totalCount} />
+
+				<div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] md:items-start">
+					<ExamQuestionGenerationBloomRatioPyramidPreview bloomCounts={bloomCounts} />
+					<ExamQuestionGenerationBloomRatioEditorList
+						bloomCounts={bloomCounts}
+						onBloomCountChange={onBloomCountChange}
+					/>
 				</div>
-				<div className="grid gap-3 md:grid-cols-3">
-					{bloomLevelOptions.map((option) => (
-						<TextField key={option.value} className="w-full">
-							<Label>{option.label}</Label>
-							<Input
-								min={0}
-								max={100}
-								type="number"
-								value={bloomRatios[option.value]}
-								onChange={(event) => onBloomRatioChange(option.value, event.target.value)}
-							/>
-						</TextField>
-					))}
-				</div>
+
+				<Description>단계별 문항 수를 직접 입력하세요. 0개인 단계는 생성 요청에서 제외됩니다.</Description>
 			</div>
 		</>
 	);

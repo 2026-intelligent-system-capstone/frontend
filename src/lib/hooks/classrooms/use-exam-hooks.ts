@@ -23,6 +23,20 @@ export const useClassroomExams = (
 	});
 };
 
+export const useClassroomExam = (
+	classroomId: string,
+	examId: string,
+	initialData?: Awaited<ReturnType<typeof examsApi.getExam>>,
+) => {
+	return useQuery({
+		queryKey: getClassroomExamDetailQueryKey(classroomId, examId),
+		queryFn: () => examsApi.getExam(classroomId, examId),
+		enabled: Boolean(classroomId && examId),
+		initialData,
+		staleTime: 60 * 1000,
+	});
+};
+
 export const useCreateExam = (classroomId: string) => {
 	const queryClient = useQueryClient();
 

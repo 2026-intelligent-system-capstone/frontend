@@ -1,15 +1,14 @@
-import { apiClient, type ApiResponse } from '@/lib/api/client';
 import type {
 	ClassroomMaterial,
 	CreateClassroomMaterialRequest,
 	UpdateClassroomMaterialRequest,
 } from '@/types/classroom';
 
+import { type ApiResponse, apiClient } from '@/lib/api/client';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
 
-const toMaterialFormData = (
-	payload: CreateClassroomMaterialRequest | UpdateClassroomMaterialRequest,
-): FormData => {
+const toMaterialFormData = (payload: CreateClassroomMaterialRequest | UpdateClassroomMaterialRequest): FormData => {
 	const formData = new FormData();
 
 	if (payload.title !== undefined) {
@@ -33,7 +32,9 @@ const toMaterialFormData = (
 
 export const classroomMaterialsApi = {
 	listMaterials: async (classroomId: string): Promise<ClassroomMaterial[]> => {
-		const response = await apiClient.get<ApiResponse<ClassroomMaterial[]>>(`/api/classrooms/${classroomId}/materials`);
+		const response = await apiClient.get<ApiResponse<ClassroomMaterial[]>>(
+			`/api/classrooms/${classroomId}/materials`,
+		);
 		return response.data;
 	},
 	getMaterial: async (classroomId: string, materialId: string): Promise<ClassroomMaterial> => {
@@ -42,7 +43,10 @@ export const classroomMaterialsApi = {
 		);
 		return response.data;
 	},
-	createMaterial: async (classroomId: string, payload: CreateClassroomMaterialRequest): Promise<ClassroomMaterial> => {
+	createMaterial: async (
+		classroomId: string,
+		payload: CreateClassroomMaterialRequest,
+	): Promise<ClassroomMaterial> => {
 		const response = await apiClient.post<ApiResponse<ClassroomMaterial>>(
 			`/api/classrooms/${classroomId}/materials`,
 			toMaterialFormData(payload),

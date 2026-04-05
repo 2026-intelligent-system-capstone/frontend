@@ -1,4 +1,4 @@
-import { Checkbox, Label } from '@heroui/react';
+import { Checkbox } from '@heroui/react';
 
 import type { ClassroomMaterial } from '@/types/classroom';
 
@@ -34,7 +34,7 @@ export function ExamQuestionMaterialSelector({
 							<Checkbox.Indicator />
 						</Checkbox.Control>
 						<Checkbox.Content className="min-w-0 flex-1">
-							<Label className="truncate text-sm font-medium text-slate-800">{material.title}</Label>
+							<p className="truncate text-sm font-medium text-slate-800">{material.title}</p>
 							<p className="truncate text-xs text-slate-500">{material.file.file_name}</p>
 						</Checkbox.Content>
 					</Checkbox>

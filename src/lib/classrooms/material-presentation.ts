@@ -1,7 +1,8 @@
 import type { ChipProps } from '@heroui/react';
 
-import { SEOUL_TIME_ZONE, dayjs } from '@/lib/dayjs';
 import type { ClassroomMaterial } from '@/types/classroom';
+
+import { SEOUL_TIME_ZONE, dayjs } from '@/lib/dayjs';
 
 export const formatMaterialDateTime = (value: string | null) => {
 	if (!value) {
