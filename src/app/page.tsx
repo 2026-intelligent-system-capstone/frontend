@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { ACCESS_TOKEN_COOKIE_NAME, getSessionUser } from '@/lib/auth/session';
+import { ACCESS_TOKEN_COOKIE_NAME, getSessionUser } from '@/entities/viewer/server';
 
 export default async function Page() {
 	const cookieStore = await cookies();

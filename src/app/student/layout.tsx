@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { AppShell } from '@/components/layout/app-shell';
-import { ACCESS_TOKEN_COOKIE_NAME, getSessionUser } from '@/lib/auth/session';
+import { ACCESS_TOKEN_COOKIE_NAME, getSessionUser } from '@/entities/viewer/server';
+import { AppShell } from '@/widgets/layout';
 
 export default async function StudentLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 	const cookieStore = await cookies();
@@ -17,5 +17,9 @@ export default async function StudentLayout({ children }: Readonly<{ children: R
 		redirect('/professor/classrooms');
 	}
 
-	return <AppShell currentUser={user} role="student">{children}</AppShell>;
+	return (
+		<AppShell currentUser={user} role="student">
+			{children}
+		</AppShell>
+	);
 }

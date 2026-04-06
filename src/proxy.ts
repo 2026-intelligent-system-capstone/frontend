@@ -1,7 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
-import { getDefaultRouteByRole } from '@/lib/auth/routes';
-import { ACCESS_TOKEN_COOKIE_NAME, getSessionUser } from '@/lib/auth/session';
+import { ACCESS_TOKEN_COOKIE_NAME, getDefaultRouteByRole, getSessionUser } from '@/entities/viewer/server';
 
 const STUDENT_PREFIX = '/student';
 const PROFESSOR_PREFIX = '/professor';

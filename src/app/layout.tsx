@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 import localFont from 'next/font/local';
 
-import { Providers } from '@/components/providers';
+import { Providers } from '@/shared/ui/providers';
 
 import './globals.css';
 

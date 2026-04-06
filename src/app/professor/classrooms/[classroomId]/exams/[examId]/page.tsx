@@ -1,11 +1,10 @@
 import { cookies } from 'next/headers';
 
-import type { Classroom, ClassroomMaterial } from '@/types/classroom';
-import type { Exam } from '@/types/exam';
-
-import { ACCESS_TOKEN_COOKIE_NAME, getSessionApiData } from '@/lib/auth/session';
-
-import { ExamManagementPage } from '@/components/professor/classroom-exams/exam-management-page';
+import { type Classroom } from '@/entities/classroom';
+import { type ClassroomMaterial } from '@/entities/classroom-material';
+import { type Exam } from '@/entities/exam';
+import { ACCESS_TOKEN_COOKIE_NAME, getSessionApiDataOrNull } from '@/entities/viewer/server';
+import { ExamManagementScreen } from '@/widgets/exam-management';
 
 interface ProfessorExamManagementPageProps {
 	params: Promise<{
@@ -19,13 +18,13 @@ export default async function ProfessorExamManagementPage({ params }: ProfessorE
 	const cookieStore = await cookies();
 	const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE_NAME)?.value;
 	const [classroomData, materialsData, examData] = await Promise.all([
-		getSessionApiData<Classroom>(`/api/classrooms/${classroomId}`, accessToken),
-		getSessionApiData<ClassroomMaterial[]>(`/api/classrooms/${classroomId}/materials`, accessToken),
-		getSessionApiData<Exam>(`/api/classrooms/${classroomId}/exams/${examId}`, accessToken),
+		getSessionApiDataOrNull<Classroom>(`/api/classrooms/${classroomId}`, accessToken),
+		getSessionApiDataOrNull<ClassroomMaterial[]>(`/api/classrooms/${classroomId}/materials`, accessToken),
+		getSessionApiDataOrNull<Exam>(`/api/classrooms/${classroomId}/exams/${examId}`, accessToken),
 	]);
 
 	return (
-		<ExamManagementPage
+		<ExamManagementScreen
 			classroomId={classroomId}
 			examId={examId}
 			initialClassroom={classroomData}
