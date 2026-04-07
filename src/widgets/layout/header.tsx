@@ -25,8 +25,8 @@ export function Header({ initialUser }: HeaderProps) {
 	const router = useRouter();
 	const { user, userUnauthenticated } = useViewer();
 	const { logout, logoutPending } = useViewerAuthActions();
-	const currentUser = userUnauthenticated ? null : (user ?? initialUser);
-	const shouldRedirectToLogin = userUnauthenticated;
+	const currentUser = userUnauthenticated ? initialUser : (user ?? initialUser);
+	const shouldRedirectToLogin = userUnauthenticated && !initialUser;
 
 	useEffect(() => {
 		if (!shouldRedirectToLogin) {

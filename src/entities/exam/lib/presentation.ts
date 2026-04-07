@@ -15,6 +15,8 @@ export const getExamTypeLabel = (type: Exam['exam_type']) => {
 			return '중간';
 		case 'final':
 			return '기말';
+		case 'midterm_final':
+			return '중간/기말';
 		case 'mock':
 			return '모의';
 	}
@@ -28,6 +30,8 @@ export const getExamTypeColor = (type: Exam['exam_type']): ChipProps['color'] =>
 			return 'warning';
 		case 'final':
 			return 'danger';
+		case 'midterm_final':
+			return 'warning';
 		case 'mock':
 			return 'success';
 	}
@@ -68,7 +72,7 @@ export const getBloomLevelLabel = (level: BloomLevel) => {
 		case 'evaluate':
 			return '평가';
 		case 'create':
-			return '창조';
+			return '종합';
 	}
 };
 

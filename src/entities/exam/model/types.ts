@@ -1,4 +1,4 @@
-export type ExamType = 'quiz' | 'midterm' | 'final' | 'mock';
+export type ExamType = 'quiz' | 'midterm' | 'final' | 'midterm_final' | 'mock';
 export type ExamStatus = 'ready' | 'in_progress' | 'closed';
 export type ExamDifficulty = 'easy' | 'medium' | 'hard';
 export type BloomLevel = 'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create';
@@ -127,6 +127,12 @@ export interface ExamSession {
 	client_secret: string | null;
 }
 
+export interface TopicAssessment {
+	topic: string;
+	bloom_level_achieved: BloomLevel | null;
+	reasoning: string;
+}
+
 export interface ExamResult {
 	id: string;
 	exam_id: string;
@@ -136,6 +142,9 @@ export interface ExamResult {
 	submitted_at: string | null;
 	overall_score: number | null;
 	summary: string | null;
+	topic_assessments: TopicAssessment[];
+	strengths: string[];
+	weaknesses: string[];
 }
 
 export interface ExamTurn {

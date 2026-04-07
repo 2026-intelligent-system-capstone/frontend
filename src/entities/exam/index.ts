@@ -15,6 +15,7 @@ export {
 } from './lib/presentation';
 export type {
 	BloomLevel,
+	TopicAssessment,
 	CompleteExamSessionRequest,
 	CreateExamCriterionRequest,
 	CreateExamQuestionRequest,

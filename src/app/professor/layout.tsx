@@ -1,24 +1,21 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-
-import { ACCESS_TOKEN_COOKIE_NAME, getSessionUser } from '@/entities/viewer/server';
+import type { User } from '@/entities/user';
 import { AppShell } from '@/widgets/layout';
 
+const mockUser: User = {
+	id: 'dev-professor',
+	organization_id: 'dev-org',
+	login_id: 'prof001',
+	role: 'professor',
+	email: 'professor@dev.com',
+	name: '이강혁',
+	status: 'active',
+	is_deleted: false,
+};
+
 export default async function ProfessorLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-	const cookieStore = await cookies();
-	const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE_NAME)?.value;
-	const user = await getSessionUser(accessToken);
-
-	if (!user) {
-		redirect('/login');
-	}
-
-	if (user.role === 'student') {
-		redirect('/student/exams');
-	}
-
+	// TODO: 백엔드 연결 후 인증 복원
 	return (
-		<AppShell currentUser={user} role={user.role === 'admin' ? 'admin' : 'professor'}>
+		<AppShell currentUser={mockUser} role="professor">
 			{children}
 		</AppShell>
 	);
