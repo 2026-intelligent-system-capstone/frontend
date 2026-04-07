@@ -9,20 +9,22 @@ export const formatExamDateTime = (value: string) => {
 
 export const getExamTypeLabel = (type: Exam['exam_type']) => {
 	switch (type) {
-		case 'quiz':
-			return '퀴즈';
+		case 'weekly':
+			return '주간평가';
 		case 'midterm':
-			return '중간';
+			return '중간평가';
 		case 'final':
-			return '기말';
+			return '기말평가';
 		case 'mock':
-			return '모의';
+			return '모의평가';
+		case 'project':
+			return '프로젝트 평가';
 	}
 };
 
 export const getExamTypeColor = (type: Exam['exam_type']): ChipProps['color'] => {
 	switch (type) {
-		case 'quiz':
+		case 'weekly':
 			return 'accent';
 		case 'midterm':
 			return 'warning';
@@ -30,6 +32,8 @@ export const getExamTypeColor = (type: Exam['exam_type']): ChipProps['color'] =>
 			return 'danger';
 		case 'mock':
 			return 'success';
+		case 'project':
+			return 'default';
 	}
 };
 

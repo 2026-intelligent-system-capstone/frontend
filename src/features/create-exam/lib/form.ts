@@ -3,10 +3,11 @@ import { SEOUL_TIME_ZONE, dayjs } from '@/shared/lib/dayjs';
 import { type DateValue, parseZonedDateTime } from '@internationalized/date';
 
 export const examTypeOptions: Array<{ label: string; value: ExamType }> = [
-	{ label: '퀴즈', value: 'quiz' },
-	{ label: '중간', value: 'midterm' },
-	{ label: '기말', value: 'final' },
-	{ label: '모의', value: 'mock' },
+	{ label: '주간평가', value: 'weekly' },
+	{ label: '중간평가', value: 'midterm' },
+	{ label: '기말평가', value: 'final' },
+	{ label: '모의평가', value: 'mock' },
+	{ label: '프로젝트 평가', value: 'project' },
 ];
 
 export type DateRangeValue = {

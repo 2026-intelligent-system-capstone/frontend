@@ -32,7 +32,7 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const [examType, setExamType] = useState<ExamType>('quiz');
+	const [examType, setExamType] = useState<ExamType>('weekly');
 
 	const { mutateAsync: createExam, isPending } = useCreateExam(classroomId);
 
@@ -43,7 +43,7 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 		setIsOpen(nextOpen);
 		if (!nextOpen) {
 			setErrorMessage(null);
-			setExamType('quiz');
+			setExamType('weekly');
 			setScheduleRange(defaultScheduleRange);
 		}
 	};
@@ -77,7 +77,7 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 			});
 
 			form.reset();
-			setExamType('quiz');
+			setExamType('weekly');
 			setScheduleRange(defaultScheduleRange);
 			close();
 		} catch (error) {
@@ -117,7 +117,6 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 										<div className="grid gap-4 md:grid-cols-2">
 											<Select
 												className="w-full"
-												name="exam_type"
 												value={examType}
 												onChange={(value) => {
 													if (typeof value === 'string' && isExamType(value)) {

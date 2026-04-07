@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { ClassroomMaterial } from '@/entities/classroom-material';
-import type { BloomLevel, ExamDifficulty, GenerateExamQuestionsRequest } from '@/entities/exam';
+import type { BloomLevel, ExamDifficulty, ExamType, GenerateExamQuestionsRequest } from '@/entities/exam';
 import { ApiClientError } from '@/shared/api/types';
 import { Button, ErrorMessage } from '@heroui/react';
 
@@ -15,6 +15,7 @@ import { GenerateExamQuestionsSettings } from './settings';
 interface GenerateExamQuestionsFormProps {
 	classroomId: string;
 	examId: string;
+	examType: ExamType;
 	materials: ClassroomMaterial[];
 	formId?: string;
 	hideActions?: boolean;
@@ -26,6 +27,7 @@ interface GenerateExamQuestionsFormProps {
 export function GenerateExamQuestionsForm({
 	classroomId,
 	examId,
+	examType,
 	materials,
 	formId,
 	hideActions = false,
@@ -39,12 +41,18 @@ export function GenerateExamQuestionsForm({
 	const [scopeText, setScopeText] = useState(emptyGenerationForm.scopeText);
 	const [maxFollowUps, setMaxFollowUps] = useState(emptyGenerationForm.maxFollowUps);
 	const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>(emptyGenerationForm.selectedMaterialIds);
-	const [bloomCounts, setBloomCounts] = useState<Record<BloomLevel, string>>(createDefaultBloomCounts);
+	const [bloomCounts, setBloomCounts] = useState<Record<BloomLevel, string>>(() =>
+		createDefaultBloomCounts(examType),
+	);
 	const generateMutation = useGenerateExamQuestions(classroomId, examId);
 
 	const completedMaterials = useMemo(() => {
 		return materials.filter((material) => material.ingest_status === 'completed');
 	}, [materials]);
+
+	useEffect(() => {
+		setBloomCounts(createDefaultBloomCounts(examType));
+	}, [examType]);
 
 	const resetForm = () => {
 		setErrorMessage(null);
@@ -52,7 +60,7 @@ export function GenerateExamQuestionsForm({
 		setScopeText(emptyGenerationForm.scopeText);
 		setMaxFollowUps(emptyGenerationForm.maxFollowUps);
 		setSelectedMaterialIds(emptyGenerationForm.selectedMaterialIds);
-		setBloomCounts(createDefaultBloomCounts());
+		setBloomCounts(createDefaultBloomCounts(examType));
 	};
 
 	const handleScopeCandidateClick = (candidateText: string) => {

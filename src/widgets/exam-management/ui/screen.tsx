@@ -94,6 +94,7 @@ export function ExamManagementScreen({
 	};
 
 	const handleClosePanel = () => {
+		setDeleteErrorMessage(null);
 		setEditingQuestionId(null);
 		setIsGenerateModalOpen(false);
 		setActivePanel(null);
@@ -116,11 +117,12 @@ export function ExamManagementScreen({
 	};
 
 	const handleGenerateModalOpenChange = (nextOpen: boolean) => {
-		setIsGenerateModalOpen(nextOpen);
 		if (!nextOpen) {
-			setEditingQuestionId(null);
-			setActivePanel(null);
+			handleClosePanel();
+			return;
 		}
+
+		setIsGenerateModalOpen(true);
 	};
 
 	const handleCreateModalOpenChange = (nextOpen: boolean) => {
@@ -284,6 +286,7 @@ export function ExamManagementScreen({
 									<GenerateExamQuestionsForm
 										classroomId={classroomId}
 										examId={examId}
+										examType={exam.exam_type}
 										formId={GENERATION_FORM_ID}
 										hideActions
 										hideHeader

@@ -1,4 +1,4 @@
-export type ExamType = 'quiz' | 'midterm' | 'final' | 'mock';
+export type ExamType = 'weekly' | 'midterm' | 'final' | 'mock' | 'project';
 export type ExamStatus = 'ready' | 'in_progress' | 'closed';
 export type ExamDifficulty = 'easy' | 'medium' | 'hard';
 export type BloomLevel = 'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create';

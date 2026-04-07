@@ -1,4 +1,10 @@
-import type { BloomLevel, ExamDifficulty, ExamQuestion, ExamQuestionBloomCountRequest } from '@/entities/exam';
+import type {
+	BloomLevel,
+	ExamDifficulty,
+	ExamQuestion,
+	ExamQuestionBloomCountRequest,
+	ExamType,
+} from '@/entities/exam';
 
 export interface ExamQuestionGenerationFormValues {
 	difficulty: ExamDifficulty;
@@ -75,20 +81,58 @@ export const createEmptyGenerationForm = (): ExamQuestionGenerationFormValues =>
 	selectedMaterialIds: [],
 });
 
-export const createDefaultBloomCounts = (): Record<BloomLevel, string> => ({
-	analyze: '1',
-	apply: '1',
-	create: '0',
-	evaluate: '0',
-	remember: '0',
-	understand: '1',
+const defaultBloomCountsByExamType: Record<ExamType, Record<BloomLevel, string>> = {
+	weekly: {
+		analyze: '0',
+		apply: '1',
+		create: '0',
+		evaluate: '0',
+		remember: '1',
+		understand: '1',
+	},
+	midterm: {
+		analyze: '1',
+		apply: '1',
+		create: '0',
+		evaluate: '0',
+		remember: '0',
+		understand: '1',
+	},
+	final: {
+		analyze: '1',
+		apply: '1',
+		create: '1',
+		evaluate: '1',
+		remember: '0',
+		understand: '1',
+	},
+	mock: {
+		analyze: '1',
+		apply: '1',
+		create: '0',
+		evaluate: '1',
+		remember: '0',
+		understand: '1',
+	},
+	project: {
+		analyze: '1',
+		apply: '0',
+		create: '1',
+		evaluate: '1',
+		remember: '0',
+		understand: '1',
+	},
+};
+
+export const createDefaultBloomCounts = (examType: ExamType): Record<BloomLevel, string> => ({
+	...defaultBloomCountsByExamType[examType],
 });
 
 export const parseBloomCounts = (bloomCounts: Record<BloomLevel, string>) => {
 	const parsedCounts: ExamQuestionBloomCountRequest[] = bloomLevelOptions
 		.map((option) => ({
 			bloom_level: option.value,
-			count: Number(bloomCounts[option.value]),
+			count: getDisplayCountValue(bloomCounts[option.value]),
 		}))
 		.filter((item) => item.count > 0);
 
@@ -121,7 +165,11 @@ export const bloomPyramidToneClassNames: Record<BloomLevel, string> = {
 export const getDisplayCountValue = (value: string) => {
 	const parsedValue = Number(value);
 
-	return Number.isFinite(parsedValue) ? parsedValue : 0;
+	if (!Number.isInteger(parsedValue) || parsedValue < 0) {
+		return 0;
+	}
+
+	return Math.min(parsedValue, MAX_BLOOM_LEVEL_QUESTION_COUNT);
 };
 
 export const toggleStringValue = (values: string[], target: string) => {
