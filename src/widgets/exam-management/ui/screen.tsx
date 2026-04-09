@@ -10,6 +10,7 @@ import {
 	type Exam,
 	type ExamQuestion,
 	formatExamDateTime,
+	getExamMaxAttemptsLabel,
 	getExamStatusLabel,
 	getExamTypeLabel,
 	useClassroomExam,
@@ -231,6 +232,7 @@ export function ExamManagementScreen({
 								<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
 									<p className="font-medium text-slate-900">운영 정보</p>
 									<p>진행 시간 {exam.duration_minutes}분</p>
+									<p>{getExamMaxAttemptsLabel(exam.max_attempts)}</p>
 									<p>설명 {exam.description ?? '설명 없음'}</p>
 								</Card.Content>
 							</Card>

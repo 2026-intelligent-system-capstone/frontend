@@ -3,6 +3,7 @@
 import {
 	type Exam,
 	formatExamDateTime,
+	getExamMaxAttemptsLabel,
 	getExamStatusColor,
 	getExamStatusLabel,
 	getExamTypeColor,
@@ -86,6 +87,9 @@ export function ExamsTable({ exams, onSelectExam }: ExamsTableProps) {
 											<ClockIcon className="size-4 shrink-0 text-amber-500" />
 											<span className="truncate">{exam.duration_minutes}분</span>
 										</div>
+										<p className="truncate text-sm text-slate-600">
+											{getExamMaxAttemptsLabel(exam.max_attempts)}
+										</p>
 									</div>
 								</Table.Cell>
 								<Table.Cell>

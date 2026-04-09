@@ -59,6 +59,10 @@ export const getExamStatusColor = (status: Exam['status']): ChipProps['color'] =
 	}
 };
 
+export const getExamMaxAttemptsLabel = (maxAttempts: Exam['max_attempts']) => {
+	return `총 ${maxAttempts}회`;
+};
+
 export const getBloomLevelLabel = (level: BloomLevel) => {
 	switch (level) {
 		case 'remember':

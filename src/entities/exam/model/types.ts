@@ -52,7 +52,7 @@ export interface Exam {
 	week: number;
 	starts_at: string;
 	ends_at: string;
-	allow_retake: boolean;
+	max_attempts: number;
 	criteria: ExamCriterion[];
 	questions: ExamQuestion[];
 }
@@ -75,7 +75,7 @@ export interface CreateExamRequest {
 	week: number;
 	starts_at: string;
 	ends_at: string;
-	allow_retake?: boolean;
+	max_attempts: number;
 	criteria: CreateExamCriterionRequest[];
 }
 

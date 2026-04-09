@@ -35,6 +35,9 @@ export const toUtcIsoString = (value: DateValue) => {
 	return dayjs(value.toDate(SEOUL_TIME_ZONE)).utc().toISOString();
 };
 
+export const DEFAULT_MAX_ATTEMPTS = 1;
+export const MAX_EXAM_ATTEMPTS = 10;
+
 export const defaultExamCriteria: CreateExamRequest['criteria'] = [
 	{
 		title: '정확성',
