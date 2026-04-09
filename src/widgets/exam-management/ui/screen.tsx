@@ -277,34 +277,38 @@ export function ExamManagementScreen({
 					<Modal.Backdrop isOpen={isGenerateModalOpen} onOpenChange={handleGenerateModalOpenChange}>
 						<Modal.Container scroll="inside">
 							<Modal.Dialog className="flex max-h-[calc(100vh-5rem)] flex-col overflow-clip sm:max-w-4xl">
-								<Modal.CloseTrigger />
-								<Modal.Header>
-									<Modal.Heading>AI 문항 생성</Modal.Heading>
-									<p className="mt-1 text-sm text-slate-500">
-										적재 완료된 강의 자료와 추출 범위를 기반으로 문항을 생성합니다.
-									</p>
-								</Modal.Header>
-								<Modal.Body className="min-h-0 flex-1 overflow-y-auto p-6">
-									<GenerateExamQuestionsForm
-										classroomId={classroomId}
-										examId={examId}
-										examType={exam.exam_type}
-										formId={GENERATION_FORM_ID}
-										hideActions
-										hideHeader
-										materials={materials}
-										onCancel={handleClosePanel}
-										onSuccess={handleClosePanel}
-									/>
-								</Modal.Body>
-								<Modal.Footer className="justify-end gap-3 border-t border-slate-200 px-6 py-4">
-									<Button type="button" variant="secondary" onPress={handleClosePanel}>
-										닫기
-									</Button>
-									<Button form={GENERATION_FORM_ID} type="submit" variant="primary">
-										생성
-									</Button>
-								</Modal.Footer>
+								{({ close }) => (
+									<>
+										<Modal.CloseTrigger />
+										<Modal.Header>
+											<Modal.Heading>AI 문항 생성</Modal.Heading>
+											<p className="mt-1 text-sm text-slate-500">
+												적재 완료된 강의 자료와 추출 범위를 기반으로 문항을 생성합니다.
+											</p>
+										</Modal.Header>
+										<Modal.Body className="min-h-0 flex-1 overflow-y-auto p-6">
+											<GenerateExamQuestionsForm
+												classroomId={classroomId}
+												examId={examId}
+												examType={exam.exam_type}
+												formId={GENERATION_FORM_ID}
+												hideActions
+												hideHeader
+												materials={materials}
+												onCancel={close}
+												onSuccess={close}
+											/>
+										</Modal.Body>
+										<Modal.Footer className="justify-end gap-3 border-t border-slate-200 px-6 py-4">
+											<Button type="button" variant="secondary" onPress={close}>
+												닫기
+											</Button>
+											<Button form={GENERATION_FORM_ID} type="submit" variant="primary">
+												생성
+											</Button>
+										</Modal.Footer>
+									</>
+								)}
 							</Modal.Dialog>
 						</Modal.Container>
 					</Modal.Backdrop>
@@ -312,41 +316,43 @@ export function ExamManagementScreen({
 
 				<Modal>
 					<Modal.Backdrop isOpen={activePanel === 'create'} onOpenChange={handleCreateModalOpenChange}>
-						{activePanel === 'create' ? (
-							<Modal.Container scroll="inside">
-								<Modal.Dialog className="sm:max-w-3xl">
-									<Modal.CloseTrigger />
-									<Modal.Header>
-										<Modal.Heading>문항 추가</Modal.Heading>
-										<p className="mt-1 text-sm text-slate-500">
-											문항 내용과 연결 자료를 현재 시험 문맥에서 바로 추가합니다.
-										</p>
-									</Modal.Header>
-									<Modal.Body className="p-6">
-										<UpsertExamQuestionForm
-											key="create"
-											classroomId={classroomId}
-											examId={examId}
-											formId={CREATE_FORM_ID}
-											hideActions
-											hideHeader
-											materials={materials}
-											title="문항 추가"
-											onCancel={handleClosePanel}
-											onSuccess={handleClosePanel}
-										/>
-									</Modal.Body>
-									<Modal.Footer className="justify-end gap-3 border-t border-slate-200 px-6 py-4">
-										<Button type="button" variant="secondary" onPress={handleClosePanel}>
-											닫기
-										</Button>
-										<Button form={CREATE_FORM_ID} type="submit" variant="primary">
-											저장
-										</Button>
-									</Modal.Footer>
-								</Modal.Dialog>
-							</Modal.Container>
-						) : null}
+						<Modal.Container scroll="inside">
+							<Modal.Dialog className="sm:max-w-3xl">
+								{({ close }) => (
+									<>
+										<Modal.CloseTrigger />
+										<Modal.Header>
+											<Modal.Heading>문항 추가</Modal.Heading>
+											<p className="mt-1 text-sm text-slate-500">
+												문항 내용과 연결 자료를 현재 시험 문맥에서 바로 추가합니다.
+											</p>
+										</Modal.Header>
+										<Modal.Body className="p-6">
+											<UpsertExamQuestionForm
+												key="create"
+												classroomId={classroomId}
+												examId={examId}
+												formId={CREATE_FORM_ID}
+												hideActions
+												hideHeader
+												materials={materials}
+												title="문항 추가"
+												onCancel={close}
+												onSuccess={close}
+											/>
+										</Modal.Body>
+										<Modal.Footer className="justify-end gap-3 border-t border-slate-200 px-6 py-4">
+											<Button type="button" variant="secondary" onPress={close}>
+												닫기
+											</Button>
+											<Button form={CREATE_FORM_ID} type="submit" variant="primary">
+												저장
+											</Button>
+										</Modal.Footer>
+									</>
+								)}
+							</Modal.Dialog>
+						</Modal.Container>
 					</Modal.Backdrop>
 				</Modal>
 
