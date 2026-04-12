@@ -6,6 +6,7 @@ export {
 	getBloomLevelLabel,
 	getDifficultyColor,
 	getDifficultyLabel,
+	getExamMaxAttemptsLabel,
 	getExamStatusColor,
 	getExamStatusLabel,
 	getExamTypeColor,

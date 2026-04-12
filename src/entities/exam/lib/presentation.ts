@@ -9,31 +9,31 @@ export const formatExamDateTime = (value: string) => {
 
 export const getExamTypeLabel = (type: Exam['exam_type']) => {
 	switch (type) {
-		case 'quiz':
+		case 'weekly':
 			return '주간평가';
 		case 'midterm':
 			return '중간평가';
 		case 'final':
 			return '기말평가';
-		case 'midterm_final':
-			return '프로젝트평가';
 		case 'mock':
 			return '모의평가';
+		case 'project':
+			return '프로젝트 평가';
 	}
 };
 
 export const getExamTypeColor = (type: Exam['exam_type']): ChipProps['color'] => {
 	switch (type) {
-		case 'quiz':
+		case 'weekly':
 			return 'accent';
 		case 'midterm':
 			return 'warning';
 		case 'final':
 			return 'danger';
-		case 'midterm_final':
-			return 'warning';
 		case 'mock':
 			return 'success';
+		case 'project':
+			return 'default';
 	}
 };
 
@@ -57,6 +57,10 @@ export const getExamStatusColor = (status: Exam['status']): ChipProps['color'] =
 		case 'closed':
 			return 'default';
 	}
+};
+
+export const getExamMaxAttemptsLabel = (maxAttempts: Exam['max_attempts']) => {
+	return `총 ${maxAttempts}회`;
 };
 
 export const getBloomLevelLabel = (level: BloomLevel) => {

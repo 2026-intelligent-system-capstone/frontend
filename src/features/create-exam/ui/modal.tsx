@@ -7,7 +7,9 @@ import { ApiClientError } from '@/shared/api/types';
 import { Button, ErrorMessage, Input, Label, ListBox, Modal, Select, TextArea, TextField } from '@heroui/react';
 
 import {
+	DEFAULT_MAX_ATTEMPTS,
 	type DateRangeValue,
+	MAX_EXAM_ATTEMPTS,
 	buildDefaultScheduleRange,
 	defaultExamCriteria,
 	examTypeOptions,
@@ -29,10 +31,11 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 	const titleId = useId();
 	const descriptionId = useId();
 	const durationId = useId();
+	const maxAttemptsId = useId();
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const [examType, setExamType] = useState<ExamType>('quiz');
+	const [examType, setExamType] = useState<ExamType>('weekly');
 
 	const { mutateAsync: createExam, isPending } = useCreateExam(classroomId);
 
@@ -43,7 +46,7 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 		setIsOpen(nextOpen);
 		if (!nextOpen) {
 			setErrorMessage(null);
-			setExamType('quiz');
+			setExamType('weekly');
 			setScheduleRange(defaultScheduleRange);
 		}
 	};
@@ -57,9 +60,15 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 		const title = String(formData.get('title') ?? '').trim();
 		const descriptionValue = String(formData.get('description') ?? '').trim();
 		const durationMinutes = Number(formData.get('duration_minutes'));
+		const maxAttempts = Number(formData.get('max_attempts'));
 
 		if (!scheduleRange) {
 			setErrorMessage('시험 일정을 선택해주세요.');
+			return;
+		}
+
+		if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > MAX_EXAM_ATTEMPTS) {
+			setErrorMessage(`총 진행 가능 횟수는 1회 이상 ${MAX_EXAM_ATTEMPTS}회 이하여야 합니다.`);
 			return;
 		}
 
@@ -72,12 +81,12 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 				week,
 				starts_at: toUtcIsoString(scheduleRange.start),
 				ends_at: toUtcIsoString(scheduleRange.end),
-				allow_retake: false,
+				max_attempts: maxAttempts,
 				criteria: defaultExamCriteria,
 			});
 
 			form.reset();
-			setExamType('quiz');
+			setExamType('weekly');
 			setScheduleRange(defaultScheduleRange);
 			close();
 		} catch (error) {
@@ -117,7 +126,6 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 										<div className="grid gap-4 md:grid-cols-2">
 											<Select
 												className="w-full"
-												name="exam_type"
 												value={examType}
 												onChange={(value) => {
 													if (typeof value === 'string' && isExamType(value)) {
@@ -156,6 +164,26 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 												<Input id={durationId} min={1} max={600} step={1} type="number" />
 											</TextField>
 										</div>
+
+										<TextField
+											isRequired
+											className="w-full"
+											defaultValue={String(DEFAULT_MAX_ATTEMPTS)}
+											name="max_attempts"
+										>
+											<Label htmlFor={maxAttemptsId}>총 진행 가능 횟수</Label>
+											<Input
+												id={maxAttemptsId}
+												min={1}
+												max={MAX_EXAM_ATTEMPTS}
+												step={1}
+												type="number"
+											/>
+										</TextField>
+
+										<p className="text-sm text-slate-500">
+											1회면 재응시 불가, 2회면 1회 재응시 가능합니다.
+										</p>
 
 										<CreateExamScheduleField
 											onScheduleRangeChange={setScheduleRange}

@@ -1,4 +1,4 @@
-export type ExamType = 'quiz' | 'midterm' | 'final' | 'midterm_final' | 'mock';
+export type ExamType = 'weekly' | 'midterm' | 'final' | 'mock' | 'project';
 export type ExamStatus = 'ready' | 'in_progress' | 'closed';
 export type ExamDifficulty = 'easy' | 'medium' | 'hard';
 export type BloomLevel = 'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create';
@@ -52,7 +52,7 @@ export interface Exam {
 	week: number;
 	starts_at: string;
 	ends_at: string;
-	allow_retake: boolean;
+	max_attempts: number;
 	criteria: ExamCriterion[];
 	questions: ExamQuestion[];
 }
@@ -75,7 +75,7 @@ export interface CreateExamRequest {
 	week: number;
 	starts_at: string;
 	ends_at: string;
-	allow_retake?: boolean;
+	max_attempts: number;
 	criteria: CreateExamCriterionRequest[];
 }
 
