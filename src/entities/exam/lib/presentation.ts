@@ -10,15 +10,15 @@ export const formatExamDateTime = (value: string) => {
 export const getExamTypeLabel = (type: Exam['exam_type']) => {
 	switch (type) {
 		case 'quiz':
-			return '퀴즈';
+			return '주간평가';
 		case 'midterm':
-			return '중간';
+			return '중간평가';
 		case 'final':
-			return '기말';
+			return '기말평가';
 		case 'midterm_final':
-			return '중간/기말';
+			return '프로젝트평가';
 		case 'mock':
-			return '모의';
+			return '모의평가';
 	}
 };
 
