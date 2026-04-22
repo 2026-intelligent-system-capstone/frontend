@@ -5,12 +5,17 @@ import {
 	classroomMaterialsApi,
 	formatMaterialDateTime,
 	formatMaterialFileSize,
+	getMaterialDisplayName,
 	getMaterialFileChipColor,
+	getMaterialFileTypeLabel,
 	getMaterialIngestStatusColor,
+	getMaterialIngestStatusDescription,
 	getMaterialIngestStatusLabel,
+	getMaterialSourceKindColor,
+	getMaterialSourceKindLabel,
 } from '@/entities/classroom-material';
 import { DownloadIcon, RefreshIcon, TrashIcon } from '@/shared/ui/icons/action-icons';
-import { FileIcon, PdfIcon } from '@/shared/ui/icons/file-icons';
+import { FileIcon, LinkIcon, PdfIcon } from '@/shared/ui/icons/file-icons';
 import { Button, ButtonGroup, Chip, EmptyState, Table, Tooltip } from '@heroui/react';
 
 interface MaterialsTableProps {
@@ -48,8 +53,8 @@ export function MaterialsTable({
 						<Table.Column isRowHeader className="w-56">
 							제목
 						</Table.Column>
-						<Table.Column className="w-24">파일 타입</Table.Column>
-						<Table.Column className="w-28">적재 상태</Table.Column>
+						<Table.Column className="w-24">자료 유형</Table.Column>
+						<Table.Column className="w-32">분석 상태</Table.Column>
 						<Table.Column className="w-24">크기</Table.Column>
 						<Table.Column className="w-40">업로드 시각</Table.Column>
 						<Table.Column className="w-32">작업</Table.Column>
@@ -62,9 +67,10 @@ export function MaterialsTable({
 						)}
 					>
 						{materials.map((material) => {
-							const extension = material.file.file_extension.toUpperCase();
-							const fileChipColor = getMaterialFileChipColor(material.file.file_extension);
+							const fileTypeLabel = getMaterialFileTypeLabel(material);
+							const fileChipColor = getMaterialFileChipColor(material);
 							const isProcessing = processingMaterialId === material.id && reingestPending;
+							const canDownload = material.source_kind === 'file';
 
 							return (
 								<Table.Row key={material.id}>
@@ -75,31 +81,47 @@ export function MaterialsTable({
 												overflow-hidden text-left"
 											onClick={() => onSelectMaterial(material.id)}
 										>
-											<p
-												className="truncate font-medium text-slate-900 underline-offset-2
-													hover:underline"
-											>
-												{material.title}
-											</p>
+											<div className="flex min-w-0 flex-wrap items-center gap-2">
+												<p
+													className="truncate font-medium text-slate-900 underline-offset-2
+														hover:underline"
+												>
+													{material.title}
+												</p>
+												<Chip
+													color={getMaterialSourceKindColor(material.source_kind)}
+													size="sm"
+													variant="soft"
+												>
+													<Chip.Label>
+														{getMaterialSourceKindLabel(material.source_kind)}
+													</Chip.Label>
+												</Chip>
+											</div>
 											<p className="truncate text-sm text-slate-600">
-												{material.description ?? '설명 없음'}
+												{material.description ?? getMaterialDisplayName(material)}
 											</p>
 										</button>
 									</Table.Cell>
 									<Table.Cell>
-										<div className="w-24 overflow-hidden">
+										<div className="flex w-24 flex-col gap-1 overflow-hidden">
 											<Chip className="max-w-full" color={fileChipColor} size="sm" variant="soft">
-												{material.file.file_extension.toLowerCase() === 'pdf' ? (
+												{material.source_kind === 'link' ? (
+													<LinkIcon className="size-3.5" />
+												) : material.file.file_extension.toLowerCase() === 'pdf' ? (
 													<PdfIcon className="size-3.5" />
 												) : (
 													<FileIcon className="size-3.5" />
 												)}
-												<Chip.Label>{extension}</Chip.Label>
+												<Chip.Label>{fileTypeLabel}</Chip.Label>
 											</Chip>
+											<p className="truncate text-xs text-slate-500">
+												{getMaterialDisplayName(material)}
+											</p>
 										</div>
 									</Table.Cell>
 									<Table.Cell>
-										<div className="w-28 overflow-hidden">
+										<div className="flex w-32 flex-col gap-1 overflow-hidden">
 											<Chip
 												color={getMaterialIngestStatusColor(material.ingest_status)}
 												size="sm"
@@ -109,11 +131,14 @@ export function MaterialsTable({
 													{getMaterialIngestStatusLabel(material.ingest_status)}
 												</Chip.Label>
 											</Chip>
+											<p className="text-xs text-slate-500">
+												{getMaterialIngestStatusDescription(material.ingest_status)}
+											</p>
 										</div>
 									</Table.Cell>
 									<Table.Cell>
 										<span className="block w-24 truncate font-medium text-slate-700">
-											{formatMaterialFileSize(material.file.file_size)}
+											{material.file ? formatMaterialFileSize(material.file.file_size) : '링크'}
 										</span>
 									</Table.Cell>
 									<Table.Cell>
@@ -148,10 +173,19 @@ export function MaterialsTable({
 												<Tooltip delay={0}>
 													<Tooltip.Trigger>
 														<Button
-															aria-label={`${material.title} 다운로드`}
+															aria-label={
+																canDownload
+																	? `${material.title} 다운로드`
+																	: `${material.title} 링크 자료`
+															}
+															isDisabled={!canDownload}
 															isIconOnly
 															variant="secondary"
-															onPress={() => handleDownload(material.id)}
+															onPress={() => {
+																if (canDownload) {
+																	handleDownload(material.id);
+																}
+															}}
 														>
 															{canManageMaterials ? <ButtonGroup.Separator /> : null}
 															<DownloadIcon className="size-5" />
@@ -159,7 +193,11 @@ export function MaterialsTable({
 													</Tooltip.Trigger>
 													<Tooltip.Content showArrow>
 														<Tooltip.Arrow />
-														<p>다운로드</p>
+														<p>
+															{canDownload
+																? '다운로드'
+																: '링크형 자료는 상세에서 확인하세요'}
+														</p>
 													</Tooltip.Content>
 												</Tooltip>
 												{canManageMaterials ? (

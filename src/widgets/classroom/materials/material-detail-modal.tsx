@@ -4,8 +4,13 @@ import {
 	type ClassroomMaterial,
 	formatMaterialDateTime,
 	formatMaterialFileSize,
+	getMaterialDisplayName,
+	getMaterialFileTypeLabel,
 	getMaterialIngestStatusColor,
+	getMaterialIngestStatusDescription,
 	getMaterialIngestStatusLabel,
+	getMaterialSourceKindColor,
+	getMaterialSourceKindLabel,
 	useClassroomMaterial,
 } from '@/entities/classroom-material';
 import { Card, Chip, EmptyState, ErrorMessage, Modal, Skeleton } from '@heroui/react';
@@ -26,8 +31,13 @@ export function MaterialDetailModal({
 	actionErrorMessage,
 }: MaterialDetailModalProps) {
 	const materialId = material?.id ?? '';
-	const { data, isError, isLoading } = useClassroomMaterial(classroomId, materialId, material ?? undefined);
+	const { data, isError, isLoading, isFetching } = useClassroomMaterial(
+		classroomId,
+		materialId,
+		material ?? undefined,
+	);
 	const resolvedMaterial = data ?? material;
+	const isRefreshingPendingMaterial = isFetching && resolvedMaterial?.ingest_status === 'pending';
 
 	return (
 		<Modal>
@@ -39,9 +49,31 @@ export function MaterialDetailModal({
 								<Modal.CloseTrigger />
 								<Modal.Header>
 									<div className="space-y-2">
-										<Modal.Heading>{resolvedMaterial.title}</Modal.Heading>
+										<div className="flex flex-wrap items-center gap-2">
+											<Modal.Heading>{resolvedMaterial.title}</Modal.Heading>
+											<Chip
+												color={getMaterialSourceKindColor(resolvedMaterial.source_kind)}
+												size="sm"
+												variant="soft"
+											>
+												<Chip.Label>
+													{getMaterialSourceKindLabel(resolvedMaterial.source_kind)}
+												</Chip.Label>
+											</Chip>
+											<Chip
+												color={getMaterialIngestStatusColor(resolvedMaterial.ingest_status)}
+												size="sm"
+												variant="soft"
+											>
+												<Chip.Label>
+													{getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)}
+												</Chip.Label>
+											</Chip>
+											{isRefreshingPendingMaterial ? (
+												<span className="text-xs text-slate-500">최신 상태 확인 중</span>
+											) : null}
+										</div>
 										<p className="text-sm text-slate-500">
-											{getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)} ·{' '}
 											{resolvedMaterial.week}주차 ·{' '}
 											{formatMaterialDateTime(resolvedMaterial.uploaded_at)}
 										</p>
@@ -64,17 +96,25 @@ export function MaterialDetailModal({
 									<div className="grid gap-3 md:grid-cols-3">
 										<Card className="border border-slate-200 bg-slate-50">
 											<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-												<p className="font-medium text-slate-900">파일 정보</p>
-												<p>파일명 {resolvedMaterial.file.file_name}</p>
-												<p>형식 {resolvedMaterial.file.file_extension.toUpperCase()}</p>
-												<p>크기 {formatMaterialFileSize(resolvedMaterial.file.file_size)}</p>
+												<p className="font-medium text-slate-900">자료 정보</p>
+												<p>유형 {getMaterialFileTypeLabel(resolvedMaterial)}</p>
+												<p>출처 {getMaterialDisplayName(resolvedMaterial)}</p>
+												<p>
+													크기{' '}
+													{resolvedMaterial.file
+														? formatMaterialFileSize(resolvedMaterial.file.file_size)
+														: '링크 자료'}
+												</p>
 											</Card.Content>
 										</Card>
 										<Card className="border border-slate-200 bg-slate-50">
 											<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-												<p className="font-medium text-slate-900">적재 결과</p>
+												<p className="font-medium text-slate-900">분석 결과</p>
 												<p>
 													상태 {getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)}
+												</p>
+												<p>
+													{getMaterialIngestStatusDescription(resolvedMaterial.ingest_status)}
 												</p>
 												<p>시험 범위 후보 {resolvedMaterial.scope_candidates.length}개</p>
 												<p>오류 {resolvedMaterial.ingest_error ?? '없음'}</p>
@@ -101,7 +141,16 @@ export function MaterialDetailModal({
 												</Chip.Label>
 											</Chip>
 										</div>
-										{resolvedMaterial.scope_candidates.length === 0 ? (
+										{resolvedMaterial.ingest_status === 'pending' ? (
+											<EmptyState
+												className="flex w-full flex-col items-center justify-center rounded-xl
+													border border-dashed border-slate-200 py-10 text-center"
+											>
+												<span className="text-sm text-slate-500">
+													시험 범위를 분석 중입니다. 잠시 후 자동으로 갱신됩니다.
+												</span>
+											</EmptyState>
+										) : resolvedMaterial.scope_candidates.length === 0 ? (
 											<EmptyState
 												className="flex w-full flex-col items-center justify-center rounded-xl
 													border border-dashed border-slate-200 py-10 text-center"

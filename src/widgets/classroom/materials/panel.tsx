@@ -62,7 +62,9 @@ export function ClassroomMaterialsPanel({
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h2 className="text-lg font-semibold text-slate-900">강의 자료</h2>
-					<p className="mt-1 text-sm text-slate-500">주차 자료를 업로드하고 적재 상태를 관리합니다.</p>
+					<p className="mt-1 text-sm text-slate-500">
+						파일 또는 YouTube 링크 자료를 등록하고 분석 상태를 관리합니다.
+					</p>
 				</div>
 				{showActions && canManageMaterials && actionWeek ? (
 					<MaterialUploadModal classroomId={classroomId} week={actionWeek} />

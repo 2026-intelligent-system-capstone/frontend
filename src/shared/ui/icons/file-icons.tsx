@@ -67,3 +67,29 @@ export const FileIcon = (props: SVGProps<SVGSVGElement>) => (
 		<path d="M8.75 16.75h6.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
 	</svg>
 );
+
+export const LinkIcon = (props: SVGProps<SVGSVGElement>) => (
+	<svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
+		<path
+			d="M9.75 14.25 7.5 16.5a3.182 3.182 0 1 1-4.5-4.5l2.25-2.25a3.182 3.182 0 0 1 4.5 0"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path
+			d="m14.25 9.75 2.25-2.25a3.182 3.182 0 0 1 4.5 4.5l-2.25 2.25a3.182 3.182 0 0 1-4.5 0"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+		<path
+			d="m8.25 15.75 7.5-7.5"
+			stroke="currentColor"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			strokeWidth="1.5"
+		/>
+	</svg>
+);

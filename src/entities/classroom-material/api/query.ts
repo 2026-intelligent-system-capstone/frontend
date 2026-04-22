@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Query } from '@tanstack/react-query';
 
 import { getClassroomDetailQueryKey } from '@/entities/classroom';
 import {
@@ -27,11 +28,39 @@ const toMaterialFormData = (payload: CreateClassroomMaterialRequest | UpdateClas
 	if (payload.description === null) {
 		formData.set('description', '');
 	}
-	if (payload.uploaded_file) {
+	if (payload.source_kind !== undefined) {
+		formData.set('source_kind', payload.source_kind);
+	}
+	if ('uploaded_file' in payload && payload.uploaded_file) {
 		formData.set('uploaded_file', payload.uploaded_file);
+	}
+	if ('source_url' in payload && payload.source_url) {
+		formData.set('source_url', payload.source_url);
 	}
 
 	return formData;
+};
+
+const MATERIALS_POLL_INTERVAL_MS = 2_000;
+
+const hasPendingMaterials = (materials: ClassroomMaterial[] | undefined): boolean => {
+	return (materials ?? []).some((material) => material.ingest_status === 'pending');
+};
+
+const getMaterialsRefetchInterval = (query: Query<ClassroomMaterial[]>): number | false => {
+	if (query.state.error) {
+		return false;
+	}
+
+	return hasPendingMaterials(query.state.data) ? MATERIALS_POLL_INTERVAL_MS : false;
+};
+
+const getMaterialRefetchInterval = (query: Query<ClassroomMaterial>): number | false => {
+	if (query.state.error) {
+		return false;
+	}
+
+	return query.state.data?.ingest_status === 'pending' ? MATERIALS_POLL_INTERVAL_MS : false;
 };
 
 export const classroomMaterialsApi = {
@@ -94,6 +123,7 @@ export const useClassroomMaterials = (
 		queryFn: () => classroomMaterialsApi.listMaterials(classroomId),
 		enabled: Boolean(classroomId),
 		initialData,
+		refetchInterval: getMaterialsRefetchInterval,
 		staleTime: 60 * 1000,
 	});
 };
@@ -108,6 +138,7 @@ export const useClassroomMaterial = (
 		queryFn: () => classroomMaterialsApi.getMaterial(classroomId, materialId),
 		enabled: Boolean(classroomId && materialId),
 		initialData,
+		refetchInterval: getMaterialRefetchInterval,
 		staleTime: 60 * 1000,
 	});
 };

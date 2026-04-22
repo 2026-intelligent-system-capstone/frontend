@@ -16,8 +16,9 @@ export interface ClassroomMaterialScopeCandidate {
 }
 
 export type ClassroomMaterialIngestStatus = 'pending' | 'completed' | 'failed';
+export type ClassroomMaterialSourceKind = 'file' | 'link';
 
-export interface ClassroomMaterial {
+export interface ClassroomMaterialBase {
 	id: string;
 	classroom_id: string;
 	title: string;
@@ -28,19 +29,54 @@ export interface ClassroomMaterial {
 	ingest_status: ClassroomMaterialIngestStatus;
 	ingest_error: string | null;
 	scope_candidates: ClassroomMaterialScopeCandidate[];
+}
+
+export interface ClassroomMaterialFileSource extends ClassroomMaterialBase {
+	source_kind: 'file';
+	source_url: null;
 	file: ClassroomMaterialFile;
 }
 
-export interface CreateClassroomMaterialRequest {
+export interface ClassroomMaterialLinkSource extends ClassroomMaterialBase {
+	source_kind: 'link';
+	source_url: string;
+	file: null;
+}
+
+export type ClassroomMaterial = ClassroomMaterialFileSource | ClassroomMaterialLinkSource;
+
+export interface CreateClassroomMaterialFileRequest {
 	title: string;
 	week: number;
 	description?: string | null;
+	source_kind: 'file';
 	uploaded_file: File;
 }
 
-export interface UpdateClassroomMaterialRequest {
+export interface CreateClassroomMaterialLinkRequest {
+	title: string;
+	week: number;
+	description?: string | null;
+	source_kind: 'link';
+	source_url: string;
+}
+
+export type CreateClassroomMaterialRequest = CreateClassroomMaterialFileRequest | CreateClassroomMaterialLinkRequest;
+
+export interface UpdateClassroomMaterialBaseRequest {
 	title?: string;
 	week?: number;
 	description?: string | null;
-	uploaded_file?: File;
 }
+
+export type UpdateClassroomMaterialRequest =
+	| (UpdateClassroomMaterialBaseRequest & {
+			source_kind?: 'file';
+			uploaded_file?: File;
+			source_url?: never;
+	  })
+	| (UpdateClassroomMaterialBaseRequest & {
+			source_kind?: 'link';
+			source_url?: string;
+			uploaded_file?: never;
+	  });

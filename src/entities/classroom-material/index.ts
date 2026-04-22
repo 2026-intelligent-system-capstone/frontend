@@ -9,9 +9,15 @@ export {
 export {
 	formatMaterialDateTime,
 	formatMaterialFileSize,
+	getMaterialDisplayName,
 	getMaterialFileChipColor,
+	getMaterialFileTypeLabel,
 	getMaterialIngestStatusColor,
+	getMaterialIngestStatusDescription,
 	getMaterialIngestStatusLabel,
+	getMaterialSourceKindColor,
+	getMaterialSourceKindLabel,
+	MATERIAL_FILE_GUIDE,
 } from './lib/presentation';
 export { getClassroomMaterialDetailQueryKey, getClassroomMaterialsQueryKey } from './model/query-keys';
 export type {
@@ -19,6 +25,7 @@ export type {
 	ClassroomMaterialFile,
 	ClassroomMaterialIngestStatus,
 	ClassroomMaterialScopeCandidate,
+	ClassroomMaterialSourceKind,
 	CreateClassroomMaterialRequest,
 	UpdateClassroomMaterialRequest,
 } from './model/types';
