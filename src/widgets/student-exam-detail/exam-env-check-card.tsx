@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { Card } from '@heroui/react';
 
 type PermissionState = 'granted' | 'denied' | 'prompt' | 'checking';
@@ -24,26 +25,68 @@ function StatusBadge({ status }: { status: PermissionState }) {
 }
 
 export function ExamEnvCheckCard() {
-	const [mic, setMic] = useState<PermissionState>('checking');
-	const [camera, setCamera] = useState<PermissionState>('checking');
+	const hasPermissionsApi = typeof navigator !== 'undefined' && 'permissions' in navigator;
+	const initialPermissionState: PermissionState = hasPermissionsApi ? 'checking' : 'prompt';
+	const [mic, setMic] = useState<PermissionState>(initialPermissionState);
+	const [camera, setCamera] = useState<PermissionState>(initialPermissionState);
 
 	useEffect(() => {
-		if (!navigator.permissions) {
-			setMic('prompt');
-			setCamera('prompt');
+		if (!hasPermissionsApi) {
 			return;
 		}
 
-		navigator.permissions.query({ name: 'microphone' as PermissionName }).then((result) => {
-			setMic(result.state as PermissionState);
-			result.onchange = () => setMic(result.state as PermissionState);
-		}).catch(() => setMic('prompt'));
+		let isActive = true;
+		let micPermissionStatus: PermissionStatus | null = null;
+		let cameraPermissionStatus: PermissionStatus | null = null;
 
-		navigator.permissions.query({ name: 'camera' as PermissionName }).then((result) => {
-			setCamera(result.state as PermissionState);
-			result.onchange = () => setCamera(result.state as PermissionState);
-		}).catch(() => setCamera('prompt'));
-	}, []);
+		void navigator.permissions
+			.query({ name: 'microphone' as PermissionName })
+			.then((result) => {
+				micPermissionStatus = result;
+				if (isActive) {
+					setMic(result.state as PermissionState);
+				}
+				result.onchange = () => {
+					if (isActive) {
+						setMic(result.state as PermissionState);
+					}
+				};
+			})
+			.catch(() => {
+				if (isActive) {
+					setMic('prompt');
+				}
+			});
+
+		void navigator.permissions
+			.query({ name: 'camera' as PermissionName })
+			.then((result) => {
+				cameraPermissionStatus = result;
+				if (isActive) {
+					setCamera(result.state as PermissionState);
+				}
+				result.onchange = () => {
+					if (isActive) {
+						setCamera(result.state as PermissionState);
+					}
+				};
+			})
+			.catch(() => {
+				if (isActive) {
+					setCamera('prompt');
+				}
+			});
+
+		return () => {
+			isActive = false;
+			if (micPermissionStatus) {
+				micPermissionStatus.onchange = null;
+			}
+			if (cameraPermissionStatus) {
+				cameraPermissionStatus.onchange = null;
+			}
+		};
+	}, [hasPermissionsApi]);
 
 	const items: CheckItem[] = [
 		{ label: '마이크', status: mic },

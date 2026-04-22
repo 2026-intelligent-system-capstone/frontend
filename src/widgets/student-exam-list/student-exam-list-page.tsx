@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Card } from '@heroui/react';
+
 import type { Exam, ExamStatus, ExamType } from '@/entities/exam';
+import { Card } from '@heroui/react';
+
 import { ExamCard } from './exam-card';
 import { ExamFilters } from './exam-filters';
 
@@ -15,6 +17,11 @@ const MOCK_EXAMS: (Exam & { classroom_name: string })[] = [
 		description: '1-7주차 강의 내용 전반',
 		exam_type: 'midterm',
 		status: 'in_progress',
+		generation_status: 'idle',
+		generation_error: null,
+		generation_job_id: null,
+		generation_requested_at: null,
+		generation_completed_at: null,
 		duration_minutes: 40,
 		week: 8,
 		starts_at: '2026-04-07T09:00:00Z',
@@ -31,6 +38,11 @@ const MOCK_EXAMS: (Exam & { classroom_name: string })[] = [
 		description: '정렬 알고리즘 범위',
 		exam_type: 'weekly',
 		status: 'ready',
+		generation_status: 'idle',
+		generation_error: null,
+		generation_job_id: null,
+		generation_requested_at: null,
+		generation_completed_at: null,
 		duration_minutes: 20,
 		week: 3,
 		starts_at: '2026-04-10T10:00:00Z',
@@ -47,6 +59,11 @@ const MOCK_EXAMS: (Exam & { classroom_name: string })[] = [
 		description: '전체 범위',
 		exam_type: 'final',
 		status: 'closed',
+		generation_status: 'idle',
+		generation_error: null,
+		generation_job_id: null,
+		generation_requested_at: null,
+		generation_completed_at: null,
 		duration_minutes: 60,
 		week: 16,
 		starts_at: '2026-03-20T09:00:00Z',

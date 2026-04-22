@@ -2,13 +2,48 @@
 
 import { useCallback, useRef, useState } from 'react';
 
+interface SpeechRecognitionAlternativeLike {
+	transcript: string;
+}
+
+interface SpeechRecognitionResultLike {
+	length: number;
+	[index: number]: SpeechRecognitionAlternativeLike;
+}
+
+interface SpeechRecognitionResultListLike {
+	length: number;
+	[index: number]: SpeechRecognitionResultLike;
+}
+
+interface SpeechRecognitionEventLike extends Event {
+	results: SpeechRecognitionResultListLike;
+}
+
+interface SpeechRecognitionLike {
+	lang: string;
+	continuous: boolean;
+	interimResults: boolean;
+	onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+	onend: (() => void) | null;
+	start: () => void;
+	stop: () => void;
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+type BrowserWindow = Window & {
+	SpeechRecognition?: SpeechRecognitionConstructor;
+	webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
 export function useSTT(onResult: (text: string) => void) {
-	const recognitionRef = useRef<any>(null);
+	const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 	const [isListening, setIsListening] = useState(false);
 
 	const start = useCallback(() => {
-		const SpeechRecognition =
-			(window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+		const browserWindow = window as BrowserWindow;
+		const SpeechRecognition = browserWindow.SpeechRecognition ?? browserWindow.webkitSpeechRecognition;
 		if (!SpeechRecognition) return;
 
 		const recognition = new SpeechRecognition();
@@ -16,10 +51,11 @@ export function useSTT(onResult: (text: string) => void) {
 		recognition.continuous = true;
 		recognition.interimResults = true;
 
-		recognition.onresult = (event: any) => {
-			const transcript = Array.from(event.results)
-				.map((r: any) => r[0].transcript)
-				.join('');
+		recognition.onresult = (event) => {
+			const transcript = Array.from(
+				{ length: event.results.length },
+				(_, index) => event.results[index]?.[0]?.transcript ?? '',
+			).join('');
 			onResult(transcript);
 		};
 
@@ -35,7 +71,12 @@ export function useSTT(onResult: (text: string) => void) {
 	}, []);
 
 	const toggle = useCallback(() => {
-		isListening ? stop() : start();
+		if (isListening) {
+			stop();
+			return;
+		}
+
+		start();
 	}, [isListening, start, stop]);
 
 	return { isListening, toggle };

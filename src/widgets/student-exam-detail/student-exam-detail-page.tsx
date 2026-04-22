@@ -1,14 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Button, Chip } from '@heroui/react';
-import {
-	getExamStatusColor,
-	getExamStatusLabel,
-	getExamTypeColor,
-	getExamTypeLabel,
-} from '@/entities/exam';
+
+import { getExamStatusColor, getExamStatusLabel, getExamTypeColor, getExamTypeLabel } from '@/entities/exam';
 import type { Exam } from '@/entities/exam';
+import { Button, Chip } from '@heroui/react';
+
 import { ExamEnvCheckCard } from './exam-env-check-card';
 import { ExamGuideCard } from './exam-guide-card';
 import { ExamInfoCard } from './exam-info-card';
@@ -21,6 +18,11 @@ const MOCK_EXAM: Exam & { classroom_name: string } = {
 	description: '1-7주차 강의 내용 전반에 걸쳐 데이터베이스, 인덱싱, 쿼리 최적화 등을 평가합니다.',
 	exam_type: 'midterm',
 	status: 'in_progress',
+	generation_status: 'idle',
+	generation_error: null,
+	generation_job_id: null,
+	generation_requested_at: null,
+	generation_completed_at: null,
 	duration_minutes: 40,
 	week: 8,
 	starts_at: '2026-04-07T09:00:00Z',

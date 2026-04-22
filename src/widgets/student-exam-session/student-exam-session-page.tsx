@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useSTT, useTTS } from '@/features/take-exam-session';
+
 import type { BloomLevel, ExamTurnEventType } from '@/entities/exam';
+import { useSTT, useTTS } from '@/features/take-exam-session';
+
 import { AICharacter } from './ai-character';
 import { SessionControls } from './session-controls';
 import { SessionHeader } from './session-header';
@@ -38,46 +40,58 @@ interface StudentExamSessionPageProps {
 }
 
 export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) {
+	const initialAssistantTurn = MOCK_TURNS.find((turn) => turn.role === 'assistant') ?? null;
 	const [turns, setTurns] = useState<MockTurn[]>(MOCK_TURNS);
 	const [input, setInput] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isFinished, setIsFinished] = useState(false);
 	const [remainingSeconds, setRemainingSeconds] = useState(DURATION_MINUTES * 60);
-	const [isSpeaking, setIsSpeaking] = useState(false);
+	const [isSpeaking, setIsSpeaking] = useState(Boolean(initialAssistantTurn));
 	const [showTextInput, setShowTextInput] = useState(false);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const { speak, stop: stopTTS } = useTTS();
 	const { isListening, toggle: toggleMic } = useSTT((text) => setInput(text));
 
 	useEffect(() => {
+		const videoElement = videoRef.current;
 		navigator.mediaDevices
 			.getUserMedia({ video: true, audio: false })
 			.then((stream) => {
-				if (videoRef.current) videoRef.current.srcObject = stream;
+				if (videoElement) {
+					videoElement.srcObject = stream;
+				}
 			})
 			.catch(() => {});
 		return () => {
-			if (videoRef.current?.srcObject) {
-				const stream = videoRef.current.srcObject as MediaStream;
-				stream.getTracks().forEach((t) => t.stop());
+			if (videoElement?.srcObject) {
+				const stream = videoElement.srcObject as MediaStream;
+				stream.getTracks().forEach((track) => track.stop());
 			}
 		};
 	}, []);
 
 	useEffect(() => {
-		const firstQuestion = MOCK_TURNS.find((t) => t.role === 'assistant');
-		if (!firstQuestion) return;
-		setIsSpeaking(true);
-		speak(firstQuestion.content);
+		if (!initialAssistantTurn) {
+			return;
+		}
+
+		speak(initialAssistantTurn.content);
 		const timer = setTimeout(() => setIsSpeaking(false), 4000);
-		return () => { clearTimeout(timer); stopTTS(); };
-	}, []);
+		return () => {
+			clearTimeout(timer);
+			stopTTS();
+		};
+	}, [initialAssistantTurn, speak, stopTTS]);
 
 	useEffect(() => {
 		if (isFinished) return;
 		const timer = setInterval(() => {
 			setRemainingSeconds((prev) => {
-				if (prev <= 1) { clearInterval(timer); setIsFinished(true); return 0; }
+				if (prev <= 1) {
+					clearInterval(timer);
+					setIsFinished(true);
+					return 0;
+				}
 				return prev - 1;
 			});
 		}, 1000);
@@ -102,7 +116,8 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		setShowTextInput(false);
 
 		setTimeout(() => {
-			const followUpText = '모든 컬럼에 인덱스를 걸었는데 오히려 성능이 저하됐습니다. 인덱스가 내부적으로 어떤 작업을 하길래 이런 결과가 나오는 걸까요?';
+			const followUpText =
+				'모든 컬럼에 인덱스를 걸었는데 오히려 성능이 저하됐습니다. 인덱스가 내부적으로 어떤 작업을 하길래 이런 결과가 나오는 걸까요?';
 			const followUp: MockTurn = {
 				id: `t${turns.length + 2}`,
 				role: 'assistant',
@@ -133,16 +148,22 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 			/>
 
 			<div className="relative flex flex-1 flex-col items-center justify-center gap-6 overflow-hidden px-6 py-8">
-				<div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-violet-900/20 via-transparent to-transparent" />
+				<div
+					className="pointer-events-none absolute inset-0 bg-gradient-to-b from-violet-900/20 via-transparent
+						to-transparent"
+				/>
 
 				<AICharacter isSpeaking={isSpeaking} />
 
 				{latestAssistantTurn && (
-					<div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-center backdrop-blur-sm">
+					<div
+						className="w-full max-w-2xl rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-center
+							backdrop-blur-sm"
+					>
 						<span className="mb-2 block text-xs font-medium text-violet-400">
 							{latestAssistantTurn.event_type === 'question' ? '질문' : '꼬리질문'}
 						</span>
-						<p className="text-base font-medium leading-relaxed text-white">
+						<p className="text-base leading-relaxed font-medium text-white">
 							{latestAssistantTurn.content}
 						</p>
 					</div>
@@ -158,7 +179,10 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 							.filter((t) => t.role === 'student')
 							.map((turn) => (
 								<div key={turn.id} className="flex justify-end">
-									<div className="max-w-[75%] rounded-2xl bg-violet-600/50 px-4 py-2 text-sm text-white backdrop-blur-sm">
+									<div
+										className="max-w-[75%] rounded-2xl bg-violet-600/50 px-4 py-2 text-sm text-white
+											backdrop-blur-sm"
+									>
 										{turn.content}
 									</div>
 								</div>
@@ -179,14 +203,11 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 					onToggleTextInput={() => setShowTextInput((v) => !v)}
 				/>
 
-				<div className="absolute bottom-4 right-4 overflow-hidden rounded-2xl border-2 border-white/20 shadow-2xl">
-					<video
-						ref={videoRef}
-						autoPlay
-						muted
-						playsInline
-						className="h-32 w-44 bg-slate-900 object-cover"
-					/>
+				<div
+					className="absolute right-4 bottom-4 overflow-hidden rounded-2xl border-2 border-white/20
+						shadow-2xl"
+				>
+					<video ref={videoRef} autoPlay muted playsInline className="h-32 w-44 bg-slate-900 object-cover" />
 					<div className="absolute bottom-1 left-2 text-xs text-white/50">나</div>
 				</div>
 			</div>
