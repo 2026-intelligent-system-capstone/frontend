@@ -1,9 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { ClassroomMaterial } from '@/entities/classroom-material';
-import type { BloomLevel, ExamDifficulty, ExamType, GenerateExamQuestionsRequest } from '@/entities/exam';
+import type {
+	BloomLevel,
+	ExamDifficulty,
+	ExamQuestionTypeStrategy,
+	ExamType,
+	GenerateExamQuestionsRequest,
+} from '@/entities/exam';
 import { ApiClientError } from '@/shared/api/types';
 import { Button, ErrorMessage } from '@heroui/react';
 
@@ -24,7 +30,11 @@ interface GenerateExamQuestionsFormProps {
 	onSuccess?: () => void;
 }
 
-export function GenerateExamQuestionsForm({
+export function GenerateExamQuestionsForm(props: GenerateExamQuestionsFormProps) {
+	return <GenerateExamQuestionsFormBody key={`${props.classroomId}:${props.examId}:${props.examType}`} {...props} />;
+}
+
+function GenerateExamQuestionsFormBody({
 	classroomId,
 	examId,
 	examType,
@@ -44,15 +54,14 @@ export function GenerateExamQuestionsForm({
 	const [bloomCounts, setBloomCounts] = useState<Record<BloomLevel, string>>(() =>
 		createDefaultBloomCounts(examType),
 	);
+	const [questionTypeStrategy, setQuestionTypeStrategy] = useState<ExamQuestionTypeStrategy>(
+		emptyGenerationForm.questionTypeStrategy,
+	);
 	const generateMutation = useGenerateExamQuestions(classroomId, examId);
 
 	const completedMaterials = useMemo(() => {
 		return materials.filter((material) => material.ingest_status === 'completed');
 	}, [materials]);
-
-	useEffect(() => {
-		setBloomCounts(createDefaultBloomCounts(examType));
-	}, [examType]);
 
 	const resetForm = () => {
 		setErrorMessage(null);
@@ -61,6 +70,7 @@ export function GenerateExamQuestionsForm({
 		setMaxFollowUps(emptyGenerationForm.maxFollowUps);
 		setSelectedMaterialIds(emptyGenerationForm.selectedMaterialIds);
 		setBloomCounts(createDefaultBloomCounts(examType));
+		setQuestionTypeStrategy(emptyGenerationForm.questionTypeStrategy);
 	};
 
 	const handleScopeCandidateClick = (candidateText: string) => {
@@ -100,12 +110,18 @@ export function GenerateExamQuestionsForm({
 		}
 
 		try {
+			if (generateMutation.isPending) {
+				return;
+			}
+
 			await generateMutation.mutateAsync({
 				bloom_counts: parsedCounts,
 				difficulty,
 				max_follow_ups: parsedMaxFollowUps,
+				question_type_strategy: questionTypeStrategy,
 				scope_text: scopeText.trim(),
 				source_material_ids: selectedMaterialIds,
+				total_question_count: totalCount,
 			} satisfies GenerateExamQuestionsRequest);
 			resetForm();
 			onSuccess?.();
@@ -137,7 +153,9 @@ export function GenerateExamQuestionsForm({
 				onBloomCountChange={(level, value) => setBloomCounts((prev) => ({ ...prev, [level]: value }))}
 				onDifficultyChange={setDifficulty}
 				onMaxFollowUpsChange={setMaxFollowUps}
+				onQuestionTypeStrategyChange={setQuestionTypeStrategy}
 				onScopeTextChange={setScopeText}
+				questionTypeStrategy={questionTypeStrategy}
 				scopeText={scopeText}
 			/>
 

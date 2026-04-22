@@ -1,7 +1,14 @@
 import { SEOUL_TIME_ZONE, dayjs } from '@/shared/lib/dayjs';
 import type { ChipProps } from '@heroui/react';
 
-import type { BloomLevel, Exam, ExamDifficulty, ExamQuestionStatus } from '../model/types';
+import type {
+	BloomLevel,
+	Exam,
+	ExamDifficulty,
+	ExamGenerationStatus,
+	ExamQuestionStatus,
+	ExamQuestionType,
+} from '../model/types';
 
 export const formatExamDateTime = (value: string) => {
 	return dayjs.utc(value).tz(SEOUL_TIME_ZONE).format('YYYY.MM.DD HH:mm');
@@ -63,6 +70,51 @@ export const getExamMaxAttemptsLabel = (maxAttempts: Exam['max_attempts']) => {
 	return `총 ${maxAttempts}회`;
 };
 
+export const getExamGenerationStatusLabel = (status: ExamGenerationStatus) => {
+	switch (status) {
+		case 'idle':
+			return '대기';
+		case 'queued':
+			return '생성 대기 중';
+		case 'running':
+			return '생성 중';
+		case 'completed':
+			return '생성 완료';
+		case 'failed':
+			return '생성 실패';
+	}
+};
+
+export const getExamGenerationStatusColor = (status: ExamGenerationStatus): ChipProps['color'] => {
+	switch (status) {
+		case 'idle':
+			return 'default';
+		case 'queued':
+			return 'warning';
+		case 'running':
+			return 'accent';
+		case 'completed':
+			return 'success';
+		case 'failed':
+			return 'danger';
+	}
+};
+
+export const getExamGenerationStatusDescription = (status: ExamGenerationStatus) => {
+	switch (status) {
+		case 'idle':
+			return '아직 AI 문항 생성을 시작하지 않았습니다.';
+		case 'queued':
+			return 'AI 문항 생성 작업이 접수되어 대기 중입니다.';
+		case 'running':
+			return 'AI가 문항을 생성하고 있습니다. 잠시 후 자동으로 갱신됩니다.';
+		case 'completed':
+			return 'AI 문항 생성이 완료되었습니다.';
+		case 'failed':
+			return 'AI 문항 생성이 실패했습니다. 오류를 확인한 뒤 다시 시도하세요.';
+	}
+};
+
 export const getBloomLevelLabel = (level: BloomLevel) => {
 	switch (level) {
 		case 'remember':
@@ -116,6 +168,32 @@ export const getDifficultyColor = (difficulty: ExamDifficulty): ChipProps['color
 			return 'warning';
 		case 'hard':
 			return 'danger';
+	}
+};
+
+export const getQuestionTypeLabel = (questionType: ExamQuestionType) => {
+	switch (questionType) {
+		case 'none':
+			return '미지정';
+		case 'multiple_choice':
+			return '객관식';
+		case 'subjective':
+			return '주관식';
+		case 'oral':
+			return '구술형';
+	}
+};
+
+export const getQuestionTypeColor = (questionType: ExamQuestionType): ChipProps['color'] => {
+	switch (questionType) {
+		case 'none':
+			return 'default';
+		case 'multiple_choice':
+			return 'accent';
+		case 'subjective':
+			return 'warning';
+		case 'oral':
+			return 'success';
 	}
 };
 

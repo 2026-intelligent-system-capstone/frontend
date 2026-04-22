@@ -1,7 +1,10 @@
 import {
 	type ClassroomMaterial,
+	getMaterialDisplayName,
 	getMaterialIngestStatusColor,
 	getMaterialIngestStatusLabel,
+	getMaterialSourceKindColor,
+	getMaterialSourceKindLabel,
 } from '@/entities/classroom-material';
 import { Button, Checkbox, Chip } from '@heroui/react';
 
@@ -46,6 +49,13 @@ export function GenerateExamQuestionsMaterials({
 								<div className="flex min-w-0 flex-wrap items-center gap-2">
 									<p className="truncate text-sm font-medium text-slate-900">{material.title}</p>
 									<Chip
+										color={getMaterialSourceKindColor(material.source_kind)}
+										size="sm"
+										variant="soft"
+									>
+										<Chip.Label>{getMaterialSourceKindLabel(material.source_kind)}</Chip.Label>
+									</Chip>
+									<Chip
 										color={getMaterialIngestStatusColor(material.ingest_status)}
 										size="sm"
 										variant="soft"
@@ -53,7 +63,9 @@ export function GenerateExamQuestionsMaterials({
 										<Chip.Label>{getMaterialIngestStatusLabel(material.ingest_status)}</Chip.Label>
 									</Chip>
 								</div>
-								<p className="mt-1 truncate text-xs text-slate-500">{material.file.file_name}</p>
+								<p className="mt-1 truncate text-xs text-slate-500">
+									{getMaterialDisplayName(material)}
+								</p>
 								{material.ingest_error ? (
 									<p className="mt-1 text-xs text-red-600">{material.ingest_error}</p>
 								) : null}

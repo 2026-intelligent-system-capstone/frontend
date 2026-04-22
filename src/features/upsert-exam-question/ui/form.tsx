@@ -39,17 +39,25 @@ export function UpsertExamQuestionForm({
 }: UpsertExamQuestionFormProps) {
 	const questionNumberId = useId();
 	const questionTextId = useId();
-	const scopeTextId = useId();
-	const evaluationObjectiveId = useId();
-	const answerKeyId = useId();
-	const scoringCriteriaId = useId();
+	const intentTextId = useId();
+	const rubricTextId = useId();
+	const answerOptionsId = useId();
+	const correctAnswerTextId = useId();
+	const maxScoreId = useId();
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const initialForm = useMemo(() => createQuestionFormValues(question), [question]);
+	const initialQuestionType = question?.question_type;
 	const [form, setForm] = useState(initialForm);
 
 	const createQuestionMutation = useCreateExamQuestion(classroomId, examId);
 	const updateQuestionMutation = useUpdateExamQuestion(classroomId, examId);
 	const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+
+	const normalizedAnswerOptions = form.answerOptionsText
+		.split('\n')
+		.map((option) => option.trim())
+		.filter(Boolean);
+	const normalizedCorrectAnswerText = form.correctAnswerText.trim();
 
 	const handleCancel = () => {
 		setErrorMessage(null);
@@ -62,32 +70,84 @@ export function UpsertExamQuestionForm({
 		setErrorMessage(null);
 
 		const parsedQuestionNumber = Number(form.questionNumber);
+		const parsedMaxScore = Number(form.maxScore);
+		const normalizedRubricText = form.rubricText.trim();
 
 		if (!Number.isInteger(parsedQuestionNumber) || parsedQuestionNumber <= 0) {
 			setErrorMessage('문항 번호는 1 이상의 정수여야 합니다.');
 			return;
 		}
 
-		const payload = {
+		if (!Number.isFinite(parsedMaxScore) || parsedMaxScore <= 0) {
+			setErrorMessage('배점은 0보다 큰 숫자여야 합니다.');
+			return;
+		}
+
+		if (form.questionType === 'oral' && !normalizedRubricText) {
+			setErrorMessage('구술형은 루브릭을 입력해주세요.');
+			return;
+		}
+
+		if (form.questionType === 'multiple_choice') {
+			if (normalizedAnswerOptions.length < 2) {
+				setErrorMessage('객관식은 학생에게 보여줄 보기를 2개 이상 입력해주세요.');
+				return;
+			}
+
+			if (!normalizedCorrectAnswerText) {
+				setErrorMessage('객관식은 정확한 정답 텍스트를 입력해주세요.');
+				return;
+			}
+
+			if (!normalizedAnswerOptions.includes(normalizedCorrectAnswerText)) {
+				setErrorMessage('객관식 정답은 학생에게 보여지는 보기 중 하나와 정확히 일치해야 합니다.');
+				return;
+			}
+		}
+
+		if (form.questionType === 'subjective' && !normalizedCorrectAnswerText) {
+			setErrorMessage('주관식은 정확한 정답을 입력해주세요.');
+			return;
+		}
+
+		const basePayload = {
 			question_number: parsedQuestionNumber,
+			max_score: parsedMaxScore,
 			bloom_level: form.bloomLevel,
 			difficulty: form.difficulty,
 			question_text: form.questionText.trim(),
-			scope_text: form.scopeText.trim(),
-			evaluation_objective: form.evaluationObjective.trim(),
-			answer_key: form.answerKey.trim(),
-			scoring_criteria: form.scoringCriteria.trim(),
+			intent_text: form.intentText.trim(),
+			rubric_text: form.questionType === 'oral' ? normalizedRubricText : null,
+			answer_options: form.questionType === 'multiple_choice' ? normalizedAnswerOptions : [],
+			correct_answer_text: form.questionType === 'oral' ? null : normalizedCorrectAnswerText || null,
 			source_material_ids: form.sourceMaterialIds,
 		};
 
 		try {
 			if (question) {
+				const payload = {
+					...basePayload,
+					...(form.questionType !== initialQuestionType && form.questionType !== 'none'
+						? { question_type: form.questionType }
+						: {}),
+				} satisfies UpdateExamQuestionRequest;
+
 				await updateQuestionMutation.mutateAsync({
-					payload: payload satisfies UpdateExamQuestionRequest,
+					payload,
 					questionId: question.id,
 				});
 			} else {
-				await createQuestionMutation.mutateAsync(payload satisfies CreateExamQuestionRequest);
+				if (form.questionType === 'none') {
+					setErrorMessage('문제 유형을 선택해주세요.');
+					return;
+				}
+
+				const payload = {
+					...basePayload,
+					question_type: form.questionType,
+				} satisfies CreateExamQuestionRequest;
+
+				await createQuestionMutation.mutateAsync(payload);
 			}
 
 			onSuccess?.();
@@ -113,14 +173,37 @@ export function UpsertExamQuestionForm({
 			)}
 
 			<UpsertExamQuestionFormFields
-				answerKeyId={answerKeyId}
-				evaluationObjectiveId={evaluationObjectiveId}
+				answerOptionsId={answerOptionsId}
+				correctAnswerTextId={correctAnswerTextId}
 				form={form}
+				intentTextId={intentTextId}
+				maxScoreId={maxScoreId}
 				onChange={setForm}
+				onQuestionTypeChange={(questionType) => {
+					setForm((prev) => {
+						if (questionType === 'multiple_choice') {
+							return { ...prev, questionType };
+						}
+
+						if (questionType === 'oral') {
+							return {
+								...prev,
+								questionType,
+								answerOptionsText: '',
+								correctAnswerText: '',
+							};
+						}
+
+						return {
+							...prev,
+							questionType,
+							answerOptionsText: '',
+						};
+					});
+				}}
 				questionNumberId={questionNumberId}
 				questionTextId={questionTextId}
-				scopeTextId={scopeTextId}
-				scoringCriteriaId={scoringCriteriaId}
+				rubricTextId={rubricTextId}
 			/>
 
 			<UpsertExamQuestionMaterialSelector

@@ -3,6 +3,7 @@ import type {
 	ExamDifficulty,
 	ExamQuestion,
 	ExamQuestionBloomCountRequest,
+	ExamQuestionTypeStrategy,
 	ExamType,
 } from '@/entities/exam';
 
@@ -11,6 +12,13 @@ export interface ExamQuestionGenerationFormValues {
 	maxFollowUps: string;
 	scopeText: string;
 	selectedMaterialIds: string[];
+	questionTypeStrategy: ExamQuestionTypeStrategy;
+}
+
+export interface QuestionTypeStrategyOption {
+	description: string;
+	label: string;
+	value: ExamQuestionTypeStrategy;
 }
 
 export interface BloomLevelOption {
@@ -72,13 +80,38 @@ export const difficultyOptions: Array<{ label: string; value: ExamDifficulty }> 
 	{ label: '어려움', value: 'hard' },
 ];
 
+export const questionTypeStrategyOptions: QuestionTypeStrategyOption[] = [
+	{
+		description: '객관식·주관식·구술형을 가능한 균형 있게 섞어 생성합니다.',
+		label: '균형형',
+		value: 'balanced',
+	},
+	{
+		description: '빠른 채점과 명확한 정답 확인이 가능한 객관식 비중을 높입니다.',
+		label: '객관식 우선',
+		value: 'multiple_choice_focus',
+	},
+	{
+		description: '서술형 설명과 논리 전개를 더 많이 평가하도록 구성합니다.',
+		label: '주관식 우선',
+		value: 'subjective_focus',
+	},
+	{
+		description: '말로 설명하는 능력과 구술 상호작용 중심으로 구성합니다.',
+		label: '구술형 우선',
+		value: 'oral_focus',
+	},
+];
+
 export const MAX_BLOOM_LEVEL_QUESTION_COUNT = 5;
+export const MAX_QUESTION_TYPE_QUESTION_COUNT = MAX_BLOOM_LEVEL_QUESTION_COUNT * bloomLevelOptions.length;
 
 export const createEmptyGenerationForm = (): ExamQuestionGenerationFormValues => ({
 	difficulty: 'medium',
 	maxFollowUps: '2',
 	scopeText: '',
 	selectedMaterialIds: [],
+	questionTypeStrategy: 'balanced',
 });
 
 const defaultBloomCountsByExamType: Record<ExamType, Record<BloomLevel, string>> = {
@@ -162,14 +195,14 @@ export const bloomPyramidToneClassNames: Record<BloomLevel, string> = {
 	remember: 'bg-slate-200 text-slate-800',
 };
 
-export const getDisplayCountValue = (value: string) => {
+export const getDisplayCountValue = (value: string, maxValue = MAX_BLOOM_LEVEL_QUESTION_COUNT) => {
 	const parsedValue = Number(value);
 
 	if (!Number.isInteger(parsedValue) || parsedValue < 0) {
 		return 0;
 	}
 
-	return Math.min(parsedValue, MAX_BLOOM_LEVEL_QUESTION_COUNT);
+	return Math.min(parsedValue, maxValue);
 };
 
 export const toggleStringValue = (values: string[], target: string) => {
@@ -177,26 +210,22 @@ export const toggleStringValue = (values: string[], target: string) => {
 };
 
 export interface ExamQuestionFormValues {
-	answerKey: string;
 	bloomLevel: BloomLevel;
 	difficulty: ExamDifficulty;
-	evaluationObjective: string;
+	intentText: string;
 	questionNumber: string;
 	questionText: string;
-	scopeText: string;
-	scoringCriteria: string;
+	rubricText: string;
 	sourceMaterialIds: string[];
 }
 
 export const createEmptyQuestionForm = (): ExamQuestionFormValues => ({
-	answerKey: '',
 	bloomLevel: 'understand',
 	difficulty: 'medium',
-	evaluationObjective: '',
+	intentText: '',
 	questionNumber: '1',
 	questionText: '',
-	scopeText: '',
-	scoringCriteria: '',
+	rubricText: '',
 	sourceMaterialIds: [],
 });
 
@@ -206,14 +235,12 @@ export const createQuestionFormValues = (question?: ExamQuestion): ExamQuestionF
 	}
 
 	return {
-		answerKey: question.answer_key,
 		bloomLevel: question.bloom_level,
 		difficulty: question.difficulty,
-		evaluationObjective: question.evaluation_objective,
+		intentText: question.intent_text,
 		questionNumber: String(question.question_number),
 		questionText: question.question_text,
-		scopeText: question.scope_text,
-		scoringCriteria: question.scoring_criteria,
+		rubricText: question.rubric_text,
 		sourceMaterialIds: [...question.source_material_ids],
 	};
 };

@@ -1,5 +1,10 @@
-import type { ClassroomMaterial } from '@/entities/classroom-material';
-import { Checkbox } from '@heroui/react';
+import {
+	type ClassroomMaterial,
+	getMaterialDisplayName,
+	getMaterialSourceKindColor,
+	getMaterialSourceKindLabel,
+} from '@/entities/classroom-material';
+import { Checkbox, Chip } from '@heroui/react';
 
 interface UpsertExamQuestionMaterialSelectorProps {
 	materials: ClassroomMaterial[];
@@ -37,8 +42,13 @@ export function UpsertExamQuestionMaterialSelector({
 							<Checkbox.Indicator />
 						</Checkbox.Control>
 						<Checkbox.Content className="min-w-0 flex-1">
-							<p className="truncate text-sm font-medium text-slate-800">{material.title}</p>
-							<p className="truncate text-xs text-slate-500">{material.file.file_name}</p>
+							<div className="flex min-w-0 flex-wrap items-center gap-2">
+								<p className="truncate text-sm font-medium text-slate-800">{material.title}</p>
+								<Chip color={getMaterialSourceKindColor(material.source_kind)} size="sm" variant="soft">
+									<Chip.Label>{getMaterialSourceKindLabel(material.source_kind)}</Chip.Label>
+								</Chip>
+							</div>
+							<p className="truncate text-xs text-slate-500">{getMaterialDisplayName(material)}</p>
 						</Checkbox.Content>
 					</Checkbox>
 				))}

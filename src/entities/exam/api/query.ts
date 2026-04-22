@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import type { Query } from '@tanstack/react-query';
 
 import { type ApiResponse, apiClient } from '@/shared/api/client';
 
@@ -14,9 +15,21 @@ import type {
 	ExamTurn,
 	FinalizeExamResultRequest,
 	GenerateExamQuestionsRequest,
+	GenerateExamQuestionsSubmitResponse,
 	RecordExamTurnRequest,
 	UpdateExamQuestionRequest,
 } from '../model/types';
+
+const EXAM_POLL_INTERVAL_MS = 2_000;
+
+const getExamRefetchInterval = (query: Query<Exam>): number | false => {
+	if (query.state.error) {
+		return false;
+	}
+
+	const generationStatus = query.state.data?.generation_status;
+	return generationStatus === 'queued' || generationStatus === 'running' ? EXAM_POLL_INTERVAL_MS : false;
+};
 
 export const examsApi = {
 	completeSession: async (
@@ -66,8 +79,8 @@ export const examsApi = {
 		classroomId: string,
 		examId: string,
 		payload: GenerateExamQuestionsRequest,
-	): Promise<ExamQuestion[]> => {
-		const response = await apiClient.post<ApiResponse<ExamQuestion[]>>(
+	): Promise<GenerateExamQuestionsSubmitResponse> => {
+		const response = await apiClient.post<ApiResponse<GenerateExamQuestionsSubmitResponse>>(
 			`/api/classrooms/${classroomId}/exams/${examId}/questions/generate`,
 			payload,
 		);
@@ -133,6 +146,7 @@ export const useClassroomExam = (
 		queryFn: () => examsApi.getExam(classroomId, examId),
 		enabled: Boolean(classroomId && examId),
 		initialData,
+		refetchInterval: getExamRefetchInterval,
 		staleTime: 60 * 1000,
 	});
 };

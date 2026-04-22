@@ -1,14 +1,16 @@
-import type { BloomLevel, ExamDifficulty, ExamQuestion } from '@/entities/exam';
+import type { BloomLevel, ExamDifficulty, ExamQuestion, ExamQuestionType } from '@/entities/exam';
 
 export interface ExamQuestionFormValues {
-	answerKey: string;
+	answerOptionsText: string;
 	bloomLevel: BloomLevel;
+	correctAnswerText: string;
 	difficulty: ExamDifficulty;
-	evaluationObjective: string;
+	intentText: string;
+	maxScore: string;
 	questionNumber: string;
 	questionText: string;
-	scopeText: string;
-	scoringCriteria: string;
+	questionType: ExamQuestionType;
+	rubricText: string;
 	sourceMaterialIds: string[];
 }
 
@@ -27,15 +29,26 @@ export const difficultyOptions: Array<{ label: string; value: ExamDifficulty }> 
 	{ label: '어려움', value: 'hard' },
 ];
 
+export const questionTypeOptions: Array<{
+	label: string;
+	value: Exclude<ExamQuestionType, 'none'>;
+}> = [
+	{ label: '객관식', value: 'multiple_choice' },
+	{ label: '주관식', value: 'subjective' },
+	{ label: '구술형', value: 'oral' },
+];
+
 export const createEmptyQuestionForm = (): ExamQuestionFormValues => ({
-	answerKey: '',
+	answerOptionsText: '',
 	bloomLevel: 'understand',
+	correctAnswerText: '',
 	difficulty: 'medium',
-	evaluationObjective: '',
+	intentText: '',
+	maxScore: '1',
 	questionNumber: '1',
 	questionText: '',
-	scopeText: '',
-	scoringCriteria: '',
+	questionType: 'none',
+	rubricText: '',
 	sourceMaterialIds: [],
 });
 
@@ -45,14 +58,16 @@ export const createQuestionFormValues = (question?: ExamQuestion): ExamQuestionF
 	}
 
 	return {
-		answerKey: question.answer_key,
+		answerOptionsText: question.answer_options.join('\n'),
 		bloomLevel: question.bloom_level,
+		correctAnswerText: question.correct_answer_text ?? '',
 		difficulty: question.difficulty,
-		evaluationObjective: question.evaluation_objective,
+		intentText: question.intent_text,
+		maxScore: String(question.max_score),
 		questionNumber: String(question.question_number),
 		questionText: question.question_text,
-		scopeText: question.scope_text,
-		scoringCriteria: question.scoring_criteria,
+		questionType: question.question_type,
+		rubricText: question.rubric_text,
 		sourceMaterialIds: [...question.source_material_ids],
 	};
 };

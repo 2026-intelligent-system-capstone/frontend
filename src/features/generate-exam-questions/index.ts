@@ -11,7 +11,8 @@ export {
 	bloomPyramidToneClassNames,
 	bloomPyramidWidthClassNames,
 	getDisplayCountValue,
+	questionTypeStrategyOptions,
 	toggleStringValue,
 } from './lib/bloom';
-export type { BloomLevelOption } from './lib/bloom';
+export type { BloomLevelOption, QuestionTypeStrategyOption } from './lib/bloom';
 export { useGenerateExamQuestions } from './model/use-generate-questions';

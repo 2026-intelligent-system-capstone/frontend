@@ -1,7 +1,7 @@
-import type { BloomLevel, ExamDifficulty } from '@/entities/exam';
+import type { BloomLevel, ExamDifficulty, ExamQuestionTypeStrategy } from '@/entities/exam';
 import { Description, Input, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
 
-import { difficultyOptions, parseBloomCounts } from '../lib/bloom';
+import { difficultyOptions, parseBloomCounts, questionTypeStrategyOptions } from '../lib/bloom';
 import { GenerateExamQuestionsBloomEditorList } from './bloom-editor-list';
 import { GenerateExamQuestionsBloomPyramidPreview } from './bloom-pyramid-preview';
 import { GenerateExamQuestionsBloomSummary } from './bloom-summary';
@@ -11,10 +11,12 @@ interface GenerateExamQuestionsSettingsProps {
 	maxFollowUps: string;
 	scopeText: string;
 	bloomCounts: Record<BloomLevel, string>;
+	questionTypeStrategy: ExamQuestionTypeStrategy;
 	onDifficultyChange: (value: ExamDifficulty) => void;
 	onMaxFollowUpsChange: (value: string) => void;
 	onScopeTextChange: (value: string) => void;
 	onBloomCountChange: (level: BloomLevel, value: string) => void;
+	onQuestionTypeStrategyChange: (value: ExamQuestionTypeStrategy) => void;
 }
 
 export function GenerateExamQuestionsSettings({
@@ -22,10 +24,12 @@ export function GenerateExamQuestionsSettings({
 	maxFollowUps,
 	scopeText,
 	bloomCounts,
+	questionTypeStrategy,
 	onDifficultyChange,
 	onMaxFollowUpsChange,
 	onScopeTextChange,
 	onBloomCountChange,
+	onQuestionTypeStrategyChange,
 }: GenerateExamQuestionsSettingsProps) {
 	const { totalCount } = parseBloomCounts(bloomCounts);
 
@@ -35,7 +39,11 @@ export function GenerateExamQuestionsSettings({
 				<Select
 					className="w-full"
 					value={difficulty}
-					onChange={(value) => onDifficultyChange(value as ExamDifficulty)}
+					onChange={(value) => {
+						if (value === 'easy' || value === 'medium' || value === 'hard') {
+							onDifficultyChange(value);
+						}
+					}}
 				>
 					<Label>난이도</Label>
 					<Select.Trigger>
@@ -87,7 +95,43 @@ export function GenerateExamQuestionsSettings({
 					/>
 				</div>
 
-				<Description>단계별 문항 수를 직접 입력하세요. 0개인 단계는 생성 요청에서 제외됩니다.</Description>
+				<div className="rounded-large space-y-4 border border-slate-200 bg-white p-4">
+					<Select
+						className="w-full"
+						value={questionTypeStrategy}
+						onChange={(value) => {
+							if (
+								value === 'balanced' ||
+								value === 'multiple_choice_focus' ||
+								value === 'subjective_focus' ||
+								value === 'oral_focus'
+							) {
+								onQuestionTypeStrategyChange(value);
+							}
+						}}
+					>
+						<Label>문제 유형 전략</Label>
+						<Select.Trigger>
+							<Select.Value />
+							<Select.Indicator />
+						</Select.Trigger>
+						<Select.Popover>
+							<ListBox>
+								{questionTypeStrategyOptions.map((option) => (
+									<ListBox.Item key={option.value} id={option.value} textValue={option.label}>
+										<div className="space-y-1">
+											<p>{option.label}</p>
+											<p className="text-xs text-slate-500">{option.description}</p>
+										</div>
+										<ListBox.ItemIndicator />
+									</ListBox.Item>
+								))}
+							</ListBox>
+						</Select.Popover>
+					</Select>
+				</div>
+
+				<Description>총 문항 수는 Bloom 단계별 문항 수 합계로 자동 결정됩니다.</Description>
 			</div>
 		</>
 	);

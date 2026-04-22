@@ -10,6 +10,9 @@ import {
 	type Exam,
 	type ExamQuestion,
 	formatExamDateTime,
+	getExamGenerationStatusColor,
+	getExamGenerationStatusDescription,
+	getExamGenerationStatusLabel,
 	getExamMaxAttemptsLabel,
 	getExamStatusLabel,
 	getExamTypeLabel,
@@ -20,7 +23,7 @@ import { GenerateExamQuestionsForm } from '@/features/generate-exam-questions';
 import { UpsertExamQuestionForm } from '@/features/upsert-exam-question';
 import { ApiClientError } from '@/shared/api/types';
 import { SparklesIcon } from '@/shared/ui/icons/exam';
-import { Button, Card, Modal, Skeleton } from '@heroui/react';
+import { Button, Card, Chip, Modal, Skeleton } from '@heroui/react';
 
 import { ExamManagementQuestionsTable } from './questions-table';
 
@@ -64,19 +67,22 @@ export function ExamManagementScreen({
 	const classroom = classroomQuery.data;
 	const exam = examQuery.data;
 	const materials = materialsQuery.data ?? [];
+	const isExamGenerationInProgress = exam?.generation_status === 'queued' || exam?.generation_status === 'running';
 	const editingQuestion = exam?.questions.find((question) => question.id === editingQuestionId);
 	const editingQuestionFormKey = editingQuestion
 		? [
 				editingQuestion.id,
 				editingQuestion.question_number,
+				editingQuestion.max_score,
+				editingQuestion.question_type,
 				editingQuestion.question_text,
-				editingQuestion.scope_text,
-				editingQuestion.evaluation_objective,
-				editingQuestion.answer_key,
-				editingQuestion.scoring_criteria,
+				editingQuestion.intent_text,
+				editingQuestion.rubric_text,
+				JSON.stringify(editingQuestion.answer_options),
+				editingQuestion.correct_answer_text ?? '',
 				editingQuestion.bloom_level,
 				editingQuestion.difficulty,
-				editingQuestion.source_material_ids.join(','),
+				JSON.stringify(editingQuestion.source_material_ids),
 			].join(':')
 		: 'create';
 
@@ -241,6 +247,24 @@ export function ExamManagementScreen({
 									<p className="font-medium text-slate-900">문항 현황</p>
 									<p>총 문항 {exam.questions.length}개</p>
 									<p>주차 {exam.week}주차</p>
+									<div className="flex flex-wrap items-center gap-2 pt-1">
+										<span>생성 상태</span>
+										<Chip
+											color={getExamGenerationStatusColor(exam.generation_status)}
+											size="sm"
+											variant="soft"
+										>
+											<Chip.Label>
+												{getExamGenerationStatusLabel(exam.generation_status)}
+											</Chip.Label>
+										</Chip>
+									</div>
+									{exam.generation_requested_at ? (
+										<p>요청 {formatExamDateTime(exam.generation_requested_at)}</p>
+									) : null}
+									{exam.generation_completed_at ? (
+										<p>완료 {formatExamDateTime(exam.generation_completed_at)}</p>
+									) : null}
 								</Card.Content>
 							</Card>
 						</div>
@@ -257,6 +281,7 @@ export function ExamManagementScreen({
 						</div>
 						<div className="flex flex-wrap gap-2">
 							<Button
+								isDisabled={isExamGenerationInProgress}
 								variant={isGenerateModalOpen ? 'primary' : 'secondary'}
 								onPress={handleToggleGeneratePanel}
 							>
@@ -271,6 +296,23 @@ export function ExamManagementScreen({
 							</Button>
 						</div>
 					</Card.Header>
+					<Card.Content className="space-y-3 pt-0">
+						<div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+							<span>현재 생성 상태</span>
+							<Chip color={getExamGenerationStatusColor(exam.generation_status)} size="sm" variant="soft">
+								<Chip.Label>{getExamGenerationStatusLabel(exam.generation_status)}</Chip.Label>
+							</Chip>
+							{examQuery.isFetching && isExamGenerationInProgress ? (
+								<span className="text-xs text-slate-500">최신 상태 확인 중</span>
+							) : null}
+						</div>
+						<p className="text-sm text-slate-500">
+							{getExamGenerationStatusDescription(exam.generation_status)}
+						</p>
+						{exam.generation_error ? (
+							<p className="text-sm text-red-600">오류 {exam.generation_error}</p>
+						) : null}
+					</Card.Content>
 				</Card>
 
 				<Modal>
