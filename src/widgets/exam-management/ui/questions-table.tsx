@@ -106,15 +106,15 @@ export function ExamManagementQuestionsTable({
 									<div className="w-96 overflow-hidden">
 										<p className="truncate font-medium text-slate-900">{question.question_text}</p>
 										{question.answer_options.length > 0 ? (
-											<div className="mt-2 flex flex-col gap-1 rounded-lg border border-violet-100 bg-violet-50 px-3 py-2">
-												<p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-violet-400">
+											<div className="mt-2 flex flex-col gap-1 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
+												<p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-600">
 													보기
 												</p>
 												{question.answer_options.map((option, index) => (
 													<div key={index} className="flex items-center gap-2 text-xs text-slate-700">
 														<span
-															className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-violet-200
-																text-[9px] font-bold text-violet-700"
+															className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-200
+																text-[9px] font-bold text-emerald-700"
 														>
 															{index + 1}
 														</span>
@@ -122,7 +122,7 @@ export function ExamManagementQuestionsTable({
 													</div>
 												))}
 												{question.correct_answer_text && (
-													<p className="mt-1 border-t border-violet-100 pt-1 text-xs font-medium text-emerald-700">
+													<p className="mt-1 border-t border-emerald-100 pt-1 text-xs font-medium text-emerald-700">
 														정답: {question.correct_answer_text}
 													</p>
 												)}

@@ -88,7 +88,7 @@ export function StudentExamListPage() {
 		<div className="bg-slate-50 px-6 py-10">
 			<div className="mx-auto flex max-w-6xl flex-col gap-6">
 				<div className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-sm">
-					<p className="text-sm font-medium text-violet-600">Student Workspace</p>
+					<p className="text-sm font-medium text-emerald-600">Student Workspace</p>
 					<h1 className="mt-2 text-2xl font-semibold text-slate-900">나의 평가</h1>
 					<p className="mt-2 text-sm text-slate-500">수강 중인 과목의 평가 목록입니다.</p>
 				</div>

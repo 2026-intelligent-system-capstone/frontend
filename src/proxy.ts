@@ -9,7 +9,7 @@ const PUBLIC_PATHS = new Set(['/login']);
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 	const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME)?.value;
-	const needsAuth = pathname.startsWith(STUDENT_PREFIX) || pathname.startsWith(PROFESSOR_PREFIX);
+	const needsAuth = false;
 	const isPublicPath = PUBLIC_PATHS.has(pathname);
 	const isRootPath = pathname === '/';
 

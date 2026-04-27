@@ -16,7 +16,7 @@ export function BloomBar({ level }: BloomBarProps) {
 				{BLOOM_ORDER.map((l, i) => (
 					<div
 						key={l}
-						className={`h-2 flex-1 rounded-full transition-all ${i < index ? 'bg-violet-500' : 'bg-slate-200'}`}
+						className={`h-2 flex-1 rounded-full transition-all ${i < index ? 'bg-emerald-500' : 'bg-slate-200'}`}
 					/>
 				))}
 			</div>

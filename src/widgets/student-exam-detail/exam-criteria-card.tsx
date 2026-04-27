@@ -24,7 +24,7 @@ export function ExamCriteriaCard({ criteria }: ExamCriteriaCardProps) {
 							<div key={criterion.id} className="rounded-xl border border-slate-100 p-4">
 								<div className="mb-2 flex items-center justify-between">
 									<span className="font-medium text-slate-900">{criterion.title}</span>
-									<span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700">
+									<span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
 										{criterion.weight}%
 									</span>
 								</div>

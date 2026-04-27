@@ -23,8 +23,16 @@ export default async function LoginPage() {
 	}
 
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-[#252525] px-4 py-16">
-			<SignInForm initialOrganizations={organizations ?? []} organizationsLoadFailed={organizations === null} />
+		<div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-white px-4 py-16">
+			<div className="flex w-full max-w-xl flex-col items-center gap-6">
+				<div className="text-center">
+					<div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600">
+						<span className="text-sm font-bold text-white">D</span>
+					</div>
+					<p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Dialearn</p>
+				</div>
+				<SignInForm initialOrganizations={organizations ?? []} organizationsLoadFailed={organizations === null} />
+			</div>
 		</div>
 	);
 }

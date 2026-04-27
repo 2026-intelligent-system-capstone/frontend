@@ -30,20 +30,30 @@ export function Sidebar({ role }: SidebarProps) {
 			className="flex min-h-screen w-full max-w-72 flex-col self-stretch border-r border-slate-200 bg-white px-4
 				py-6"
 		>
-			<Link href="/" className="block px-3">
-				<p className="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">Dialearn</p>
-				<h2 className="mt-2 text-lg font-semibold text-slate-900">
-					{role === 'student' ? '학생 포털' : '교수자 포털'}
-				</h2>
+			<Link href="/" className="flex items-center gap-2.5 px-3">
+				<div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600">
+					<span className="text-xs font-bold text-white">D</span>
+				</div>
+				<div>
+					<p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Dialearn</p>
+					<p className="text-sm font-semibold text-slate-900">
+						{role === 'student' ? '학생 포털' : '교수자 포털'}
+					</p>
+				</div>
 			</Link>
 
-			<nav className="mt-8 flex flex-col gap-2">
+			<nav className="mt-8 flex flex-col gap-1">
 				{navigation.map((item) => {
 					const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
 					return (
 						<Link key={item.href} href={item.href}>
-							<Button className="justify-start" fullWidth variant={isActive ? 'primary' : 'ghost'}>
+							<Button
+								className={`justify-start rounded-lg ${isActive ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : ''}`}
+								fullWidth
+								variant={isActive ? 'ghost' : 'ghost'}
+							>
+								{isActive && <span className="mr-2 h-1.5 w-1.5 rounded-full bg-emerald-600" />}
 								{item.label}
 							</Button>
 						</Link>

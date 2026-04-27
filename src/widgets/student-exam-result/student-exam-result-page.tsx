@@ -77,7 +77,7 @@ export function StudentExamResultPage() {
 				<div className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-sm">
 					<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 						<div>
-							<p className="text-sm font-medium text-violet-600">Student Workspace</p>
+							<p className="text-sm font-medium text-emerald-600">Student Workspace</p>
 							<p className="mt-1 text-xs text-slate-400">{result.classroom_name}</p>
 							<h1 className="mt-1 text-2xl font-semibold text-slate-900">{result.exam_title}</h1>
 							<p className="mt-1 text-sm text-slate-500">평가 결과 리포트</p>

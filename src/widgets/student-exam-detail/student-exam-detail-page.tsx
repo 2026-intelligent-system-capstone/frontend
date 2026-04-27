@@ -77,7 +77,7 @@ export function StudentExamDetailPage({ examId }: StudentExamDetailPageProps) {
 				<div className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-sm">
 					<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
 						<div className="space-y-2">
-							<p className="text-sm font-medium text-violet-600">Student Workspace</p>
+							<p className="text-sm font-medium text-emerald-600">Student Workspace</p>
 							<div className="flex flex-wrap items-center gap-2">
 								<Chip color={getExamTypeColor(exam.exam_type)} size="sm" variant="soft">
 									<Chip.Label>{getExamTypeLabel(exam.exam_type)}</Chip.Label>

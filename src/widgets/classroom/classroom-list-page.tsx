@@ -21,7 +21,7 @@ export function ClassroomListPage({ classrooms, isError }: ClassroomListPageProp
 						md:flex-row md:items-end md:justify-between"
 				>
 					<div>
-						<p className="text-sm font-medium text-blue-600">Professor Workspace</p>
+						<p className="text-sm font-medium text-emerald-600">Professor Workspace</p>
 						<h1 className="mt-2 text-2xl font-semibold text-slate-900">강의실 관리</h1>
 						<p className="mt-2 text-sm text-slate-500">
 							강의실을 생성하고 학생, 자료, 시험 운영 흐름을 관리하세요.

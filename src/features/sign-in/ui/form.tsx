@@ -59,7 +59,7 @@ export function SignInForm({ initialOrganizations, organizationsLoadFailed }: Si
 	};
 
 	return (
-		<Card className="w-full max-w-xl border border-white/10 bg-white/95 p-6 shadow-2xl backdrop-blur">
+		<Card className="w-full max-w-xl border border-slate-100 bg-white p-6 shadow-sm">
 			<Card.Header className="gap-2 px-0 pt-0">
 				<Card.Title className="text-2xl font-semibold text-slate-900">Dialearn 로그인</Card.Title>
 				<Card.Description className="text-sm text-slate-500">
@@ -126,7 +126,7 @@ export function SignInForm({ initialOrganizations, organizationsLoadFailed }: Si
 
 				{errorMessage ? <ErrorMessage className="w-full">{errorMessage}</ErrorMessage> : null}
 
-				<Button className="w-full" isPending={loginPending} type="submit">
+				<Button className="w-full rounded-full" isPending={loginPending} type="submit">
 					로그인
 				</Button>
 			</Form>

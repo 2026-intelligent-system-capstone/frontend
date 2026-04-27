@@ -99,7 +99,7 @@ export function ExamsTable({ exams, onSelectExam }: ExamsTableProps) {
 											<span className="truncate">시작 {formatExamDateTime(exam.starts_at)}</span>
 										</div>
 										<div className="flex items-center gap-2 overflow-hidden">
-											<CalendarIcon className="size-4 shrink-0 text-violet-500" />
+											<CalendarIcon className="size-4 shrink-0 text-emerald-500" />
 											<span className="truncate">종료 {formatExamDateTime(exam.ends_at)}</span>
 										</div>
 									</div>
