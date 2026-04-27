@@ -9,6 +9,7 @@ import { useSTT, useTTS } from '@/features/take-exam-session';
 
 import { AICharacter } from './ai-character';
 import { LatexText } from './latex-text';
+import { MicButton } from './mic-button';
 import { MultipleChoiceInput } from './multiple-choice-input';
 import { QuestionNav } from './question-nav';
 import { SessionControls } from './session-controls';
@@ -89,6 +90,9 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const { speak, stop: stopTTS } = useTTS();
+	const { isListening: isSubjectiveListening, toggle: toggleSubjectiveMic } = useSTT((text) =>
+		setSubjectiveInput(text),
+	);
 	const { isListening, toggle: toggleMic } = useSTT((text) => setOralInput(text));
 
 	const currentQuestion = MOCK_QUESTIONS.find((q) => q.id === currentQuestionId)!;
@@ -243,13 +247,22 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 										text-white placeholder:text-slate-500 focus:border-amber-400 focus:outline-none
 										disabled:cursor-not-allowed disabled:opacity-70"
 									disabled={answeredIds.has(currentQuestionId)}
-									placeholder="답변을 입력하세요."
+									placeholder="답변을 입력하거나 마이크로 말하세요."
 									rows={6}
 									value={subjectiveInput}
 									onChange={(e) => setSubjectiveInput(e.target.value)}
 								/>
 								<div className="flex items-center justify-between">
-									<p className="text-xs text-slate-500">Ctrl+Enter로 제출</p>
+									<div className="flex items-center gap-3">
+										<MicButton
+											disabled={answeredIds.has(currentQuestionId)}
+											isListening={isSubjectiveListening}
+											onToggle={toggleSubjectiveMic}
+										/>
+										<p className="text-xs text-slate-500">
+											{isSubjectiveListening ? '음성 인식 중... 말씀해주세요.' : '마이크로 답변하거나 직접 입력하세요.'}
+										</p>
+									</div>
 									{!answeredIds.has(currentQuestionId) ? (
 										<Button
 											isDisabled={!subjectiveInput.trim()}
