@@ -30,10 +30,14 @@ const fetchApiData = async <T>(path: string, options: GetApiDataOptions = {}): P
 	}
 
 	try {
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 3000);
 		const response = await fetch(buildApiUrl(path), {
 			cache: 'no-store',
 			headers: buildSessionHeaders(accessToken),
+			signal: controller.signal,
 		});
+		clearTimeout(timeoutId);
 
 		if (response.status === 401 || response.status === 403 || response.status === 404) {
 			return null;

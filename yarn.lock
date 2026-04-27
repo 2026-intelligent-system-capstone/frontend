@@ -2955,6 +2955,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/katex@npm:^0.16.8":
+  version: 0.16.8
+  resolution: "@types/katex@npm:0.16.8"
+  checksum: 10c0/0661609353f4f5e62bd2dc78da99e842761c6474b19f2268b195bbe9dbf20e6f766a31155d79eec2e7c3eff4e7eba4b30f4f519e9c6a11c75bb45e257a2ddb69
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^20":
   version: 20.19.37
   resolution: "@types/node@npm:20.19.37"
@@ -2973,7 +2980,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^19":
+"@types/react-katex@npm:^3":
+  version: 3.0.4
+  resolution: "@types/react-katex@npm:3.0.4"
+  dependencies:
+    "@types/react": "npm:*"
+  checksum: 10c0/919d5752eb5ea8e5eb72dde1cb2f2b3e0b0d7e74e463eb95a8da4a3a12478223b92e78c0b1bece53ce9e5404aa1a0ac63955ef1a4e00829080ad41808ee82538
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:*, @types/react@npm:^19":
   version: 19.2.14
   resolution: "@types/react@npm:19.2.14"
   dependencies:
@@ -3617,6 +3633,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"commander@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "commander@npm:8.3.0"
+  checksum: 10c0/8b043bb8322ea1c39664a1598a95e0495bfe4ca2fad0d84a92d7d1d8d213e2a155b441d2470c8e08de7c4a28cf2bc6e169211c49e1b21d9f7edc6ae4d9356060
+  languageName: node
+  linkType: hard
+
 "concat-map@npm:0.0.1":
   version: 0.0.1
   resolution: "concat-map@npm:0.0.1"
@@ -3773,14 +3796,17 @@ __metadata:
     "@tanstack/eslint-plugin-query": "npm:^5.95.2"
     "@tanstack/react-query": "npm:^5.95.2"
     "@trivago/prettier-plugin-sort-imports": "npm:^6.0.2"
+    "@types/katex": "npm:^0.16.8"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
+    "@types/react-katex": "npm:^3"
     dayjs: "npm:^1.11.20"
     eslint: "npm:^9"
     eslint-config-next: "npm:16.2.1"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-no-relative-import-paths: "npm:^1.6.1"
+    katex: "npm:^0.16.45"
     next: "npm:16.2.1"
     prettier: "npm:^3.8.1"
     prettier-plugin-classnames: "npm:^0.10.1"
@@ -3788,6 +3814,7 @@ __metadata:
     prettier-plugin-tailwindcss: "npm:^0.7.2"
     react: "npm:19.2.4"
     react-dom: "npm:19.2.4"
+    react-katex: "npm:^3.1.0"
     tailwind-merge: "npm:^3.5.0"
     tailwindcss: "npm:^4"
     typescript: "npm:^5"
@@ -5071,6 +5098,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"katex@npm:^0.16.0, katex@npm:^0.16.45":
+  version: 0.16.45
+  resolution: "katex@npm:0.16.45"
+  dependencies:
+    commander: "npm:^8.3.0"
+  bin:
+    katex: cli.js
+  checksum: 10c0/f715eb9a73daff68ac14dcc8c2f47f02f5fc756a74077d22479e64e06872b2b44f0d81f1c91a98a9873722a08841388a869a0b9ddb96b224362eb8054ddf533a
+  languageName: node
+  linkType: hard
+
 "keyv@npm:^4.5.4":
   version: 4.5.4
   resolution: "keyv@npm:4.5.4"
@@ -5907,6 +5945,18 @@ __metadata:
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: 10c0/33977da7a5f1a287936a0c85639fec6ca74f4f15ef1e59a6bc20338fc73dc69555381e211f7a3529b8150a1f71e4225525b41b60b52965bda53ce7d47377ada1
+  languageName: node
+  linkType: hard
+
+"react-katex@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "react-katex@npm:3.1.0"
+  dependencies:
+    katex: "npm:^0.16.0"
+  peerDependencies:
+    prop-types: ^15.8.1
+    react: ">=15.3.2 <20"
+  checksum: 10c0/a61eb2c19a2dc384ad5864a27af66f40c504643f984150f4e270373df88293c2586779b53b2ee7ee4e75076f3c5284b36f425bbc1021d164ccb2997d11d8678f
   languageName: node
   linkType: hard
 
