@@ -10,6 +10,7 @@ import type { BloomLevel, ExamQuestionType, ExamTurnEventType } from '@/entities
 import { useSTT, useTTS } from '@/features/take-exam-session';
 
 import { AICharacter } from './ai-character';
+import { ConversationTree } from './conversation-tree';
 import { LatexText } from './latex-text';
 import { MicButton } from './mic-button';
 import { MultipleChoiceInput } from './multiple-choice-input';
@@ -75,6 +76,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const router = useRouter();
 	const [currentQuestionId, setCurrentQuestionId] = useState(MOCK_QUESTIONS[0].id);
 	const [showEndConfirm, setShowEndConfirm] = useState(false);
+	const [showConversationTree, setShowConversationTree] = useState(false);
 	const [answeredIds, setAnsweredIds] = useState<Set<string>>(new Set());
 	const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState<Record<string, number[]>>({});
 	const [multipleChoiceSelected, setMultipleChoiceSelected] = useState<number[]>([]);
@@ -246,11 +248,13 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 				isFinished={isFinished}
 				questionNumber={currentQuestion.question_number}
 				remainingSeconds={remainingSeconds}
+				showConversationTree={showConversationTree}
 				totalQuestions={MOCK_QUESTIONS.length}
 				onEndExam={handleEndExam}
+				onToggleConversationTree={() => setShowConversationTree((v) => !v)}
 			/>
 
-			<div className="flex flex-1 overflow-hidden">
+			<div className="relative flex flex-1 overflow-hidden">
 				<QuestionNav
 					questions={MOCK_QUESTIONS}
 					currentId={currentQuestionId}
@@ -383,13 +387,20 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 
 					{/* 카메라 미리보기 */}
 					<div
-						className="absolute right-4 bottom-4 overflow-hidden rounded-2xl border-2 border-white/20
-							shadow-2xl"
+						className={`absolute bottom-4 overflow-hidden rounded-2xl border-2 border-white/20 shadow-2xl
+							transition-all duration-300 ${showConversationTree ? 'right-76' : 'right-4'}`}
 					>
 						<video ref={videoRef} autoPlay muted playsInline className="h-32 w-44 bg-slate-900 object-cover" />
 						<div className="absolute bottom-1 left-2 text-xs text-white/50">나</div>
 					</div>
 				</div>
+
+				{/* 대화 흐름 트리 패널 */}
+				<ConversationTree
+					isOpen={showConversationTree}
+					turns={oralTurns}
+					onClose={() => setShowConversationTree(false)}
+				/>
 			</div>
 		</div>
 	);

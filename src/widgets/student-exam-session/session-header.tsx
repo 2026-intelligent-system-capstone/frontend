@@ -16,7 +16,9 @@ interface SessionHeaderProps {
 	answeredCount: number;
 	remainingSeconds: number;
 	isFinished: boolean;
+	showConversationTree: boolean;
 	onEndExam: () => void;
+	onToggleConversationTree: () => void;
 }
 
 export function SessionHeader({
@@ -27,7 +29,9 @@ export function SessionHeader({
 	answeredCount,
 	remainingSeconds,
 	isFinished,
+	showConversationTree,
 	onEndExam,
+	onToggleConversationTree,
 }: SessionHeaderProps) {
 	const isWarning = remainingSeconds < 5 * 60;
 
@@ -50,6 +54,14 @@ export function SessionHeader({
 				>
 					{formatTime(remainingSeconds)}
 				</div>
+				<Button
+					className={`border-white/20 text-white hover:bg-white/10 ${showConversationTree ? 'bg-white/10' : ''}`}
+					size="sm"
+					variant="outline"
+					onPress={onToggleConversationTree}
+				>
+					📋 대화 흐름
+				</Button>
 				{!isFinished && (
 					<Button
 						className="border-white/20 text-white hover:bg-white/10"
