@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Button, Chip } from '@heroui/react';
 import { getBloomLevelColor, getBloomLevelLabel } from '@/entities/exam';
 import type { BloomLevel } from '@/entities/exam';
@@ -14,9 +13,10 @@ interface SessionHeaderProps {
 	bloomLevel: BloomLevel;
 	questionNumber: number;
 	totalQuestions: number;
+	answeredCount: number;
 	remainingSeconds: number;
 	isFinished: boolean;
-	examId: string;
+	onEndExam: () => void;
 }
 
 export function SessionHeader({
@@ -24,9 +24,10 @@ export function SessionHeader({
 	bloomLevel,
 	questionNumber,
 	totalQuestions,
+	answeredCount,
 	remainingSeconds,
 	isFinished,
-	examId,
+	onEndExam,
 }: SessionHeaderProps) {
 	const isWarning = remainingSeconds < 5 * 60;
 
@@ -40,7 +41,7 @@ export function SessionHeader({
 			</div>
 			<div className="flex items-center gap-4">
 				<span className="text-xs text-slate-400">
-					{questionNumber} / {totalQuestions} 문항
+					{questionNumber} / {totalQuestions} 문항 · {answeredCount}/{totalQuestions} 완료
 				</span>
 				<div
 					className={`rounded-lg px-3 py-1.5 font-mono text-sm font-semibold ${
@@ -50,15 +51,14 @@ export function SessionHeader({
 					{formatTime(remainingSeconds)}
 				</div>
 				{!isFinished && (
-					<Link href={`/student/exams/${examId}/result`}>
-						<Button
-							className="border-white/20 text-white hover:bg-white/10"
-							size="sm"
-							variant="outline"
-						>
-							평가 종료
-						</Button>
-					</Link>
+					<Button
+						className="border-white/20 text-white hover:bg-white/10"
+						size="sm"
+						variant="outline"
+						onPress={onEndExam}
+					>
+						평가 종료
+					</Button>
 				)}
 			</div>
 		</div>

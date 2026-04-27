@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
 import { Button } from '@heroui/react';
 
 import type { BloomLevel, ExamQuestionType, ExamTurnEventType } from '@/entities/exam';
@@ -70,7 +72,9 @@ interface StudentExamSessionPageProps {
 }
 
 export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) {
+	const router = useRouter();
 	const [currentQuestionId, setCurrentQuestionId] = useState(MOCK_QUESTIONS[0].id);
+	const [showEndConfirm, setShowEndConfirm] = useState(false);
 	const [answeredIds, setAnsweredIds] = useState<Set<string>>(new Set());
 	const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState<Record<string, number[]>>({});
 	const [multipleChoiceSelected, setMultipleChoiceSelected] = useState<number[]>([]);
@@ -96,6 +100,18 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const { isListening, toggle: toggleMic } = useSTT((text) => setOralInput(text));
 
 	const currentQuestion = MOCK_QUESTIONS.find((q) => q.id === currentQuestionId)!;
+
+	// 이탈 방지
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (!isFinished) {
+				e.preventDefault();
+				e.returnValue = '';
+			}
+		};
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+	}, [isFinished]);
 
 	// Camera setup
 	useEffect(() => {
@@ -187,16 +203,51 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 
 	const latestAssistantTurn = [...oralTurns].reverse().find((t) => t.role === 'assistant');
 
+	const unansweredCount = MOCK_QUESTIONS.length - answeredIds.size;
+
+	const handleEndExam = () => setShowEndConfirm(true);
+
+	const handleConfirmEnd = () => {
+		setIsFinished(true);
+		router.push(`/student/exams/${examId}/result`);
+	};
+
 	return (
 		<div className="flex h-screen flex-col bg-[#0f0f1a]">
+			{/* 평가 종료 확인 다이얼로그 */}
+			{showEndConfirm && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+					<div className="mx-4 w-full max-w-sm rounded-2xl border border-white/10 bg-[#1a1a2e] p-6 shadow-2xl">
+						<h2 className="text-lg font-semibold text-white">평가를 종료하시겠습니까?</h2>
+						{unansweredCount > 0 ? (
+							<p className="mt-2 text-sm text-amber-400">
+								아직 {unansweredCount}개 문제가 답변되지 않았습니다.
+							</p>
+						) : (
+							<p className="mt-2 text-sm text-emerald-400">모든 문제에 답변을 완료했습니다.</p>
+						)}
+						<p className="mt-1 text-xs text-slate-400">종료 후에는 답변을 수정할 수 없습니다.</p>
+						<div className="mt-5 flex gap-3">
+							<Button className="flex-1" variant="outline" onPress={() => setShowEndConfirm(false)}>
+								계속 풀기
+							</Button>
+							<Button className="flex-1" variant="danger" onPress={handleConfirmEnd}>
+								종료하기
+							</Button>
+						</div>
+					</div>
+				</div>
+			)}
+
 			<SessionHeader
+				answeredCount={answeredIds.size}
 				bloomLevel={currentQuestion.bloom_level}
-				examId={examId}
 				examTitle="데이터 과학 개론 중간고사"
 				isFinished={isFinished}
 				questionNumber={currentQuestion.question_number}
 				remainingSeconds={remainingSeconds}
 				totalQuestions={MOCK_QUESTIONS.length}
+				onEndExam={handleEndExam}
 			/>
 
 			<div className="flex flex-1 overflow-hidden">

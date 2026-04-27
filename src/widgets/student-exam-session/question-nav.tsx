@@ -22,6 +22,8 @@ const TYPE_SHORT: Record<ExamQuestionType, string> = {
 };
 
 export function QuestionNav({ questions, currentId, answeredIds, onSelect }: QuestionNavProps) {
+	const answeredCount = questions.filter((q) => answeredIds.has(q.id)).length;
+
 	return (
 		<aside className="flex w-[72px] shrink-0 flex-col gap-2 border-r border-white/10 bg-[#16213e]/80 px-2 py-4 backdrop-blur-sm">
 			<p className="mb-1 text-center text-[9px] font-semibold uppercase tracking-widest text-slate-500">문제</p>
@@ -46,6 +48,12 @@ export function QuestionNav({ questions, currentId, answeredIds, onSelect }: Que
 					</button>
 				);
 			})}
+			<div className="mt-auto border-t border-white/10 pt-2 text-center">
+				<p className={`text-xs font-bold ${answeredCount === questions.length ? 'text-emerald-400' : 'text-slate-400'}`}>
+					{answeredCount}/{questions.length}
+				</p>
+				<p className="text-[9px] text-slate-500">완료</p>
+			</div>
 		</aside>
 	);
 }
