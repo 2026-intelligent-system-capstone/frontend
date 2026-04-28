@@ -4,6 +4,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Override HeroUI accent (primary) to emerald */
+  --accent: oklch(0.61 0.194 149.58);
+  --accent-foreground: oklch(1 0 0);
+  --focus: oklch(0.61 0.194 149.58);
 }
 
 @theme inline {
