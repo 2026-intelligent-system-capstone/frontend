@@ -1,117 +1,178 @@
 'use client';
 
-import Link from 'next/link';
+import type { ReactNode } from 'react';
 
-import { getExamStatusColor, getExamStatusLabel, getExamTypeColor, getExamTypeLabel } from '@/entities/exam';
-import type { Exam } from '@/entities/exam';
+import {
+	getExamStatusColor,
+	getExamStatusLabel,
+	getExamTypeColor,
+	getExamTypeLabel,
+	useStudentExam,
+} from '@/entities/exam';
+import type { StudentExamPayload } from '@/entities/exam';
+import { LinkButton, PageHeader, PageShell, StateBlock, SurfaceCard } from '@/shared/ui';
 import { Button, Chip } from '@heroui/react';
 
+import { ExamCriteriaCard } from './exam-criteria-card';
 import { ExamEnvCheckCard } from './exam-env-check-card';
 import { ExamGuideCard } from './exam-guide-card';
 import { ExamInfoCard } from './exam-info-card';
-
-const MOCK_EXAM: Exam & { classroom_name: string } = {
-	id: '1',
-	classroom_id: 'c1',
-	classroom_name: '데이터 과학 개론',
-	title: '데이터 과학 개론 중간고사',
-	description: '1-7주차 강의 내용 전반에 걸쳐 데이터베이스, 인덱싱, 쿼리 최적화 등을 평가합니다.',
-	exam_type: 'midterm',
-	status: 'in_progress',
-	generation_status: 'idle',
-	generation_error: null,
-	generation_job_id: null,
-	generation_requested_at: null,
-	generation_completed_at: null,
-	duration_minutes: 40,
-	week: 8,
-	starts_at: '2026-04-07T09:00:00Z',
-	ends_at: '2026-04-07T23:59:00Z',
-	max_attempts: 1,
-	criteria: [
-		{
-			id: 'cr1',
-			title: '개념 이해도',
-			description: '핵심 개념을 정확히 설명할 수 있는가',
-			weight: 40,
-			sort_order: 1,
-			excellent_definition: '개념을 정확히 설명하고 예시를 들 수 있음',
-			average_definition: '개념을 대략적으로 설명할 수 있음',
-			poor_definition: '개념 설명이 불명확하거나 틀림',
-		},
-		{
-			id: 'cr2',
-			title: '문제 해결 능력',
-			description: '주어진 상황에서 적절한 해결책을 제시할 수 있는가',
-			weight: 35,
-			sort_order: 2,
-			excellent_definition: '최적의 해결책을 논리적으로 제시',
-			average_definition: '적절한 해결책을 제시하나 설명 부족',
-			poor_definition: '해결책 제시 불가 또는 부적절',
-		},
-		{
-			id: 'cr3',
-			title: '심층 사고력',
-			description: '꼬리질문에 대해 깊이 있는 답변을 할 수 있는가',
-			weight: 25,
-			sort_order: 3,
-			excellent_definition: '다각도로 분석하고 비판적 사고 가능',
-			average_definition: '기본적인 추가 설명 가능',
-			poor_definition: '추가 질문에 답변 어려움',
-		},
-	],
-	questions: [],
-};
 
 interface StudentExamDetailPageProps {
 	examId: string;
 }
 
+interface PrimaryCta {
+	href: string;
+	label: string;
+	helperText: string;
+	isDisabled: boolean;
+}
+
+function getPrimaryCta(exam: StudentExamPayload): PrimaryCta {
+	if (exam.has_result) {
+		return {
+			href: `/student/exams/${exam.id}/result`,
+			label: '결과 보기',
+			helperText: '채점이 완료되어 결과 리포트를 다시 확인할 수 있습니다.',
+			isDisabled: false,
+		};
+	}
+
+	if (exam.is_completed) {
+		return {
+			href: `/student/exams/${exam.id}/result`,
+			label: '채점 중',
+			helperText: '제출은 완료되었습니다. 결과 생성이 끝나면 리포트가 열립니다.',
+			isDisabled: true,
+		};
+	}
+
+	if (exam.can_enter) {
+		return {
+			href: `/student/exams/${exam.id}/session`,
+			label: '평가 입장하기',
+			helperText: '아래 안내와 환경 점검을 확인한 뒤 입장하세요.',
+			isDisabled: false,
+		};
+	}
+
+	return {
+		href: `/student/exams/${exam.id}/session`,
+		label: '입장 불가',
+		helperText: '아직 응시 시간이 아니거나 응시 가능 횟수가 남아 있지 않습니다.',
+		isDisabled: true,
+	};
+}
+
+function DetailStateCard({ children }: { children: ReactNode }) {
+	return <PageShell>{children}</PageShell>;
+}
+
 export function StudentExamDetailPage({ examId }: StudentExamDetailPageProps) {
-	const exam = MOCK_EXAM;
-	const canEnter = exam.status === 'in_progress';
+	const examQuery = useStudentExam(examId);
+	const exam = examQuery.data;
+
+	if (examQuery.isLoading) {
+		return (
+			<DetailStateCard>
+				<StateBlock
+					tone="loading"
+					title="평가 정보를 불러오는 중입니다."
+					description="입장 전 안내 문서를 준비하고 있습니다."
+				/>
+			</DetailStateCard>
+		);
+	}
+
+	if (examQuery.isError) {
+		return (
+			<DetailStateCard>
+				<StateBlock
+					tone="error"
+					title="평가 정보를 불러오지 못했습니다."
+					description="네트워크 상태를 확인한 뒤 다시 시도해주세요."
+					action={
+						<Button size="sm" variant="outline" onPress={() => examQuery.refetch()}>
+							다시 시도
+						</Button>
+					}
+				/>
+			</DetailStateCard>
+		);
+	}
+
+	if (!exam) {
+		return (
+			<DetailStateCard>
+				<StateBlock
+					title="평가 정보를 찾을 수 없습니다."
+					description="목록으로 돌아가 공개된 평가를 다시 선택해주세요."
+				/>
+			</DetailStateCard>
+		);
+	}
+
+	const primaryCta = getPrimaryCta(exam);
 
 	return (
-		<div className="bg-slate-50 px-6 py-10">
-			<div className="mx-auto flex max-w-6xl flex-col gap-6">
-				<div className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-sm">
-					<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-						<div className="space-y-2">
-							<p className="text-sm font-medium text-emerald-600">Student Workspace</p>
-							<div className="flex flex-wrap items-center gap-2">
-								<Chip color={getExamTypeColor(exam.exam_type)} size="sm" variant="soft">
-									<Chip.Label>{getExamTypeLabel(exam.exam_type)}</Chip.Label>
-								</Chip>
-								<Chip color={getExamStatusColor(exam.status)} size="sm" variant="soft">
-									<Chip.Label>{getExamStatusLabel(exam.status)}</Chip.Label>
-								</Chip>
-							</div>
-							<p className="text-sm text-slate-400">{exam.classroom_name}</p>
-							<h1 className="text-2xl font-semibold text-slate-900">{exam.title}</h1>
-							{exam.description && <p className="text-sm text-slate-500">{exam.description}</p>}
-						</div>
-						<div className="flex shrink-0 flex-col items-end gap-2">
-							<Link href={`/student/exams/${examId}/session`}>
-								<Button isDisabled={!canEnter} variant="primary">
-									평가 입장하기
-								</Button>
-							</Link>
-							<Link href="/student/exams">
-								<Button size="sm" variant="outline">
-									목록으로
-								</Button>
-							</Link>
-						</div>
-					</div>
-				</div>
+		<PageShell>
+			<PageHeader
+				eyebrow="Student Workspace"
+				title={exam.title}
+				description={
+					exam.description ?? '구술 평가 입장 전 시험 정보와 환경 점검, 평가 기준을 순서대로 확인하세요.'
+				}
+				actions={
+					<>
+						<LinkButton href="/student/exams" size="sm" variant="outline">
+							목록으로
+						</LinkButton>
+						{primaryCta.isDisabled ? (
+							<Button isDisabled variant="primary">
+								{primaryCta.label}
+							</Button>
+						) : (
+							<LinkButton href={primaryCta.href}>{primaryCta.label}</LinkButton>
+						)}
+					</>
+				}
+			/>
 
-				<div className="grid gap-6 md:grid-cols-2">
+			<SurfaceCard className="flex flex-col gap-4 p-5 sm:p-6 md:flex-row md:items-center md:justify-between">
+				<div className="space-y-3">
+					<div className="flex flex-wrap items-center gap-2">
+						<Chip color={getExamTypeColor(exam.exam_type)} size="sm" variant="soft">
+							<Chip.Label>{getExamTypeLabel(exam.exam_type)}</Chip.Label>
+						</Chip>
+						<Chip color={getExamStatusColor(exam.status)} size="sm" variant="soft">
+							<Chip.Label>{getExamStatusLabel(exam.status)}</Chip.Label>
+						</Chip>
+					</div>
+					{exam.classroom_name ? (
+						<p className="text-neutral-gray-500 text-sm font-medium">{exam.classroom_name}</p>
+					) : null}
+					<p className="text-neutral-gray-500 max-w-2xl text-sm leading-6">{primaryCta.helperText}</p>
+				</div>
+				<div
+					className="border-border-subtle bg-surface-muted text-neutral-gray-500 rounded-2xl border px-4 py-3
+						text-sm"
+				>
+					<p className="text-neutral-text font-semibold">입장 전 확인 순서</p>
+					<p className="mt-1">시험 정보 → 환경 점검 → 평가 기준 → 안내사항</p>
+				</div>
+			</SurfaceCard>
+
+			<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]">
+				<div className="space-y-6">
 					<ExamInfoCard exam={exam} />
+					<ExamEnvCheckCard />
+					<ExamCriteriaCard criteria={exam.criteria} />
+				</div>
+				<div className="lg:sticky lg:top-6 lg:self-start">
 					<ExamGuideCard />
 				</div>
-
-				<ExamEnvCheckCard />
 			</div>
-		</div>
+		</PageShell>
 	);
 }

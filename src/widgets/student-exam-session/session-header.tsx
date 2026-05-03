@@ -1,6 +1,7 @@
-import { Button, Chip } from '@heroui/react';
 import { getBloomLevelColor, getBloomLevelLabel } from '@/entities/exam';
 import type { BloomLevel } from '@/entities/exam';
+import { cn } from '@/shared/ui';
+import { Button, Chip } from '@heroui/react';
 
 function formatTime(seconds: number) {
 	const m = Math.floor(seconds / 60);
@@ -34,44 +35,70 @@ export function SessionHeader({
 	onToggleConversationTree,
 }: SessionHeaderProps) {
 	const isWarning = remainingSeconds < 5 * 60;
+	const formattedRemainingTime = formatTime(remainingSeconds);
 
 	return (
-		<div className="flex items-center justify-between border-b border-white/10 bg-[#16213e]/80 px-6 py-3 backdrop-blur-sm">
-			<div className="flex items-center gap-3">
-				<span className="text-sm font-semibold text-white">{examTitle}</span>
-				<Chip color={getBloomLevelColor(bloomLevel)} size="sm" variant="soft">
-					<Chip.Label>{getBloomLevelLabel(bloomLevel)}</Chip.Label>
-				</Chip>
-			</div>
-			<div className="flex items-center gap-4">
-				<span className="text-xs text-slate-400">
-					{questionNumber} / {totalQuestions} 문항 · {answeredCount}/{totalQuestions} 완료
-				</span>
-				<div
-					className={`rounded-lg px-3 py-1.5 font-mono text-sm font-semibold ${
-						isWarning ? 'animate-pulse bg-red-900/60 text-red-300' : 'bg-white/10 text-white'
-					}`}
-				>
-					{formatTime(remainingSeconds)}
+		<div
+			className="border-border-subtle bg-surface/95 shadow-card sticky top-0 z-30 border-b px-4 py-3
+				backdrop-blur-md sm:px-6"
+		>
+			<div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+				<div className="min-w-0 space-y-2">
+					<div className="flex flex-wrap items-center gap-2">
+						<span className="text-neutral-text truncate text-sm font-semibold sm:text-base">
+							{examTitle}
+						</span>
+						<Chip color={getBloomLevelColor(bloomLevel)} size="sm" variant="soft">
+							<Chip.Label>{getBloomLevelLabel(bloomLevel)}</Chip.Label>
+						</Chip>
+					</div>
+					<div className="text-neutral-gray-500 flex flex-wrap items-center gap-2 text-xs">
+						<span
+							className="border-border-subtle bg-surface-muted text-neutral-text rounded-full border px-3
+								py-1 font-medium"
+						>
+							{questionNumber} / {totalQuestions} 문항
+						</span>
+						<span className="border-border-subtle bg-surface-muted rounded-full border px-3 py-1">
+							{answeredCount}/{totalQuestions} 완료
+						</span>
+					</div>
 				</div>
-				<Button
-					className={`border-white/20 text-white hover:bg-white/10 ${showConversationTree ? 'bg-white/10' : ''}`}
-					size="sm"
-					variant="outline"
-					onPress={onToggleConversationTree}
-				>
-					📋 대화 흐름
-				</Button>
-				{!isFinished && (
+				<div className="flex flex-wrap items-center gap-2 sm:justify-end">
+					<div
+						aria-label={`남은 시간 ${formattedRemainingTime}`}
+						className={cn(
+							'shadow-button rounded-full border px-4 py-2 font-mono text-sm font-semibold',
+							isWarning
+								? 'animate-pulse border-red-200 bg-red-50 text-red-700'
+								: 'border-brand/20 bg-brand-light text-brand-deep',
+						)}
+						role="timer"
+					>
+						{formattedRemainingTime}
+					</div>
 					<Button
-						className="border-white/20 text-white hover:bg-white/10"
+						className={cn(
+							'border-border-subtle text-neutral-text hover:bg-surface-muted',
+							showConversationTree && 'bg-surface-muted text-brand-deep',
+						)}
 						size="sm"
 						variant="outline"
-						onPress={onEndExam}
+						onPress={onToggleConversationTree}
 					>
-						평가 종료
+						대화 흐름
 					</Button>
-				)}
+					{!isFinished && (
+						<Button
+							className="border-red-200 bg-white text-red-700 hover:bg-red-50"
+							size="sm"
+							variant="outline"
+							onPress={onEndExam}
+						>
+							평가 종료
+						</Button>
+					)}
+				</div>
 			</div>
 		</div>
 	);

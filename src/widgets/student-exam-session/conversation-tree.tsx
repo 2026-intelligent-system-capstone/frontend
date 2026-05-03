@@ -16,24 +16,35 @@ interface ConversationTreeProps {
 export function ConversationTree({ turns, isOpen, onClose }: ConversationTreeProps) {
 	return (
 		<div
-			className={`absolute top-0 right-0 z-40 flex h-full w-72 flex-col border-l border-white/10 bg-[#16213e]/95
-				backdrop-blur-sm transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+			aria-hidden={!isOpen}
+			inert={!isOpen}
+			className={`border-border-subtle bg-surface/95 shadow-card absolute top-0 right-0 z-40 flex h-full w-72
+				max-w-[85vw] flex-col border-l backdrop-blur-md transition-transform duration-300
+				${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
 		>
 			{/* 헤더 */}
-			<div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-				<p className="text-sm font-semibold text-white">대화 흐름</p>
+			<div className="border-border-subtle flex items-center justify-between border-b px-4 py-3">
+				<p className="text-neutral-text text-sm font-semibold">대화 흐름</p>
 				<button
-					className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+					aria-label="대화 흐름 닫기"
+					className="border-border-subtle bg-surface-muted text-neutral-gray-500 hover:bg-brand-light
+						hover:text-brand-deep rounded-full border px-2 py-1 text-xs transition-colors"
+					type="button"
 					onClick={onClose}
 				>
-					✕
+					닫기
 				</button>
 			</div>
 
 			{/* 트리 */}
 			<div className="flex-1 overflow-y-auto px-3 py-4">
 				{turns.length === 0 ? (
-					<p className="text-center text-xs text-slate-500">아직 대화 내용이 없습니다.</p>
+					<p
+						className="border-border-subtle bg-surface-muted text-neutral-gray-500 rounded-2xl border p-4
+							text-center text-xs"
+					>
+						아직 대화 내용이 없습니다.
+					</p>
 				) : (
 					<div className="flex flex-col gap-1">
 						{turns.map((turn, index) => {
@@ -46,24 +57,21 @@ export function ConversationTree({ turns, isOpen, onClose }: ConversationTreePro
 									{index > 0 && (
 										<div
 											style={{ marginLeft: `${depth * 12 - 6}px` }}
-											className="my-0.5 ml-3 h-3 w-px bg-white/20"
+											className="bg-border-subtle my-0.5 ml-3 h-3 w-px"
 										/>
 									)}
 									<div
-										className={`rounded-xl px-3 py-2 text-xs leading-relaxed ${
+										className={`rounded-2xl border px-3 py-2 text-xs leading-relaxed ${
 											isAI
-												? 'border border-violet-500/30 bg-violet-900/30 text-violet-200'
-												: 'border border-white/10 bg-white/5 text-slate-300'
-										}`}
+												? 'border-brand/20 bg-brand-light text-brand-deep'
+												: 'border-border-subtle bg-surface-muted text-neutral-text'
+											}`}
 									>
 										<span
-											className={`mb-1 block text-[10px] font-semibold ${isAI ? 'text-violet-400' : 'text-slate-500'}`}
+											className={`mb-1 block text-[10px] font-semibold
+												${isAI ? 'text-brand-deep' : 'text-neutral-gray-500'}`}
 										>
-											{isAI
-												? turn.event_type === 'question'
-													? '🤖 질문'
-													: '🤖 꼬리질문'
-												: '👤 내 답변'}
+											{isAI ? (turn.event_type === 'question' ? '질문' : '꼬리질문') : '내 답변'}
 										</span>
 										<p className="line-clamp-3">{turn.content}</p>
 									</div>

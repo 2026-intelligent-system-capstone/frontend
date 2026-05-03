@@ -1,5 +1,5 @@
-import { Button } from '@heroui/react';
 import type { ExamStatus, ExamType } from '@/entities/exam';
+import { Button } from '@heroui/react';
 
 const STATUS_FILTERS: { label: string; value: ExamStatus | 'all' }[] = [
 	{ label: '전체', value: 'all' },
@@ -26,9 +26,14 @@ interface ExamFiltersProps {
 
 export function ExamFilters({ statusFilter, typeFilter, onStatusChange, onTypeChange }: ExamFiltersProps) {
 	return (
-		<div className="flex flex-wrap gap-6">
+		<section
+			className="border-border-subtle bg-surface-muted flex flex-col gap-4 rounded-3xl border p-4 sm:p-5"
+			aria-label="평가 필터"
+		>
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="text-xs font-medium text-slate-500">상태</span>
+				<span className="text-neutral-gray-500 mr-1 font-mono text-xs font-semibold tracking-[0.05em] uppercase">
+					상태
+				</span>
 				{STATUS_FILTERS.map((f) => (
 					<Button
 						key={f.value}
@@ -41,7 +46,9 @@ export function ExamFilters({ statusFilter, typeFilter, onStatusChange, onTypeCh
 				))}
 			</div>
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="text-xs font-medium text-slate-500">유형</span>
+				<span className="text-neutral-gray-500 mr-1 font-mono text-xs font-semibold tracking-[0.05em] uppercase">
+					유형
+				</span>
 				{TYPE_FILTERS.map((f) => (
 					<Button
 						key={f.value}
@@ -53,6 +60,6 @@ export function ExamFilters({ statusFilter, typeFilter, onStatusChange, onTypeCh
 					</Button>
 				))}
 			</div>
-		</div>
+		</section>
 	);
 }

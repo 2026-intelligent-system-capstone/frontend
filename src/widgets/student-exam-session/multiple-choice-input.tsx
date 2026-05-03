@@ -1,57 +1,98 @@
+import { cn } from '@/shared/ui';
 import { Button } from '@heroui/react';
 
 interface MultipleChoiceInputProps {
 	options: string[];
 	selected: number[];
 	isAnswered: boolean;
+	isDisabled?: boolean;
+	disabledReason?: string;
+	isSubmitting?: boolean;
 	onChange: (indices: number[]) => void;
 	onSubmit: (indices: number[]) => void;
 }
 
-export function MultipleChoiceInput({ options, selected, isAnswered, onChange, onSubmit }: MultipleChoiceInputProps) {
-	const toggle = (index: number) => {
-		if (isAnswered) return;
-		if (selected.includes(index)) {
-			onChange(selected.filter((i) => i !== index));
-		} else {
-			onChange([...selected, index]);
-		}
+export function MultipleChoiceInput({
+	options,
+	selected,
+	isAnswered,
+	isDisabled = false,
+	disabledReason,
+	isSubmitting = false,
+	onChange,
+	onSubmit,
+}: MultipleChoiceInputProps) {
+	const isInteractionDisabled = isAnswered || isSubmitting || isDisabled;
+	const choose = (index: number) => {
+		if (isInteractionDisabled) return;
+		onChange([index]);
 	};
 
 	return (
-		<div className="flex w-full max-w-2xl flex-col gap-3">
-			{options.map((option, index) => {
-				const isSelected = selected.includes(index);
-				return (
-					<button
-						key={index}
-						disabled={isAnswered}
-						onClick={() => toggle(index)}
-						className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-all ${
-							isSelected
-								? 'border-violet-500 bg-violet-600/30 text-white'
-								: 'border-white/10 bg-white/5 text-slate-300 hover:border-white/30 hover:bg-white/10'
-						} ${isAnswered ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
-					>
-						<span
-							className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs font-bold ${
-								isSelected ? 'border-violet-400 bg-violet-500 text-white' : 'border-white/30 text-slate-400'
-							}`}
+		<div
+			className="border-border-subtle bg-surface shadow-card flex w-full max-w-2xl flex-col gap-4 rounded-3xl
+				border p-5 sm:p-6"
+		>
+			<fieldset className="contents" aria-describedby="multiple-choice-help">
+				<legend className="sr-only">객관식 답안 선택</legend>
+				{options.map((option, index) => {
+					const isSelected = selected.includes(index);
+					return (
+						<label
+							key={index}
+							className={cn(
+								`has-[:focus-visible]:ring-brand/30 flex items-center gap-3 rounded-2xl border px-4 py-3
+								text-left text-sm transition-all has-[:focus-visible]:ring-2
+								has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-white`,
+								isSelected
+									? 'border-brand/40 bg-brand-light text-brand-deep shadow-button'
+									: `border-border-subtle bg-surface-muted text-neutral-text hover:border-brand/30
+										hover:bg-white`,
+								isInteractionDisabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
+							)}
 						>
-							{isSelected ? '✓' : String.fromCharCode(65 + index)}
-						</span>
-						<span className="flex-1">{option}</span>
-					</button>
-				);
-			})}
-			<div className="mt-1 flex items-center justify-between">
-				<p className="text-xs text-slate-500">복수 선택 가능</p>
+							<input
+								aria-label={`${String.fromCharCode(65 + index)}번 선택지: ${option}`}
+								checked={isSelected}
+								className="peer sr-only"
+								disabled={isInteractionDisabled}
+								name="multiple-choice-answer"
+								type="radio"
+								onChange={() => choose(index)}
+							/>
+							<span
+								aria-hidden="true"
+								className={cn(
+									`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-xs
+									font-bold`,
+									isSelected
+										? 'border-brand bg-brand text-white'
+										: 'border-border-subtle text-neutral-gray-500 bg-white',
+								)}
+							>
+								{isSelected ? '✓' : String.fromCharCode(65 + index)}
+							</span>
+							<span className="flex-1 leading-relaxed">{option}</span>
+						</label>
+					);
+				})}
+			</fieldset>
+			<div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+				<p id="multiple-choice-help" className="text-neutral-gray-500 text-xs">
+					{disabledReason ?? '하나의 답안을 선택하세요.'}
+				</p>
 				{!isAnswered && (
-					<Button isDisabled={selected.length === 0} variant="primary" onPress={() => onSubmit(selected)}>
-						제출
+					<Button
+						className="shadow-button w-full sm:w-auto"
+						isDisabled={selected.length === 0 || isDisabled || isSubmitting}
+						isPending={isSubmitting}
+						variant="primary"
+						onPress={() => onSubmit(selected)}
+					>
+						{isSubmitting ? '제출 중...' : '제출'}
 					</Button>
 				)}
-				{isAnswered && <p className="text-xs font-medium text-emerald-400">✓ 제출 완료</p>}
+				{isAnswered && <p className="text-brand-deep text-xs font-medium">제출 완료</p>}
 			</div>
 		</div>
 	);

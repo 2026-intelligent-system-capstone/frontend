@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { Button } from '@heroui/react';
+
 import { MicButton } from './mic-button';
 
 interface SessionControlsProps {
@@ -8,7 +8,10 @@ interface SessionControlsProps {
 	isFinished: boolean;
 	showTextInput: boolean;
 	input: string;
-	examId: string;
+	isDisabled?: boolean;
+	isSttSupported?: boolean;
+	isSttPermissionBlocked?: boolean;
+	sttErrorMessage?: string | null;
 	onMicToggle: () => void;
 	onToggleTextInput: () => void;
 	onInputChange: (value: string) => void;
@@ -21,59 +24,85 @@ export function SessionControls({
 	isFinished,
 	showTextInput,
 	input,
-	examId,
+	isDisabled = false,
+	isSttSupported = true,
+	isSttPermissionBlocked = false,
+	sttErrorMessage = null,
 	onMicToggle,
 	onToggleTextInput,
 	onInputChange,
 	onSubmit,
 }: SessionControlsProps) {
 	if (isFinished) {
-		return (
-			<div className="flex flex-col items-center gap-3">
-				<p className="text-sm font-medium text-slate-300">시험이 종료되었습니다.</p>
-				<Link href={`/student/exams/${examId}/result`}>
-					<Button variant="primary">결과 확인하기</Button>
-				</Link>
-			</div>
-		);
+		return <p className="text-neutral-gray-500 text-sm font-medium">시험이 종료되었습니다.</p>;
 	}
 
+	const sttUnavailableMessage = !isSttSupported
+		? '이 브라우저는 음성 인식을 지원하지 않습니다. 텍스트 입력으로 답변해주세요.'
+		: sttErrorMessage;
+	const isMicDisabled = isSubmitting || isDisabled || !isSttSupported || isSttPermissionBlocked;
+	const isTextToggleDisabled = isSubmitting || isDisabled;
+
 	return (
-		<div className="flex flex-col items-center gap-3">
-			<div className="flex items-center gap-6">
-				<MicButton disabled={isSubmitting} isListening={isListening} onToggle={onMicToggle} />
+		<div
+			className="border-border-subtle bg-surface shadow-card flex w-full max-w-2xl flex-col items-center gap-4
+				rounded-3xl border p-5 sm:p-6"
+		>
+			<div className="flex flex-wrap items-center justify-center gap-4">
+				<MicButton
+					disabled={isMicDisabled}
+					disabledReason={sttUnavailableMessage}
+					isListening={isListening}
+					onToggle={onMicToggle}
+				/>
 				<button
-					className="rounded-full border border-white/20 px-4 py-2 text-xs text-slate-300 transition-colors hover:bg-white/10"
+					className="border-border-subtle bg-surface-muted text-neutral-text hover:bg-brand-light
+						hover:text-brand-deep rounded-full border px-4 py-2 text-xs font-medium transition-colors
+						disabled:cursor-not-allowed disabled:opacity-50"
+					disabled={isTextToggleDisabled}
+					type="button"
 					onClick={onToggleTextInput}
 				>
 					{showTextInput ? '텍스트 닫기' : '텍스트로 입력'}
 				</button>
 			</div>
 
-			<p className="text-xs text-slate-500">
-				{isListening
-					? '음성 인식 중... 말씀해주세요.'
-					: '마이크를 눌러 답변하거나 텍스트로 입력하세요.'}
+			<p
+				className="text-neutral-gray-500 text-center text-xs"
+				role={sttUnavailableMessage ? 'status' : undefined}
+			>
+				{sttUnavailableMessage ??
+					(isListening ? '음성 인식 중... 말씀해주세요.' : '마이크를 눌러 답변하거나 텍스트로 입력하세요.')}
 			</p>
 
 			{showTextInput && (
-				<div className="flex w-full max-w-2xl gap-3">
+				<div className="flex w-full flex-col gap-3 sm:flex-row">
 					<textarea
-						className="flex-1 resize-none rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-violet-400 focus:outline-none"
-						disabled={isSubmitting}
+						aria-label="구술형 답변 입력"
+						className="border-border-subtle bg-surface-muted text-neutral-text
+							placeholder:text-neutral-gray-500 focus:border-brand/50 flex-1 resize-none rounded-2xl
+							border px-4 py-3 text-sm focus:bg-white focus:outline-none disabled:cursor-not-allowed
+							disabled:opacity-70"
+						disabled={isSubmitting || isDisabled}
 						placeholder="답변을 입력하세요. (Ctrl+Enter로 제출)"
 						rows={3}
 						value={input}
-						onChange={(e) => onInputChange(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-								e.preventDefault();
+						onChange={(event) => onInputChange(event.target.value)}
+						onKeyDown={(event) => {
+							if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+								event.preventDefault();
 								onSubmit();
 							}
 						}}
 					/>
-					<Button isDisabled={!input.trim()} isPending={isSubmitting} variant="primary" onPress={onSubmit}>
-						제출
+					<Button
+						className="shadow-button w-full self-stretch sm:w-auto"
+						isDisabled={!input.trim() || isDisabled || isSubmitting}
+						isPending={isSubmitting}
+						variant="primary"
+						onPress={onSubmit}
+					>
+						{isSubmitting ? 'AI 분석 중...' : '제출'}
 					</Button>
 				</div>
 			)}

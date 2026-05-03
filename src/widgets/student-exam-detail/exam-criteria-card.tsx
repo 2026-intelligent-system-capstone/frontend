@@ -1,5 +1,5 @@
-import { Card } from '@heroui/react';
 import type { ExamCriterion } from '@/entities/exam';
+import { SurfaceCard } from '@/shared/ui';
 
 interface ExamCriteriaCardProps {
 	criteria: ExamCriterion[];
@@ -9,52 +9,67 @@ export function ExamCriteriaCard({ criteria }: ExamCriteriaCardProps) {
 	if (criteria.length === 0) return null;
 
 	return (
-		<Card className="border border-slate-200 bg-white">
-			<Card.Header>
-				<Card.Title className="text-base font-semibold text-slate-900">평가 기준</Card.Title>
-				<Card.Description className="text-sm text-slate-500">
-					아래 기준에 따라 답변이 평가됩니다.
-				</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<div className="space-y-4">
-					{[...criteria]
-						.sort((a, b) => a.sort_order - b.sort_order)
-						.map((criterion) => (
-							<div key={criterion.id} className="rounded-xl border border-slate-100 p-4">
-								<div className="mb-2 flex items-center justify-between">
-									<span className="font-medium text-slate-900">{criterion.title}</span>
-									<span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-										{criterion.weight}%
-									</span>
+		<SurfaceCard className="space-y-5">
+			<div className="space-y-2">
+				<p className="text-brand-deep font-mono text-xs font-semibold tracking-[0.05em] uppercase">
+					03 · Rubric
+				</p>
+				<h2 className="text-neutral-text text-xl font-semibold tracking-[-0.01em]">평가 기준</h2>
+				<p className="text-neutral-gray-500 text-sm leading-6">
+					답변은 아래 기준과 Bloom 역량 단계에 맞춰 평가됩니다.
+				</p>
+			</div>
+			<div className="space-y-4">
+				{[...criteria]
+					.sort((a, b) => a.sort_order - b.sort_order)
+					.map((criterion) => (
+						<article
+							key={criterion.id}
+							className="border-border-subtle bg-surface-muted rounded-2xl border p-4"
+						>
+							<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+								<div>
+									<h3 className="text-neutral-text font-semibold">{criterion.title}</h3>
+									{criterion.description ? (
+										<p className="text-neutral-gray-500 mt-1 text-sm leading-6">
+											{criterion.description}
+										</p>
+									) : null}
 								</div>
-								{criterion.description && (
-									<p className="mb-3 text-sm text-slate-500">{criterion.description}</p>
-								)}
-								<div className="grid gap-2 text-xs sm:grid-cols-3">
-									{criterion.excellent_definition && (
-										<div className="rounded-lg bg-emerald-50 p-2">
-											<p className="mb-1 font-medium text-emerald-700">우수</p>
-											<p className="text-emerald-600">{criterion.excellent_definition}</p>
-										</div>
-									)}
-									{criterion.average_definition && (
-										<div className="rounded-lg bg-amber-50 p-2">
-											<p className="mb-1 font-medium text-amber-700">보통</p>
-											<p className="text-amber-600">{criterion.average_definition}</p>
-										</div>
-									)}
-									{criterion.poor_definition && (
-										<div className="rounded-lg bg-red-50 p-2">
-											<p className="mb-1 font-medium text-red-700">미흡</p>
-											<p className="text-red-600">{criterion.poor_definition}</p>
-										</div>
-									)}
-								</div>
+								<span
+									className="bg-brand-light text-brand-deep inline-flex w-fit rounded-full px-3 py-1
+										text-xs font-semibold"
+								>
+									가중치 {criterion.weight}%
+								</span>
 							</div>
-						))}
-				</div>
-			</Card.Content>
-		</Card>
+							<div className="mt-4 grid gap-2 text-xs sm:grid-cols-3">
+								{criterion.excellent_definition && (
+									<div className="border-brand/20 bg-surface rounded-xl border p-3">
+										<p className="text-brand-deep mb-1 font-semibold">우수</p>
+										<p className="text-neutral-gray-500 leading-5">
+											{criterion.excellent_definition}
+										</p>
+									</div>
+								)}
+								{criterion.average_definition && (
+									<div className="bg-surface rounded-xl border border-amber-200 p-3">
+										<p className="mb-1 font-semibold text-amber-700">보통</p>
+										<p className="text-neutral-gray-500 leading-5">
+											{criterion.average_definition}
+										</p>
+									</div>
+								)}
+								{criterion.poor_definition && (
+									<div className="bg-surface rounded-xl border border-red-200 p-3">
+										<p className="mb-1 font-semibold text-red-700">미흡</p>
+										<p className="text-neutral-gray-500 leading-5">{criterion.poor_definition}</p>
+									</div>
+								)}
+							</div>
+						</article>
+					))}
+			</div>
+		</SurfaceCard>
 	);
 }

@@ -1,4 +1,5 @@
 import type { BloomLevel, ExamQuestionType } from '@/entities/exam';
+import { cn } from '@/shared/ui';
 
 interface NavQuestion {
 	id: string;
@@ -21,38 +22,67 @@ const TYPE_SHORT: Record<ExamQuestionType, string> = {
 	oral: '구술',
 };
 
+function getQuestionButtonLabel(question: NavQuestion, isCurrent: boolean, isAnswered: boolean): string {
+	const statusLabel = isAnswered ? '답변 완료' : '미답변';
+	const currentLabel = isCurrent ? ', 현재 문항' : '';
+	return `${question.question_number}번 ${TYPE_SHORT[question.question_type]} 문항, ${statusLabel}${currentLabel}`;
+}
+
 export function QuestionNav({ questions, currentId, answeredIds, onSelect }: QuestionNavProps) {
-	const answeredCount = questions.filter((q) => answeredIds.has(q.id)).length;
+	const answeredCount = questions.filter((question) => answeredIds.has(question.id)).length;
 
 	return (
-		<aside className="flex w-[72px] shrink-0 flex-col gap-2 border-r border-white/10 bg-[#16213e]/80 px-2 py-4 backdrop-blur-sm">
-			<p className="mb-1 text-center text-[9px] font-semibold uppercase tracking-widest text-slate-500">문제</p>
-			{questions.map((q) => {
-				const isCurrent = q.id === currentId;
-				const isAnswered = answeredIds.has(q.id);
+		<aside
+			aria-label="문항 이동"
+			className="border-border-subtle bg-surface/90 flex shrink-0 gap-2 overflow-x-auto border-b px-4 py-3
+				backdrop-blur-md md:w-24 md:flex-col md:overflow-x-visible md:border-r md:border-b-0 md:px-3 md:py-4"
+		>
+			<p
+				className="md:text-neutral-gray-500 sr-only md:not-sr-only md:mb-1 md:text-center md:text-[10px]
+					md:font-semibold md:tracking-widest md:uppercase"
+			>
+				문제
+			</p>
+			{questions.map((question) => {
+				const isCurrent = question.id === currentId;
+				const isAnswered = answeredIds.has(question.id);
 				return (
 					<button
-						key={q.id}
-						onClick={() => onSelect(q.id)}
-						className={`flex flex-col items-center gap-0.5 rounded-xl py-2.5 transition-all ${
+						key={question.id}
+						aria-current={isCurrent ? 'step' : undefined}
+						aria-label={getQuestionButtonLabel(question, isCurrent, isAnswered)}
+						className={cn(
+							`focus-visible:ring-brand/40 flex min-w-16 flex-col items-center gap-1 rounded-2xl border
+							px-3 py-2.5 text-xs transition-all focus-visible:ring-2 focus-visible:outline-none
+							md:min-w-0 md:px-2`,
 							isCurrent
-								? 'bg-violet-600 text-white shadow-lg shadow-violet-900/40'
+								? 'border-brand/30 bg-brand-light text-brand-deep shadow-button'
 								: isAnswered
-									? 'bg-emerald-900/40 text-emerald-300 hover:bg-emerald-900/60'
-									: 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
-						}`}
+									? 'border-brand/20 text-brand-deep hover:bg-brand-light/60 bg-white'
+									: `border-border-subtle bg-surface-muted text-neutral-gray-500
+										hover:text-neutral-text hover:bg-white`,
+						)}
+						type="button"
+						onClick={() => onSelect(question.id)}
 					>
-						<span className="text-sm font-bold leading-none">{q.question_number}</span>
-						<span className="text-[9px] leading-tight opacity-80">{TYPE_SHORT[q.question_type]}</span>
-						{isAnswered && !isCurrent && <span className="mt-0.5 text-[10px] text-emerald-400">✓</span>}
+						<span className="text-sm leading-none font-bold">{question.question_number}</span>
+						<span className="text-[10px] leading-tight opacity-80">
+							{TYPE_SHORT[question.question_type]}
+						</span>
+						{isAnswered && !isCurrent && <span className="text-brand-deep text-[10px]">완료</span>}
 					</button>
 				);
 			})}
-			<div className="mt-auto border-t border-white/10 pt-2 text-center">
-				<p className={`text-xs font-bold ${answeredCount === questions.length ? 'text-emerald-400' : 'text-slate-400'}`}>
+			<div className="border-border-subtle hidden text-center md:mt-auto md:block md:border-t md:pt-2">
+				<p
+					className={cn(
+						'text-xs font-bold',
+						answeredCount === questions.length ? 'text-brand-deep' : 'text-neutral-gray-500',
+					)}
+				>
 					{answeredCount}/{questions.length}
 				</p>
-				<p className="text-[9px] text-slate-500">완료</p>
+				<p className="text-neutral-gray-500 text-[10px]">완료</p>
 			</div>
 		</aside>
 	);
