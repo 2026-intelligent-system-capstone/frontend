@@ -1,5 +1,22 @@
-export { examsApi, useClassroomExam, useClassroomExams } from './api/query';
-export { getClassroomExamDetailQueryKey, getClassroomExamsQueryKey } from './model/query-keys';
+export {
+	examsApi,
+	useClassroomExam,
+	useClassroomExams,
+	useStudentExam,
+	useStudentExamResults,
+	useStudentExams,
+	useStudentExamSessionResult,
+	useStudentExamSessionSheet,
+} from './api/query';
+export {
+	getClassroomExamDetailQueryKey,
+	getClassroomExamsQueryKey,
+	getStudentExamDetailQueryKey,
+	getStudentExamResultsQueryKey,
+	getStudentExamsQueryKey,
+	getStudentExamSessionResultQueryKey,
+	getStudentExamSessionSheetQueryKey,
+} from './model/query-keys';
 export {
 	formatExamDateTime,
 	getBloomLevelColor,
@@ -19,6 +36,7 @@ export {
 	getQuestionTypeColor,
 	getQuestionTypeLabel,
 } from './lib/presentation';
+export { toStudentExam, toStudentExams } from './lib/student-exam';
 export type {
 	AsyncJobStatus,
 	BloomLevel,
@@ -29,6 +47,7 @@ export type {
 	CreateExamRequest,
 	Exam,
 	ExamCriterion,
+	ExamCriterionResult,
 	ExamDifficulty,
 	ExamGenerationStatus,
 	ExamQuestion,
@@ -47,8 +66,16 @@ export type {
 	ExamTurnRole,
 	ExamType,
 	FinalizeExamResultRequest,
+	GenerateExamFollowUpRequest,
+	GenerateExamFollowUpResponse,
 	GenerateExamQuestionsRequest,
 	GenerateExamQuestionsSubmitResponse,
 	RecordExamTurnRequest,
+	StudentExam,
+	StudentExamPayload,
+	StudentExamResult,
+	StudentExamResultStatus,
+	StudentExamSessionQuestion,
+	StudentExamSessionSheet,
 	UpdateExamQuestionRequest,
 } from './model/types';

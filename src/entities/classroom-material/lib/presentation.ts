@@ -3,7 +3,9 @@ import type { ChipProps } from '@heroui/react';
 
 import type { ClassroomMaterial, ClassroomMaterialSourceKind } from '../model/types';
 
-export const MATERIAL_FILE_GUIDE = 'pdf, ppt, pptx, doc, docx, hwp, hwpx, avi, mp4, zip';
+export const MATERIAL_FILE_ACCEPT = '.pdf,.pptx,.docx,.hwpx,.avi,.mp4,.zip,.txt,.md,.csv,.json,.xml';
+
+export const MATERIAL_FILE_GUIDE = 'pdf, pptx, docx, hwpx, avi, mp4, zip, txt, md, csv, json, xml';
 
 export const formatMaterialDateTime = (value: string | null) => {
 	if (!value) {
@@ -66,18 +68,21 @@ export const getMaterialFileChipColor = (material: ClassroomMaterial): ChipProps
 	switch (material.file.file_extension.toLowerCase()) {
 		case 'pdf':
 			return 'danger';
-		case 'ppt':
 		case 'pptx':
 			return 'accent';
-		case 'doc':
 		case 'docx':
 			return 'warning';
-		case 'hwp':
 		case 'hwpx':
 			return 'default';
 		case 'avi':
 		case 'mp4':
 			return 'success';
+		case 'txt':
+		case 'md':
+		case 'csv':
+		case 'json':
+		case 'xml':
+			return 'accent';
 		case 'zip':
 			return 'default';
 		default:
@@ -99,9 +104,9 @@ export const getMaterialIngestStatusLabel = (status: ClassroomMaterial['ingest_s
 export const getMaterialIngestStatusDescription = (status: ClassroomMaterial['ingest_status']) => {
 	switch (status) {
 		case 'pending':
-			return '자료를 읽고 시험 범위를 추출하는 중입니다.';
+			return '자료를 읽고 핵심 개념을 추출하는 중입니다.';
 		case 'completed':
-			return '시험 범위 추출이 끝나 문항 생성에 사용할 수 있습니다.';
+			return '핵심 개념 추출이 끝나 문항 생성에 사용할 수 있습니다.';
 		case 'failed':
 			return '자료 분석에 실패해 다시 적재가 필요합니다.';
 	}

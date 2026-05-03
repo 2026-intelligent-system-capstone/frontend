@@ -39,7 +39,7 @@ export function ExamManagementQuestionsTable({
 							번호
 						</Table.Column>
 						<Table.Column className="w-24">배점</Table.Column>
-							<Table.Column className="w-28">유형</Table.Column>
+						<Table.Column className="w-28">유형</Table.Column>
 						<Table.Column className="w-28">Bloom</Table.Column>
 						<Table.Column className="w-28">난이도</Table.Column>
 						<Table.Column className="w-96">문항/정답</Table.Column>
@@ -49,20 +49,23 @@ export function ExamManagementQuestionsTable({
 					</Table.Header>
 					<Table.Body
 						renderEmptyState={() => (
-							<EmptyState className="flex w-full flex-col items-center justify-center py-10 text-center">
-								<span className="text-sm text-slate-500">아직 생성된 문항이 없습니다.</span>
+							<EmptyState
+								className="border-border-subtle bg-surface flex w-full flex-col items-center
+									justify-center rounded-2xl border border-dashed py-10 text-center"
+							>
+								<span className="text-neutral-gray-500 text-sm">아직 생성된 문항이 없습니다.</span>
 							</EmptyState>
 						)}
 					>
 						{exam.questions.map((question) => (
 							<Table.Row key={question.id}>
 								<Table.Cell>
-									<span className="block w-20 truncate font-medium text-slate-700">
+									<span className="text-neutral-gray-700 block w-20 truncate font-medium">
 										{question.question_number}
 									</span>
 								</Table.Cell>
 								<Table.Cell>
-									<span className="block w-24 truncate text-sm font-medium text-slate-700">
+									<span className="text-neutral-gray-700 block w-24 truncate text-sm font-medium">
 										{question.max_score}점
 									</span>
 								</Table.Cell>
@@ -104,17 +107,30 @@ export function ExamManagementQuestionsTable({
 								</Table.Cell>
 								<Table.Cell>
 									<div className="w-96 overflow-hidden">
-										<p className="truncate font-medium text-slate-900">{question.question_text}</p>
+										<p className="text-neutral-text truncate font-medium">
+											{question.question_text}
+										</p>
 										{question.answer_options.length > 0 ? (
-											<div className="mt-2 flex flex-col gap-1 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
-												<p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-600">
+											<div
+												className="border-brand-light bg-brand-light mt-2 flex flex-col gap-1
+													rounded-lg border px-3 py-2"
+											>
+												<p
+													className="text-brand-deep mb-1 text-[10px] font-semibold
+														tracking-wide uppercase"
+												>
 													보기
 												</p>
 												{question.answer_options.map((option, index) => (
-													<div key={index} className="flex items-center gap-2 text-xs text-slate-700">
+													<div
+														key={index}
+														className="text-neutral-gray-700 flex items-center gap-2
+															text-xs"
+													>
 														<span
-															className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-200
-																text-[9px] font-bold text-emerald-700"
+															className="bg-surface text-brand-deep flex h-4 w-4 shrink-0
+																items-center justify-center rounded-full text-[9px]
+																font-bold"
 														>
 															{index + 1}
 														</span>
@@ -122,21 +138,26 @@ export function ExamManagementQuestionsTable({
 													</div>
 												))}
 												{question.correct_answer_text && (
-													<p className="mt-1 border-t border-emerald-100 pt-1 text-xs font-medium text-emerald-700">
+													<p
+														className="border-border-subtle text-brand-deep mt-1 border-t
+															pt-1 text-xs font-medium"
+													>
 														정답: {question.correct_answer_text}
 													</p>
 												)}
 											</div>
 										) : null}
 										{question.answer_options.length === 0 && question.correct_answer_text ? (
-											<p className="mt-1 truncate text-sm text-emerald-700">
+											<p className="text-brand-deep mt-1 truncate text-sm">
 												정답: {question.correct_answer_text}
 											</p>
 										) : null}
 									</div>
 								</Table.Cell>
 								<Table.Cell>
-									<p className="w-56 truncate text-sm text-slate-700">{question.intent_text}</p>
+									<p className="text-neutral-gray-700 w-56 truncate text-sm">
+										{question.intent_text}
+									</p>
 								</Table.Cell>
 								<Table.Cell>
 									<div className="w-32 overflow-hidden">

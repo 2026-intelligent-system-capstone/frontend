@@ -27,8 +27,11 @@ export function StudentsTable({ students, canManageStudents, removePending, onRe
 					</Table.Header>
 					<Table.Body
 						renderEmptyState={() => (
-							<EmptyState className="flex w-full flex-col items-center justify-center py-10 text-center">
-								<span className="text-sm text-slate-500">초대된 학생이 없습니다.</span>
+							<EmptyState
+								className="border-border-subtle bg-surface flex w-full flex-col items-center
+									justify-center rounded-2xl border border-dashed py-10 text-center"
+							>
+								<span className="text-neutral-gray-500 text-sm">초대된 학생이 없습니다.</span>
 							</EmptyState>
 						)}
 					>
@@ -44,11 +47,14 @@ export function StudentsTable({ students, canManageStudents, removePending, onRe
 								<Table.Cell>
 									<div className="flex w-48 items-center gap-2 overflow-hidden">
 										<UserIcon className="size-4 shrink-0 text-blue-500" />
-										<span className="truncate font-medium text-slate-900">{student.name}</span>
+										<span className="text-neutral-text truncate font-medium">{student.name}</span>
 									</div>
 								</Table.Cell>
 								<Table.Cell>
-									<div className="flex w-64 items-center gap-2 overflow-hidden text-sm text-slate-700">
+									<div
+										className="text-neutral-gray-700 flex w-64 items-center gap-2 overflow-hidden
+											text-sm"
+									>
 										<MailIcon className="size-4 shrink-0 text-emerald-500" />
 										<span className="truncate">{student.email ?? '-'}</span>
 									</div>

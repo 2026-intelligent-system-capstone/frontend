@@ -48,7 +48,6 @@ export type ClassroomMaterial = ClassroomMaterialFileSource | ClassroomMaterialL
 export interface CreateClassroomMaterialFileRequest {
 	title: string;
 	week: number;
-	description?: string | null;
 	source_kind: 'file';
 	uploaded_file: File;
 }
@@ -56,7 +55,6 @@ export interface CreateClassroomMaterialFileRequest {
 export interface CreateClassroomMaterialLinkRequest {
 	title: string;
 	week: number;
-	description?: string | null;
 	source_kind: 'link';
 	source_url: string;
 }

@@ -38,6 +38,9 @@ export function MaterialDetailModal({
 	);
 	const resolvedMaterial = data ?? material;
 	const isRefreshingPendingMaterial = isFetching && resolvedMaterial?.ingest_status === 'pending';
+	const isIngestFailed = resolvedMaterial?.ingest_status === 'failed';
+	const ingestFailureMessage =
+		resolvedMaterial?.ingest_error ?? '분석 원인을 확인할 수 없습니다. 파일을 확인한 뒤 다시 적재해주세요.';
 
 	return (
 		<Modal>
@@ -70,10 +73,10 @@ export function MaterialDetailModal({
 												</Chip.Label>
 											</Chip>
 											{isRefreshingPendingMaterial ? (
-												<span className="text-xs text-slate-500">최신 상태 확인 중</span>
+												<span className="text-neutral-gray-500 text-xs">최신 상태 확인 중</span>
 											) : null}
 										</div>
-										<p className="text-sm text-slate-500">
+										<p className="text-neutral-gray-500 text-sm">
 											{resolvedMaterial.week}주차 ·{' '}
 											{formatMaterialDateTime(resolvedMaterial.uploaded_at)}
 										</p>
@@ -94,9 +97,9 @@ export function MaterialDetailModal({
 										</div>
 									) : null}
 									<div className="grid gap-3 md:grid-cols-3">
-										<Card className="border border-slate-200 bg-slate-50">
-											<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-												<p className="font-medium text-slate-900">자료 정보</p>
+										<Card className="border-border-subtle bg-surface-muted border">
+											<Card.Content className="text-neutral-gray-500 space-y-2 py-4 text-sm">
+												<p className="text-neutral-text font-medium">자료 정보</p>
 												<p>유형 {getMaterialFileTypeLabel(resolvedMaterial)}</p>
 												<p>출처 {getMaterialDisplayName(resolvedMaterial)}</p>
 												<p>
@@ -107,30 +110,49 @@ export function MaterialDetailModal({
 												</p>
 											</Card.Content>
 										</Card>
-										<Card className="border border-slate-200 bg-slate-50">
-											<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-												<p className="font-medium text-slate-900">분석 결과</p>
+										<Card className="border-border-subtle bg-surface-muted border">
+											<Card.Content className="text-neutral-gray-500 space-y-2 py-4 text-sm">
+												<p className="text-neutral-text font-medium">분석 결과</p>
 												<p>
 													상태 {getMaterialIngestStatusLabel(resolvedMaterial.ingest_status)}
 												</p>
 												<p>
 													{getMaterialIngestStatusDescription(resolvedMaterial.ingest_status)}
 												</p>
-												<p>시험 범위 후보 {resolvedMaterial.scope_candidates.length}개</p>
-												<p>오류 {resolvedMaterial.ingest_error ?? '없음'}</p>
+												<p>핵심 개념 {resolvedMaterial.scope_candidates.length}개</p>
+												{isIngestFailed ? (
+													<div
+														className="space-y-1 rounded-lg border border-amber-200
+															bg-amber-50/70 p-3 text-amber-900"
+													>
+														<p className="font-medium">자료 분석에 실패했습니다</p>
+														<p>{ingestFailureMessage}</p>
+														<p className="text-amber-800">
+															파일을 확인한 뒤 다시 적재해주세요.
+														</p>
+													</div>
+												) : (
+													<p>오류 없음</p>
+												)}
 											</Card.Content>
 										</Card>
-										<Card className="border border-slate-200 bg-slate-50">
-											<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-												<p className="font-medium text-slate-900">설명</p>
+										<Card className="border-border-subtle bg-surface-muted border">
+											<Card.Content className="text-neutral-gray-500 space-y-2 py-4 text-sm">
+												<p className="text-neutral-text font-medium">설명</p>
 												<p>{resolvedMaterial.description ?? '설명 없음'}</p>
 											</Card.Content>
 										</Card>
 									</div>
 
 									<div className="space-y-3">
-										<div className="flex items-center justify-between gap-3">
-											<h3 className="text-base font-semibold text-slate-900">시험 범위 후보</h3>
+										<div className="flex flex-wrap items-start justify-between gap-3">
+											<div className="space-y-1">
+												<h3 className="text-neutral-text text-base font-semibold">핵심 개념</h3>
+												<p className="text-neutral-gray-500 text-sm">
+													핵심 개념은 이후 Bloom 단계 기반 시험문제 생성 시 주요 출제 소재로
+													활용될 수 있습니다.
+												</p>
+											</div>
 											<Chip
 												color={getMaterialIngestStatusColor(resolvedMaterial.ingest_status)}
 												size="sm"
@@ -143,63 +165,77 @@ export function MaterialDetailModal({
 										</div>
 										{resolvedMaterial.ingest_status === 'pending' ? (
 											<EmptyState
-												className="flex w-full flex-col items-center justify-center rounded-xl
-													border border-dashed border-slate-200 py-10 text-center"
+												className="border-border-subtle flex w-full flex-col items-center
+													justify-center rounded-xl border border-dashed py-10 text-center"
 											>
-												<span className="text-sm text-slate-500">
-													시험 범위를 분석 중입니다. 잠시 후 자동으로 갱신됩니다.
+												<span className="text-neutral-gray-500 text-sm">
+													핵심 개념을 분석 중입니다. 잠시 후 자동으로 갱신됩니다.
 												</span>
 											</EmptyState>
 										) : resolvedMaterial.scope_candidates.length === 0 ? (
 											<EmptyState
-												className="flex w-full flex-col items-center justify-center rounded-xl
-													border border-dashed border-slate-200 py-10 text-center"
+												className="border-border-subtle flex w-full flex-col items-center
+													justify-center rounded-xl border border-dashed py-10 text-center"
 											>
-												<span className="text-sm text-slate-500">
-													추출된 시험 범위가 없습니다.
-												</span>
+												{isIngestFailed ? (
+													<span className="text-neutral-gray-500 text-sm">
+														분석 실패로 핵심 개념을 표시할 수 없습니다. 위 분석 결과 안내를
+														확인해주세요.
+													</span>
+												) : (
+													<span className="text-neutral-gray-500 text-sm">
+														추출된 핵심 개념이 없습니다.
+													</span>
+												)}
 											</EmptyState>
 										) : (
 											<div className="space-y-3">
 												{resolvedMaterial.scope_candidates.map((candidate, index) => (
 													<Card
 														key={`${candidate.label}-${index}`}
-														className="border border-slate-200 bg-white"
+														className="border-border-subtle bg-surface border"
 													>
-														<Card.Content className="space-y-3 py-4">
-															<div className="flex flex-wrap items-center gap-2">
-																<Chip color="accent" size="sm" variant="soft">
-																	<Chip.Label>{candidate.label}</Chip.Label>
-																</Chip>
-																{candidate.week_range ? (
-																	<Chip size="sm" variant="secondary">
-																		<Chip.Label>{candidate.week_range}</Chip.Label>
-																	</Chip>
-																) : null}
-																{candidate.confidence !== null ? (
-																	<Chip size="sm" variant="secondary">
-																		<Chip.Label>
-																			신뢰도{' '}
-																			{(candidate.confidence * 100).toFixed(0)}%
-																		</Chip.Label>
-																	</Chip>
-																) : null}
+														<Card.Content className="space-y-4 py-4">
+															<div className="space-y-1">
+																<p className="text-xs font-medium text-emerald-700">
+																	핵심 개념 이름/분류
+																</p>
+																<h4
+																	className="text-neutral-text text-base
+																		font-semibold"
+																>
+																	{candidate.label}
+																</h4>
 															</div>
-															<p className="text-sm text-slate-700">
-																{candidate.scope_text}
-															</p>
-															<div className="flex flex-wrap gap-2">
-																{candidate.keywords.length === 0 ? (
-																	<span className="text-sm text-slate-500">
-																		키워드 없음
-																	</span>
-																) : (
-																	candidate.keywords.map((keyword) => (
-																		<Chip key={keyword} size="sm" variant="soft">
-																			<Chip.Label>{keyword}</Chip.Label>
-																		</Chip>
-																	))
-																)}
+															<div className="space-y-1">
+																<p className="text-neutral-gray-500 text-xs font-medium">
+																	개념 설명
+																</p>
+																<p className="text-neutral-gray-700 text-sm leading-6">
+																	{candidate.scope_text}
+																</p>
+															</div>
+															<div className="space-y-2">
+																<p className="text-neutral-gray-500 text-xs font-medium">
+																	관련 키워드
+																</p>
+																<div className="flex flex-wrap gap-2">
+																	{candidate.keywords.length === 0 ? (
+																		<span className="text-neutral-gray-500 text-sm">
+																			관련 키워드 없음
+																		</span>
+																	) : (
+																		candidate.keywords.map((keyword) => (
+																			<Chip
+																				key={keyword}
+																				size="sm"
+																				variant="soft"
+																			>
+																				<Chip.Label>{keyword}</Chip.Label>
+																			</Chip>
+																		))
+																	)}
+																</div>
 															</div>
 														</Card.Content>
 													</Card>

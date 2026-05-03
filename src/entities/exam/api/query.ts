@@ -3,7 +3,15 @@ import type { Query } from '@tanstack/react-query';
 
 import { type ApiResponse, apiClient } from '@/shared/api/client';
 
-import { getClassroomExamDetailQueryKey, getClassroomExamsQueryKey } from '../model/query-keys';
+import {
+	getClassroomExamDetailQueryKey,
+	getClassroomExamsQueryKey,
+	getStudentExamDetailQueryKey,
+	getStudentExamResultsQueryKey,
+	getStudentExamSessionResultQueryKey,
+	getStudentExamSessionSheetQueryKey,
+	getStudentExamsQueryKey,
+} from '../model/query-keys';
 import type {
 	CompleteExamSessionRequest,
 	CreateExamQuestionRequest,
@@ -14,9 +22,14 @@ import type {
 	ExamSession,
 	ExamTurn,
 	FinalizeExamResultRequest,
+	GenerateExamFollowUpRequest,
+	GenerateExamFollowUpResponse,
 	GenerateExamQuestionsRequest,
 	GenerateExamQuestionsSubmitResponse,
 	RecordExamTurnRequest,
+	StudentExamPayload,
+	StudentExamResult,
+	StudentExamSessionSheet,
 	UpdateExamQuestionRequest,
 } from '../model/types';
 
@@ -75,6 +88,17 @@ export const examsApi = {
 		);
 		return response.data;
 	},
+	generateFollowUp: async (
+		examId: string,
+		sessionId: string,
+		payload: GenerateExamFollowUpRequest,
+	): Promise<GenerateExamFollowUpResponse> => {
+		const response = await apiClient.post<ApiResponse<GenerateExamFollowUpResponse>>(
+			`/api/exams/${examId}/sessions/${sessionId}/follow-ups`,
+			payload,
+		);
+		return response.data;
+	},
 	generateQuestions: async (
 		classroomId: string,
 		examId: string,
@@ -90,12 +114,32 @@ export const examsApi = {
 		const response = await apiClient.get<ApiResponse<Exam>>(`/api/classrooms/${classroomId}/exams/${examId}`);
 		return response.data;
 	},
+	getSessionResult: async (examId: string, sessionId: string): Promise<StudentExamResult> => {
+		const response = await apiClient.get<ApiResponse<StudentExamResult>>(
+			`/api/exams/${examId}/sessions/${sessionId}/result`,
+		);
+		return response.data;
+	},
+	getStudentExam: async (examId: string): Promise<StudentExamPayload> => {
+		const response = await apiClient.get<ApiResponse<StudentExamPayload>>(`/api/exams/${examId}`);
+		return response.data;
+	},
+	getStudentExamSessionSheet: async (examId: string): Promise<StudentExamSessionSheet> => {
+		const response = await apiClient.get<ApiResponse<StudentExamSessionSheet>>(
+			`/api/exams/${examId}/session-sheet`,
+		);
+		return response.data;
+	},
 	listExams: async (classroomId: string): Promise<Exam[]> => {
 		const response = await apiClient.get<ApiResponse<Exam[]>>(`/api/classrooms/${classroomId}/exams`);
 		return response.data;
 	},
-	listMyResults: async (examId: string): Promise<ExamResult[]> => {
-		const response = await apiClient.get<ApiResponse<ExamResult[]>>(`/api/exams/${examId}/results/me`);
+	listMyResults: async (examId: string): Promise<StudentExamResult[]> => {
+		const response = await apiClient.get<ApiResponse<StudentExamResult[]>>(`/api/exams/${examId}/results/me`);
+		return response.data;
+	},
+	listStudentExams: async (): Promise<StudentExamPayload[]> => {
+		const response = await apiClient.get<ApiResponse<StudentExamPayload[]>>('/api/exams');
 		return response.data;
 	},
 	recordTurn: async (examId: string, sessionId: string, payload: RecordExamTurnRequest): Promise<ExamTurn> => {
@@ -148,5 +192,73 @@ export const useClassroomExam = (
 		initialData,
 		refetchInterval: getExamRefetchInterval,
 		staleTime: 60 * 1000,
+	});
+};
+
+export const useStudentExams = (initialData?: Awaited<ReturnType<typeof examsApi.listStudentExams>>) => {
+	return useQuery({
+		queryKey: getStudentExamsQueryKey(),
+		queryFn: examsApi.listStudentExams,
+		initialData,
+		staleTime: 60 * 1000,
+	});
+};
+
+export const useStudentExam = (examId: string, initialData?: Awaited<ReturnType<typeof examsApi.getStudentExam>>) => {
+	return useQuery({
+		queryKey: getStudentExamDetailQueryKey(examId),
+		queryFn: () => examsApi.getStudentExam(examId),
+		enabled: Boolean(examId),
+		initialData,
+		staleTime: 60 * 1000,
+	});
+};
+
+export const useStudentExamSessionSheet = (
+	examId: string,
+	initialData?: Awaited<ReturnType<typeof examsApi.getStudentExamSessionSheet>>,
+) => {
+	return useQuery({
+		queryKey: getStudentExamSessionSheetQueryKey(examId),
+		queryFn: () => examsApi.getStudentExamSessionSheet(examId),
+		enabled: Boolean(examId),
+		initialData,
+		staleTime: 60 * 1000,
+	});
+};
+
+export const useStudentExamSessionResult = (examId: string, sessionId: string | null) => {
+	return useQuery({
+		queryKey: getStudentExamSessionResultQueryKey(examId, sessionId ?? ''),
+		queryFn: () => {
+			if (!sessionId) {
+				throw new Error('시험 세션 ID가 필요합니다.');
+			}
+			return examsApi.getSessionResult(examId, sessionId);
+		},
+		enabled: Boolean(examId && sessionId),
+		refetchInterval: (query) =>
+			query.state.data?.status === 'pending' || query.state.error ? EXAM_POLL_INTERVAL_MS : false,
+		staleTime: 0,
+	});
+};
+
+interface UseStudentExamResultsOptions {
+	enabled?: boolean;
+	refetchPending?: boolean;
+}
+
+export const useStudentExamResults = (examId: string, options: UseStudentExamResultsOptions = {}) => {
+	return useQuery({
+		queryKey: getStudentExamResultsQueryKey(examId),
+		queryFn: () => examsApi.listMyResults(examId),
+		enabled: Boolean(examId) && (options.enabled ?? true),
+		refetchInterval: (query) => {
+			if (!options.refetchPending) return false;
+			return query.state.data?.some((result) => result.status === 'pending') || query.state.error
+				? EXAM_POLL_INTERVAL_MS
+				: false;
+		},
+		staleTime: 0,
 	});
 };

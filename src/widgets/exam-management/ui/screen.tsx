@@ -22,8 +22,9 @@ import { useDeleteExamQuestion } from '@/features/delete-exam-question';
 import { GenerateExamQuestionsForm } from '@/features/generate-exam-questions';
 import { UpsertExamQuestionForm } from '@/features/upsert-exam-question';
 import { ApiClientError } from '@/shared/api/types';
+import { PageHeader, PageShell, StateBlock, SurfaceCard } from '@/shared/ui';
 import { SparklesIcon } from '@/shared/ui/icons/exam';
-import { Button, Card, Chip, Modal, Skeleton } from '@heroui/react';
+import { Button, Chip, Modal, Skeleton } from '@heroui/react';
 
 import { ExamManagementQuestionsTable } from './questions-table';
 
@@ -156,20 +157,16 @@ export function ExamManagementScreen({
 
 	if ((classroomQuery.isLoading && !initialClassroom) || (examQuery.isLoading && !initialExam)) {
 		return (
-			<div className="bg-slate-50 px-6 py-10">
-				<div className="mx-auto flex max-w-6xl flex-col gap-6">
-					<Card>
-						<Card.Content className="space-y-6 py-8">
-							<Skeleton className="h-8 w-64 rounded-lg" />
-							<div className="grid gap-4 md:grid-cols-3">
-								{Array.from({ length: 3 }).map((_, index) => (
-									<Skeleton key={index} className="rounded-large h-28" />
-								))}
-							</div>
-						</Card.Content>
-					</Card>
-				</div>
-			</div>
+			<PageShell>
+				<SurfaceCard className="space-y-6">
+					<Skeleton className="h-8 w-64 rounded-lg" />
+					<div className="grid gap-4 md:grid-cols-3">
+						{Array.from({ length: 3 }).map((_, index) => (
+							<Skeleton key={index} className="h-28 rounded-2xl" />
+						))}
+					</div>
+				</SurfaceCard>
+			</PageShell>
 		);
 	}
 
@@ -182,278 +179,292 @@ export function ExamManagementScreen({
 		!exam
 	) {
 		return (
-			<div className="bg-slate-50 px-6 py-10">
-				<div className="mx-auto max-w-6xl">
-					<Card>
-						<Card.Content className="space-y-4 py-10 text-sm text-red-600">
-							<p>시험 관리 정보를 불러오지 못했습니다.</p>
-							<Button
-								type="button"
-								variant="secondary"
-								onPress={() => router.push(`/professor/classrooms/${classroomId}`)}
-							>
-								강의실로 돌아가기
-							</Button>
-						</Card.Content>
-					</Card>
-				</div>
-			</div>
+			<PageShell>
+				<StateBlock
+					action={
+						<Button
+							className="rounded-full"
+							type="button"
+							variant="secondary"
+							onPress={() => router.push(`/professor/classrooms/${classroomId}`)}
+						>
+							강의실로 돌아가기
+						</Button>
+					}
+					description="시험이 삭제되었거나 접근 권한이 변경되었을 수 있습니다."
+					title="시험 관리 정보를 불러오지 못했습니다."
+					tone="error"
+				/>
+			</PageShell>
 		);
 	}
 
 	return (
-		<div className="bg-slate-50 px-6 py-10">
-			<div className="mx-auto flex max-w-6xl flex-col gap-6">
-				<div className="flex flex-wrap items-center justify-between gap-3">
-					<Button
-						type="button"
-						variant="ghost"
-						onPress={() => router.push(`/professor/classrooms/${classroomId}`)}
-					>
-						강의실로 돌아가기
-					</Button>
-					<p className="text-sm text-slate-500">{classroom.name}</p>
+		<PageShell>
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<Button
+					className="rounded-full"
+					type="button"
+					variant="ghost"
+					onPress={() => router.push(`/professor/classrooms/${classroomId}`)}
+				>
+					강의실로 돌아가기
+				</Button>
+				<p className="text-neutral-gray-500 text-sm">{classroom.name}</p>
+			</div>
+
+			<PageHeader
+				description={`${getExamTypeLabel(exam.exam_type)} · ${getExamStatusLabel(exam.status)} · 문항 ${exam.questions.length}개`}
+				eyebrow="Exam Operations Document"
+				title={exam.title}
+			/>
+
+			<SurfaceCard className="space-y-6">
+				<div>
+					<p className="text-brand-deep font-mono text-xs font-semibold tracking-[0.08em] uppercase">
+						Operations Summary
+					</p>
+					<h2 className="text-neutral-text mt-2 text-2xl font-semibold tracking-[-0.01em]">시험 운영 문서</h2>
 				</div>
-
-				<Card>
-					<Card.Header>
-						<div className="space-y-2">
-							<Card.Title className="text-2xl font-semibold text-slate-900">{exam.title}</Card.Title>
-							<Card.Description className="text-sm text-slate-500">
-								{getExamTypeLabel(exam.exam_type)} · {getExamStatusLabel(exam.status)} · 문항{' '}
-								{exam.questions.length}개
-							</Card.Description>
-						</div>
-					</Card.Header>
-					<Card.Content className="space-y-6">
-						<div className="grid gap-3 md:grid-cols-3">
-							<Card className="border border-slate-200 bg-slate-50">
-								<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-									<p className="font-medium text-slate-900">시험 일정</p>
-									<p>시작 {formatExamDateTime(exam.starts_at)}</p>
-									<p>종료 {formatExamDateTime(exam.ends_at)}</p>
-								</Card.Content>
-							</Card>
-							<Card className="border border-slate-200 bg-slate-50">
-								<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-									<p className="font-medium text-slate-900">운영 정보</p>
-									<p>진행 시간 {exam.duration_minutes}분</p>
-									<p>{getExamMaxAttemptsLabel(exam.max_attempts)}</p>
-									<p>설명 {exam.description ?? '설명 없음'}</p>
-								</Card.Content>
-							</Card>
-							<Card className="border border-slate-200 bg-slate-50">
-								<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
-									<p className="font-medium text-slate-900">문항 현황</p>
-									<p>총 문항 {exam.questions.length}개</p>
-									<p>주차 {exam.week}주차</p>
-									<div className="flex flex-wrap items-center gap-2 pt-1">
-										<span>생성 상태</span>
-										<Chip
-											color={getExamGenerationStatusColor(exam.generation_status)}
-											size="sm"
-											variant="soft"
-										>
-											<Chip.Label>
-												{getExamGenerationStatusLabel(exam.generation_status)}
-											</Chip.Label>
-										</Chip>
-									</div>
-									{exam.generation_requested_at ? (
-										<p>요청 {formatExamDateTime(exam.generation_requested_at)}</p>
-									) : null}
-									{exam.generation_completed_at ? (
-										<p>완료 {formatExamDateTime(exam.generation_completed_at)}</p>
-									) : null}
-								</Card.Content>
-							</Card>
-						</div>
-					</Card.Content>
-				</Card>
-
-				<Card>
-					<Card.Header className="flex flex-wrap items-start justify-between gap-4">
-						<div>
-							<Card.Title className="text-lg font-semibold text-slate-900">문항 관리</Card.Title>
-							<Card.Description className="mt-1 text-sm text-slate-500">
-								생성·추가·수정을 현재 시험 페이지에서 바로 처리합니다.
-							</Card.Description>
-						</div>
-						<div className="flex flex-wrap gap-2">
-							<Button
-								isDisabled={isExamGenerationInProgress}
-								variant={isGenerateModalOpen ? 'primary' : 'secondary'}
-								onPress={handleToggleGeneratePanel}
-							>
-								<SparklesIcon className="size-4" />
-								AI 문항 생성
-							</Button>
-							<Button
-								variant={activePanel === 'create' ? 'primary' : 'secondary'}
-								onPress={handleToggleCreatePanel}
-							>
-								문항 추가
-							</Button>
-						</div>
-					</Card.Header>
-					<Card.Content className="space-y-3 pt-0">
-						<div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-							<span>현재 생성 상태</span>
+				<div className="grid gap-4 md:grid-cols-3">
+					<section className="border-border-subtle bg-surface-muted rounded-2xl border p-5">
+						<p className="text-neutral-text text-sm font-semibold">시험 일정</p>
+						<dl className="text-neutral-gray-500 mt-3 space-y-2 text-sm">
+							<div>
+								<dt className="text-neutral-text font-medium">시작</dt>
+								<dd>{formatExamDateTime(exam.starts_at)}</dd>
+							</div>
+							<div>
+								<dt className="text-neutral-text font-medium">종료</dt>
+								<dd>{formatExamDateTime(exam.ends_at)}</dd>
+							</div>
+						</dl>
+					</section>
+					<section className="border-border-subtle bg-surface-muted rounded-2xl border p-5">
+						<p className="text-neutral-text text-sm font-semibold">운영 정보</p>
+						<dl className="text-neutral-gray-500 mt-3 space-y-2 text-sm">
+							<div className="flex justify-between gap-3">
+								<dt>진행 시간</dt>
+								<dd className="text-neutral-text font-medium">{exam.duration_minutes}분</dd>
+							</div>
+							<div>
+								<dt className="sr-only">응시 제한</dt>
+								<dd>{getExamMaxAttemptsLabel(exam.max_attempts)}</dd>
+							</div>
+							<div>
+								<dt className="text-neutral-text font-medium">설명</dt>
+								<dd>{exam.description ?? '설명 없음'}</dd>
+							</div>
+						</dl>
+					</section>
+					<section className="border-border-subtle bg-surface-muted rounded-2xl border p-5">
+						<p className="text-neutral-text text-sm font-semibold">문항 현황</p>
+						<dl className="text-neutral-gray-500 mt-3 space-y-2 text-sm">
+							<div className="flex justify-between gap-3">
+								<dt>총 문항</dt>
+								<dd className="text-neutral-text font-medium">{exam.questions.length}개</dd>
+							</div>
+							<div className="flex justify-between gap-3">
+								<dt>주차</dt>
+								<dd className="text-neutral-text font-medium">{exam.week}주차</dd>
+							</div>
+						</dl>
+						<div className="text-neutral-gray-500 mt-4 flex flex-wrap items-center gap-2 text-sm">
+							<span>생성 상태</span>
 							<Chip color={getExamGenerationStatusColor(exam.generation_status)} size="sm" variant="soft">
 								<Chip.Label>{getExamGenerationStatusLabel(exam.generation_status)}</Chip.Label>
 							</Chip>
-							{examQuery.isFetching && isExamGenerationInProgress ? (
-								<span className="text-xs text-slate-500">최신 상태 확인 중</span>
-							) : null}
 						</div>
-						<p className="text-sm text-slate-500">
-							{getExamGenerationStatusDescription(exam.generation_status)}
-						</p>
-						{exam.generation_error ? (
-							<p className="text-sm text-red-600">오류 {exam.generation_error}</p>
-						) : null}
-					</Card.Content>
-				</Card>
-
-				<Modal>
-					<Modal.Backdrop isOpen={isGenerateModalOpen} onOpenChange={handleGenerateModalOpenChange}>
-						<Modal.Container scroll="inside">
-							<Modal.Dialog className="flex max-h-[calc(100vh-5rem)] flex-col overflow-clip sm:max-w-4xl">
-								{({ close }) => (
-									<>
-										<Modal.CloseTrigger />
-										<Modal.Header>
-											<Modal.Heading>AI 문항 생성</Modal.Heading>
-											<p className="mt-1 text-sm text-slate-500">
-												적재 완료된 강의 자료와 추출 범위를 기반으로 문항을 생성합니다.
-											</p>
-										</Modal.Header>
-										<Modal.Body className="min-h-0 flex-1 overflow-y-auto p-6">
-											<GenerateExamQuestionsForm
-												classroomId={classroomId}
-												examId={examId}
-												examType={exam.exam_type}
-												formId={GENERATION_FORM_ID}
-												hideActions
-												hideHeader
-												materials={materials}
-												onCancel={close}
-												onSuccess={close}
-											/>
-										</Modal.Body>
-										<Modal.Footer className="justify-end gap-3 border-t border-slate-200 px-6 py-4">
-											<Button type="button" variant="secondary" onPress={close}>
-												닫기
-											</Button>
-											<Button form={GENERATION_FORM_ID} type="submit" variant="primary">
-												생성
-											</Button>
-										</Modal.Footer>
-									</>
-								)}
-							</Modal.Dialog>
-						</Modal.Container>
-					</Modal.Backdrop>
-				</Modal>
-
-				<Modal>
-					<Modal.Backdrop isOpen={activePanel === 'create'} onOpenChange={handleCreateModalOpenChange}>
-						<Modal.Container scroll="inside">
-							<Modal.Dialog className="sm:max-w-3xl">
-								{({ close }) => (
-									<>
-										<Modal.CloseTrigger />
-										<Modal.Header>
-											<Modal.Heading>문항 추가</Modal.Heading>
-											<p className="mt-1 text-sm text-slate-500">
-												문항 내용과 연결 자료를 현재 시험 문맥에서 바로 추가합니다.
-											</p>
-										</Modal.Header>
-										<Modal.Body className="p-6">
-											<UpsertExamQuestionForm
-												key="create"
-												classroomId={classroomId}
-												examId={examId}
-												formId={CREATE_FORM_ID}
-												hideActions
-												hideHeader
-												materials={materials}
-												title="문항 추가"
-												onCancel={close}
-												onSuccess={close}
-											/>
-										</Modal.Body>
-										<Modal.Footer className="justify-end gap-3 border-t border-slate-200 px-6 py-4">
-											<Button type="button" variant="secondary" onPress={close}>
-												닫기
-											</Button>
-											<Button form={CREATE_FORM_ID} type="submit" variant="primary">
-												저장
-											</Button>
-										</Modal.Footer>
-									</>
-								)}
-							</Modal.Dialog>
-						</Modal.Container>
-					</Modal.Backdrop>
-				</Modal>
-
-				{activePanel === 'edit' && editingQuestion ? (
-					<Card>
-						<Card.Content className="pt-6">
-							<UpsertExamQuestionForm
-								key={editingQuestionFormKey}
-								classroomId={classroomId}
-								examId={examId}
-								materials={materials}
-								question={editingQuestion}
-								title={`${editingQuestion.question_number}번 문항 수정`}
-								onCancel={handleClosePanel}
-								onSuccess={handleClosePanel}
-							/>
-						</Card.Content>
-					</Card>
-				) : null}
-
-				{activePanel === 'edit' && !editingQuestion ? (
-					<Card>
-						<Card.Content className="space-y-4 py-6 text-sm text-amber-700">
-							<p>수정할 문항 정보를 찾을 수 없습니다. 목록을 새로 확인해주세요.</p>
-							<div className="flex justify-end">
-								<Button type="button" variant="secondary" onPress={handleClosePanel}>
-									닫기
-								</Button>
-							</div>
-						</Card.Content>
-					</Card>
-				) : null}
-
-				<Card>
-					<Card.Header>
-						<div>
-							<Card.Title className="text-lg font-semibold text-slate-900">문항 목록</Card.Title>
-							<Card.Description className="mt-1 text-sm text-slate-500">
-								총 {exam.questions.length}개
-							</Card.Description>
-						</div>
-					</Card.Header>
-					<Card.Content className="space-y-4">
-						{deleteErrorMessage ? <p className="text-sm text-red-600">{deleteErrorMessage}</p> : null}
-						{isMaterialsError || materialsQuery.isError ? (
-							<p className="text-sm text-amber-600">
-								참고 자료 정보를 불러오지 못해 연결 자료 표시는 일부 제한될 수 있습니다.
+						{exam.generation_requested_at ? (
+							<p className="text-neutral-gray-500 mt-2 text-sm">
+								요청 {formatExamDateTime(exam.generation_requested_at)}
 							</p>
 						) : null}
-						<ExamManagementQuestionsTable
-							deletingQuestionId={deletingQuestionId}
-							exam={exam}
-							isDeletePending={deleteQuestionMutation.isPending}
-							onDeleteQuestion={(questionId) => void handleDeleteQuestion(questionId)}
-							onEditQuestion={handleOpenEditPanel}
-						/>
-					</Card.Content>
-				</Card>
-			</div>
-		</div>
+						{exam.generation_completed_at ? (
+							<p className="text-neutral-gray-500 mt-1 text-sm">
+								완료 {formatExamDateTime(exam.generation_completed_at)}
+							</p>
+						) : null}
+					</section>
+				</div>
+			</SurfaceCard>
+
+			<SurfaceCard className="space-y-5">
+				<div className="flex flex-wrap items-start justify-between gap-4">
+					<div>
+						<h2 className="text-neutral-text text-lg font-semibold">문항 관리</h2>
+						<p className="text-neutral-gray-500 mt-1 text-sm">
+							AI 생성은 자료 기반 초안 작성, 수동 추가는 개별 문항 보강에 사용합니다.
+						</p>
+					</div>
+					<div className="flex flex-wrap gap-2">
+						<Button
+							className="rounded-full"
+							isDisabled={isExamGenerationInProgress}
+							variant={isGenerateModalOpen ? 'primary' : 'secondary'}
+							onPress={handleToggleGeneratePanel}
+						>
+							<SparklesIcon className="size-4" />
+							AI 문항 생성
+						</Button>
+						<Button
+							className="rounded-full"
+							variant={activePanel === 'create' ? 'primary' : 'secondary'}
+							onPress={handleToggleCreatePanel}
+						>
+							문항 추가
+						</Button>
+					</div>
+				</div>
+				<div className="border-border-subtle bg-surface-muted rounded-2xl border p-4">
+					<div className="text-neutral-gray-500 flex flex-wrap items-center gap-2 text-sm">
+						<span>현재 생성 상태</span>
+						<Chip color={getExamGenerationStatusColor(exam.generation_status)} size="sm" variant="soft">
+							<Chip.Label>{getExamGenerationStatusLabel(exam.generation_status)}</Chip.Label>
+						</Chip>
+						{examQuery.isFetching && isExamGenerationInProgress ? (
+							<span className="text-neutral-gray-500 text-xs">최신 상태 확인 중</span>
+						) : null}
+					</div>
+					<p className="text-neutral-gray-500 mt-2 text-sm leading-6">
+						{getExamGenerationStatusDescription(exam.generation_status)}
+					</p>
+					{exam.generation_error ? (
+						<p className="mt-2 text-sm text-red-600">오류 {exam.generation_error}</p>
+					) : null}
+				</div>
+			</SurfaceCard>
+
+			<Modal>
+				<Modal.Backdrop isOpen={isGenerateModalOpen} onOpenChange={handleGenerateModalOpenChange}>
+					<Modal.Container scroll="inside">
+						<Modal.Dialog className="flex max-h-[calc(100vh-5rem)] flex-col overflow-clip sm:max-w-4xl">
+							{({ close }) => (
+								<>
+									<Modal.CloseTrigger />
+									<Modal.Header>
+										<Modal.Heading>AI 문항 생성</Modal.Heading>
+										<p className="text-neutral-gray-500 mt-1 text-sm">
+											적재 완료된 강의 자료와 추출 범위를 기반으로 문항을 생성합니다.
+										</p>
+									</Modal.Header>
+									<Modal.Body className="min-h-0 flex-1 overflow-y-auto p-6">
+										<GenerateExamQuestionsForm
+											classroomId={classroomId}
+											examId={examId}
+											examType={exam.exam_type}
+											formId={GENERATION_FORM_ID}
+											hideActions
+											hideHeader
+											materials={materials}
+											onCancel={close}
+											onSuccess={close}
+										/>
+									</Modal.Body>
+									<Modal.Footer className="border-border-subtle justify-end gap-3 border-t px-6 py-4">
+										<Button type="button" variant="secondary" onPress={close}>
+											닫기
+										</Button>
+										<Button form={GENERATION_FORM_ID} type="submit" variant="primary">
+											생성
+										</Button>
+									</Modal.Footer>
+								</>
+							)}
+						</Modal.Dialog>
+					</Modal.Container>
+				</Modal.Backdrop>
+			</Modal>
+
+			<Modal>
+				<Modal.Backdrop isOpen={activePanel === 'create'} onOpenChange={handleCreateModalOpenChange}>
+					<Modal.Container scroll="inside">
+						<Modal.Dialog className="sm:max-w-3xl">
+							{({ close }) => (
+								<>
+									<Modal.CloseTrigger />
+									<Modal.Header>
+										<Modal.Heading>문항 추가</Modal.Heading>
+										<p className="text-neutral-gray-500 mt-1 text-sm">
+											문항 내용과 연결 자료를 현재 시험 문맥에서 바로 추가합니다.
+										</p>
+									</Modal.Header>
+									<Modal.Body className="p-6">
+										<UpsertExamQuestionForm
+											key="create"
+											classroomId={classroomId}
+											examId={examId}
+											formId={CREATE_FORM_ID}
+											hideActions
+											hideHeader
+											materials={materials}
+											title="문항 추가"
+											onCancel={close}
+											onSuccess={close}
+										/>
+									</Modal.Body>
+									<Modal.Footer className="border-border-subtle justify-end gap-3 border-t px-6 py-4">
+										<Button type="button" variant="secondary" onPress={close}>
+											닫기
+										</Button>
+										<Button form={CREATE_FORM_ID} type="submit" variant="primary">
+											저장
+										</Button>
+									</Modal.Footer>
+								</>
+							)}
+						</Modal.Dialog>
+					</Modal.Container>
+				</Modal.Backdrop>
+			</Modal>
+
+			{activePanel === 'edit' && editingQuestion ? (
+				<SurfaceCard>
+					<UpsertExamQuestionForm
+						key={editingQuestionFormKey}
+						classroomId={classroomId}
+						examId={examId}
+						materials={materials}
+						question={editingQuestion}
+						title={`${editingQuestion.question_number}번 문항 수정`}
+						onCancel={handleClosePanel}
+						onSuccess={handleClosePanel}
+					/>
+				</SurfaceCard>
+			) : null}
+
+			{activePanel === 'edit' && !editingQuestion ? (
+				<StateBlock
+					action={
+						<Button className="rounded-full" type="button" variant="secondary" onPress={handleClosePanel}>
+							닫기
+						</Button>
+					}
+					description="목록을 새로 확인한 뒤 다시 시도해주세요."
+					title="수정할 문항 정보를 찾을 수 없습니다."
+					tone="disabled"
+				/>
+			) : null}
+
+			<SurfaceCard className="space-y-5">
+				<div>
+					<h2 className="text-neutral-text text-lg font-semibold">문항 목록</h2>
+					<p className="text-neutral-gray-500 mt-1 text-sm">총 {exam.questions.length}개</p>
+				</div>
+				{deleteErrorMessage ? <p className="text-sm text-red-600">{deleteErrorMessage}</p> : null}
+				{isMaterialsError || materialsQuery.isError ? (
+					<p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+						참고 자료 정보를 불러오지 못해 연결 자료 표시는 일부 제한될 수 있습니다.
+					</p>
+				) : null}
+				<ExamManagementQuestionsTable
+					deletingQuestionId={deletingQuestionId}
+					exam={exam}
+					isDeletePending={deleteQuestionMutation.isPending}
+					onDeleteQuestion={(questionId) => void handleDeleteQuestion(questionId)}
+					onEditQuestion={handleOpenEditPanel}
+				/>
+			</SurfaceCard>
+		</PageShell>
 	);
 }

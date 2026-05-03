@@ -22,11 +22,13 @@ const toMaterialFormData = (payload: CreateClassroomMaterialRequest | UpdateClas
 	if (payload.week !== undefined) {
 		formData.set('week', String(payload.week));
 	}
-	if (payload.description !== undefined && payload.description !== null && payload.description !== '') {
-		formData.set('description', payload.description);
-	}
-	if (payload.description === null) {
-		formData.set('description', '');
+	if ('description' in payload) {
+		if (payload.description !== undefined && payload.description !== null && payload.description !== '') {
+			formData.set('description', payload.description);
+		}
+		if (payload.description === null) {
+			formData.set('description', '');
+		}
 	}
 	if (payload.source_kind !== undefined) {
 		formData.set('source_kind', payload.source_kind);

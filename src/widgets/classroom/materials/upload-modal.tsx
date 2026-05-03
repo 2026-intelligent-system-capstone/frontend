@@ -4,11 +4,12 @@ import { useId, useState } from 'react';
 
 import {
 	type ClassroomMaterialSourceKind,
+	MATERIAL_FILE_ACCEPT,
 	MATERIAL_FILE_GUIDE,
 	useCreateClassroomMaterial,
 } from '@/entities/classroom-material';
 import { ApiClientError } from '@/shared/api/types';
-import { Button, Description, ErrorMessage, Input, Label, Modal, TextArea, TextField } from '@heroui/react';
+import { Button, Description, ErrorMessage, Input, Label, Modal, TextField } from '@heroui/react';
 
 interface MaterialUploadModalProps {
 	classroomId: string;
@@ -17,7 +18,6 @@ interface MaterialUploadModalProps {
 
 export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalProps) {
 	const titleId = useId();
-	const descriptionId = useId();
 	const fileId = useId();
 	const sourceUrlId = useId();
 	const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +38,6 @@ export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalPr
 		const form = event.currentTarget;
 		const formData = new FormData(form);
 		const title = String(formData.get('title') ?? '').trim();
-		const descriptionValue = String(formData.get('description') ?? '').trim();
 		const sourceUrl = String(formData.get('source_url') ?? '').trim();
 		const uploadedFile = formData.get('uploaded_file');
 
@@ -48,7 +47,7 @@ export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalPr
 				return;
 			}
 		} else if (sourceUrl.length === 0) {
-			setErrorMessage('YouTube 링크를 입력해주세요.');
+			setErrorMessage('링크를 입력해주세요.');
 			return;
 		}
 
@@ -57,7 +56,6 @@ export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalPr
 				await createMaterial({
 					title,
 					week,
-					description: descriptionValue || null,
 					source_kind: 'file',
 					uploaded_file: uploadedFile as File,
 				});
@@ -65,7 +63,6 @@ export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalPr
 				await createMaterial({
 					title,
 					week,
-					description: descriptionValue || null,
 					source_kind: 'link',
 					source_url: sourceUrl,
 				});
@@ -112,39 +109,72 @@ export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalPr
 											<Input id={titleId} placeholder="예: 1주차 강의 자료" />
 										</TextField>
 
-										<div className="space-y-2">
-											<p className="text-sm font-medium text-slate-700">자료 등록 방식</p>
+										<fieldset className="space-y-2">
+											<legend className="text-sm font-medium text-slate-700">
+												자료 등록 방식
+											</legend>
 											<div className="grid gap-2 sm:grid-cols-2">
-												<button
-													type="button"
-													className={`rounded-large border px-4 py-3 text-left ${
+												<label
+													className={`rounded-large focus-within:ring-primary-500 border px-4
+													py-3 text-left focus-within:ring-2 ${
 														sourceKind === 'file'
 															? 'border-primary-500 bg-primary-50 text-primary-700'
 															: 'border-slate-200 bg-white text-slate-700'
 													}`}
-													onClick={() => setSourceKind('file')}
 												>
-													<p className="text-sm font-semibold">파일 업로드</p>
-													<p className="mt-1 text-xs text-slate-500">
+													<input
+														type="radio"
+														name="source_kind"
+														value="file"
+														checked={sourceKind === 'file'}
+														className="sr-only"
+														onChange={() => setSourceKind('file')}
+													/>
+													<span className="text-sm font-semibold">파일 업로드</span>
+													<span className="mt-1 block text-xs text-slate-500">
 														문서·영상·압축 파일을 등록합니다.
-													</p>
-												</button>
-												<button
-													type="button"
-													className={`rounded-large border px-4 py-3 text-left ${
+													</span>
+													{sourceKind === 'file' ? (
+														<span
+															className="bg-primary-100 text-primary-700 mt-2 inline-flex
+																rounded-full px-2 py-0.5 text-xs font-medium"
+														>
+															선택됨
+														</span>
+													) : null}
+												</label>
+												<label
+													className={`rounded-large focus-within:ring-primary-500 border px-4
+													py-3 text-left focus-within:ring-2 ${
 														sourceKind === 'link'
 															? 'border-primary-500 bg-primary-50 text-primary-700'
 															: 'border-slate-200 bg-white text-slate-700'
 													}`}
-													onClick={() => setSourceKind('link')}
 												>
-													<p className="text-sm font-semibold">YouTube 링크</p>
-													<p className="mt-1 text-xs text-slate-500">
-														공개 또는 접근 가능한 영상 URL을 등록합니다.
-													</p>
-												</button>
+													<input
+														type="radio"
+														name="source_kind"
+														value="link"
+														checked={sourceKind === 'link'}
+														className="sr-only"
+														onChange={() => setSourceKind('link')}
+													/>
+													<span className="text-sm font-semibold">HTTP/HTTPS 링크</span>
+													<span className="mt-1 block text-xs text-slate-500">
+														YouTube 링크는 자막 분석을 시도하고, 일반 링크는 등록 후 본문
+														추출 미지원으로 표시될 수 있습니다.
+													</span>
+													{sourceKind === 'link' ? (
+														<span
+															className="bg-primary-100 text-primary-700 mt-2 inline-flex
+																rounded-full px-2 py-0.5 text-xs font-medium"
+														>
+															선택됨
+														</span>
+													) : null}
+												</label>
 											</div>
-										</div>
+										</fieldset>
 
 										{sourceKind === 'file' ? (
 											<div className="flex flex-col gap-2 text-sm font-medium text-slate-700">
@@ -153,6 +183,7 @@ export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalPr
 													id={fileId}
 													name="uploaded_file"
 													type="file"
+													accept={MATERIAL_FILE_ACCEPT}
 													className="rounded-medium file:rounded-medium block h-10 w-full
 														border border-slate-200 bg-white px-3 py-2 text-sm
 														text-slate-700 file:mr-3 file:border-0 file:bg-slate-100
@@ -165,26 +196,25 @@ export function MaterialUploadModal({ classroomId, week }: MaterialUploadModalPr
 											</div>
 										) : (
 											<TextField isRequired className="w-full" name="source_url">
-												<Label htmlFor={sourceUrlId}>YouTube URL</Label>
+												<Label htmlFor={sourceUrlId}>링크 URL</Label>
 												<Input
 													id={sourceUrlId}
-													placeholder="https://www.youtube.com/watch?v=..."
+													placeholder="https://example.com/material"
 													type="url"
 												/>
 												<Description>
-													YouTube 링크형 자료로 저장되어 적재를 진행합니다.
+													YouTube 링크는 자막 분석을 시도하고, 일반 링크는 등록되지만 본문
+													추출 분석은 아직 지원하지 않습니다.
 												</Description>
 											</TextField>
 										)}
 
-										<TextField className="w-full" name="description">
-											<Label htmlFor={descriptionId}>설명</Label>
-											<TextArea
-												id={descriptionId}
-												className="min-h-28"
-												placeholder="자료 설명이나 학습 포인트를 입력하세요."
-											/>
-										</TextField>
+										<p
+											className="rounded-medium border-primary-100 bg-primary-50 text-primary-700
+												border px-3 py-2 text-xs"
+										>
+											자료 설명은 업로드 후 AI가 자동으로 생성합니다.
+										</p>
 
 										{errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
 

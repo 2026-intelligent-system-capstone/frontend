@@ -18,6 +18,7 @@ export type ExamTurnEventType =
 	| 'session_started'
 	| 'session_completed';
 export type ExamResultStatus = 'pending' | 'completed';
+export type StudentExamResultStatus = ExamResultStatus | null;
 
 export interface ExamCriterion {
 	id: string;
@@ -47,6 +48,34 @@ export interface ExamQuestion {
 	status: ExamQuestionStatus;
 }
 
+export interface StudentExamSessionQuestion {
+	id: string;
+	exam_id: string;
+	question_number: number;
+	max_score: number;
+	question_type: Exclude<ExamQuestionType, 'none'>;
+	bloom_level: BloomLevel;
+	difficulty: ExamDifficulty;
+	question_text: string;
+	answer_options: string[];
+	status: ExamQuestionStatus;
+}
+
+export interface StudentExamSessionSheet {
+	id: string;
+	classroom_id: string;
+	title: string;
+	description: string | null;
+	exam_type: ExamType;
+	status: ExamStatus;
+	duration_minutes: number;
+	week: number;
+	starts_at: string;
+	ends_at: string;
+	max_attempts: number;
+	questions: StudentExamSessionQuestion[];
+}
+
 export interface Exam {
 	id: string;
 	classroom_id: string;
@@ -67,6 +96,17 @@ export interface Exam {
 	criteria: ExamCriterion[];
 	questions: ExamQuestion[];
 }
+
+export interface StudentExamPayload extends Exam {
+	is_completed: boolean;
+	can_enter: boolean;
+	has_result: boolean;
+	classroom_name?: string;
+	result_status?: StudentExamResultStatus;
+	remaining_attempts?: number | null;
+}
+
+export type StudentExam = StudentExamPayload;
 
 export interface CreateExamCriterionRequest {
 	title: string;
@@ -165,6 +205,14 @@ export interface TopicAssessment {
 	reasoning: string;
 }
 
+export interface ExamCriterionResult {
+	criterion_id: string;
+	score: number | null;
+	feedback: string | null;
+	title?: string;
+	max_score?: number | null;
+}
+
 export interface ExamResult {
 	id: string;
 	exam_id: string;
@@ -174,9 +222,16 @@ export interface ExamResult {
 	submitted_at: string | null;
 	overall_score: number | null;
 	summary: string | null;
-	topic_assessments: TopicAssessment[];
+	topic_assessments?: TopicAssessment[];
 	strengths: string[];
 	weaknesses: string[];
+	criteria_results: ExamCriterionResult[];
+	improvement_suggestions: string[];
+}
+
+export interface StudentExamResult extends ExamResult {
+	exam_title?: string | null;
+	classroom_name?: string | null;
 }
 
 export interface ExamTurn {
@@ -189,6 +244,15 @@ export interface ExamTurn {
 	created_at: string;
 	metadata: Record<string, string>;
 }
+
+export interface GenerateExamFollowUpRequest {
+	question_id: string;
+	answer_content: string;
+	metadata?: Record<string, string>;
+	occurred_at: string;
+}
+
+export type GenerateExamFollowUpResponse = ExamTurn;
 
 export interface RecordExamTurnRequest {
 	role: ExamTurnRole;

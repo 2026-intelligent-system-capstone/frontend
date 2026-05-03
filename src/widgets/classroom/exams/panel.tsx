@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 
 import type { Exam } from '@/entities/exam';
 import { CreateExamModal } from '@/features/create-exam';
+import { StateBlock } from '@/shared/ui';
 import { Card, Skeleton } from '@heroui/react';
 
 import { ExamsTable } from './exams-table';
@@ -35,15 +36,15 @@ export function ClassroomExamsPanel({
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-wrap items-center justify-between gap-3">
-				<h2 className="text-lg font-semibold text-slate-900">시험 목록</h2>
+				<h2 className="text-neutral-text text-lg font-semibold">시험 목록</h2>
 				{canCreateExam ? <CreateExamModal classroomId={classroomId} week={actionWeek} /> : null}
 			</div>
 
 			{showExamSkeleton ? (
 				<div className="space-y-3">
 					{Array.from({ length: 2 }).map((_, index) => (
-						<Card key={index} className="border border-slate-200 bg-slate-50">
-							<Card.Content className="space-y-2 py-4 text-sm text-slate-600">
+						<Card key={index} className="border-border-subtle bg-surface border">
+							<Card.Content className="text-neutral-gray-500 space-y-2 py-4 text-sm">
 								<Skeleton className="h-5 w-40 rounded-lg" />
 								<Skeleton className="h-4 w-56 rounded-lg" />
 								<Skeleton className="h-4 w-48 rounded-lg" />
@@ -53,7 +54,12 @@ export function ClassroomExamsPanel({
 					))}
 				</div>
 			) : isError ? (
-				<p className="text-sm text-red-600">시험 목록을 불러오지 못했습니다.</p>
+				<StateBlock
+					className="py-8"
+					description="시험 일정과 문항 현황을 확인할 수 없습니다."
+					title="시험 목록을 불러오지 못했습니다."
+					tone="error"
+				/>
 			) : (
 				<ExamsTable exams={exams} onSelectExam={openExamDetail} />
 			)}

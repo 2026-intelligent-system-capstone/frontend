@@ -1,6 +1,6 @@
 import type { ClassroomMaterial } from '@/entities/classroom-material';
 import type { Exam } from '@/entities/exam';
-import { Card } from '@heroui/react';
+import { SurfaceCard } from '@/shared/ui';
 
 import { ClassroomExamsPanel } from '../exams/panel';
 import { ClassroomMaterialsPanel } from '../materials/panel';
@@ -39,53 +39,50 @@ export function ClassroomWeekSections({
 	});
 
 	return (
-		<Card>
-			<Card.Header>
-				<div>
-					<Card.Title className="text-xl font-semibold text-slate-900">주차별 자료 · 시험 관리</Card.Title>
-					<Card.Description className="mt-2 text-sm text-slate-500">
-						각 주차에서 강의 자료와 시험을 함께 생성·관리합니다.
-					</Card.Description>
-				</div>
-			</Card.Header>
-			<Card.Content className="space-y-6">
+		<SurfaceCard className="space-y-8">
+			<div>
+				<h2 className="text-neutral-text text-2xl font-semibold tracking-[-0.01em]">주차별 자료 · 시험 관리</h2>
+				<p className="text-neutral-gray-500 mt-2 text-sm leading-6">
+					각 주차에서 강의 자료와 시험을 함께 생성·관리합니다.
+				</p>
+			</div>
+			<div className="space-y-6">
 				{weekSections.map((section) => (
-					<Card key={section.week} className="border border-slate-200 bg-slate-50">
-						<Card.Header className="flex flex-wrap items-start justify-between gap-4">
+					<section
+						key={section.week}
+						className="border-border-subtle bg-surface-muted rounded-3xl border p-5 sm:p-6"
+					>
+						<div className="mb-6 flex flex-wrap items-start justify-between gap-4">
 							<div>
-								<Card.Title className="text-lg font-semibold text-slate-900">
-									{section.week}주차
-								</Card.Title>
-								<Card.Description className="mt-1 text-sm text-slate-500">
+								<h3 className="text-neutral-text text-lg font-semibold">{section.week}주차</h3>
+								<p className="text-neutral-gray-500 mt-1 text-sm">
 									자료 {section.materials.length}건 · 시험 {section.exams.length}건
-								</Card.Description>
+								</p>
 							</div>
-						</Card.Header>
-						<Card.Content className="space-y-6">
-							<div className="flex flex-col space-y-4">
-								<ClassroomMaterialsPanel
-									actionWeek={section.week}
-									canManageMaterials={canManageClassroom}
-									classroomId={classroomId}
-									isError={isMaterialsError}
-									isLoading={isMaterialsLoading}
-									materials={section.materials}
-									showActions
-								/>
-								<ClassroomExamsPanel
-									actionWeek={section.week}
-									canManageExams={canManageClassroom}
-									classroomId={classroomId}
-									exams={section.exams}
-									isError={isExamsError}
-									isLoading={isExamsLoading}
-									showActions
-								/>
-							</div>
-						</Card.Content>
-					</Card>
+						</div>
+						<div className="flex flex-col space-y-4">
+							<ClassroomMaterialsPanel
+								actionWeek={section.week}
+								canManageMaterials={canManageClassroom}
+								classroomId={classroomId}
+								isError={isMaterialsError}
+								isLoading={isMaterialsLoading}
+								materials={section.materials}
+								showActions
+							/>
+							<ClassroomExamsPanel
+								actionWeek={section.week}
+								canManageExams={canManageClassroom}
+								classroomId={classroomId}
+								exams={section.exams}
+								isError={isExamsError}
+								isLoading={isExamsLoading}
+								showActions
+							/>
+						</div>
+					</section>
 				))}
-			</Card.Content>
-		</Card>
+			</div>
+		</SurfaceCard>
 	);
 }

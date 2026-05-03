@@ -18,6 +18,9 @@ import { DownloadIcon, RefreshIcon, TrashIcon } from '@/shared/ui/icons/action-i
 import { FileIcon, LinkIcon, PdfIcon } from '@/shared/ui/icons/file-icons';
 import { Button, ButtonGroup, Chip, EmptyState, Table, Tooltip } from '@heroui/react';
 
+const DEFAULT_INGEST_ERROR_MESSAGE = '분석 원인을 확인할 수 없습니다. 다시 적재를 시도해주세요.';
+const INGEST_ERROR_TOOLTIP_THRESHOLD = 48;
+
 interface MaterialsTableProps {
 	classroomId: string;
 	materials: ClassroomMaterial[];
@@ -61,8 +64,11 @@ export function MaterialsTable({
 					</Table.Header>
 					<Table.Body
 						renderEmptyState={() => (
-							<EmptyState className="flex w-full flex-col items-center justify-center py-10 text-center">
-								<span className="text-sm text-slate-500">등록된 자료가 없습니다.</span>
+							<EmptyState
+								className="border-border-subtle bg-surface flex w-full flex-col items-center
+									justify-center rounded-2xl border border-dashed py-10 text-center"
+							>
+								<span className="text-neutral-gray-500 text-sm">등록된 자료가 없습니다.</span>
 							</EmptyState>
 						)}
 					>
@@ -71,6 +77,10 @@ export function MaterialsTable({
 							const fileChipColor = getMaterialFileChipColor(material);
 							const isProcessing = processingMaterialId === material.id && reingestPending;
 							const canDownload = material.source_kind === 'file';
+							const hasFailedIngest = material.ingest_status === 'failed';
+							const ingestErrorMessage = material.ingest_error ?? DEFAULT_INGEST_ERROR_MESSAGE;
+							const shouldShowIngestErrorTooltip =
+								ingestErrorMessage.length > INGEST_ERROR_TOOLTIP_THRESHOLD;
 
 							return (
 								<Table.Row key={material.id}>
@@ -83,7 +93,7 @@ export function MaterialsTable({
 										>
 											<div className="flex min-w-0 flex-wrap items-center gap-2">
 												<p
-													className="truncate font-medium text-slate-900 underline-offset-2
+													className="text-neutral-text truncate font-medium underline-offset-2
 														hover:underline"
 												>
 													{material.title}
@@ -98,7 +108,7 @@ export function MaterialsTable({
 													</Chip.Label>
 												</Chip>
 											</div>
-											<p className="truncate text-sm text-slate-600">
+											<p className="text-neutral-gray-500 truncate text-sm">
 												{material.description ?? getMaterialDisplayName(material)}
 											</p>
 										</button>
@@ -115,7 +125,7 @@ export function MaterialsTable({
 												)}
 												<Chip.Label>{fileTypeLabel}</Chip.Label>
 											</Chip>
-											<p className="truncate text-xs text-slate-500">
+											<p className="text-neutral-gray-500 truncate text-xs">
 												{getMaterialDisplayName(material)}
 											</p>
 										</div>
@@ -123,27 +133,80 @@ export function MaterialsTable({
 									<Table.Cell>
 										<div className="flex w-32 flex-col gap-1 overflow-hidden">
 											<Chip
-												color={getMaterialIngestStatusColor(material.ingest_status)}
+												color={
+													hasFailedIngest
+														? 'danger'
+														: getMaterialIngestStatusColor(material.ingest_status)
+												}
 												size="sm"
 												variant="soft"
 											>
 												<Chip.Label>
-													{getMaterialIngestStatusLabel(material.ingest_status)}
+													{hasFailedIngest
+														? '분석 실패'
+														: getMaterialIngestStatusLabel(material.ingest_status)}
 												</Chip.Label>
 											</Chip>
-											<p className="text-xs text-slate-500">
-												{getMaterialIngestStatusDescription(material.ingest_status)}
-											</p>
+											{hasFailedIngest ? (
+												<div className="flex flex-col gap-1">
+													{shouldShowIngestErrorTooltip ? (
+														<>
+															<p
+																className="line-clamp-2 text-xs font-medium break-words
+																	text-red-600"
+															>
+																{ingestErrorMessage}
+															</p>
+															<Tooltip delay={0}>
+																<Tooltip.Trigger>
+																	<button
+																		type="button"
+																		aria-label="분석 실패 원인 전체 보기"
+																		className="w-fit text-xs font-medium
+																			text-red-700 underline underline-offset-2
+																			transition-colors hover:text-red-800
+																			focus-visible:outline
+																			focus-visible:outline-2
+																			focus-visible:outline-offset-2
+																			focus-visible:outline-red-500"
+																	>
+																		전체 보기
+																	</button>
+																</Tooltip.Trigger>
+																<Tooltip.Content showArrow className="max-w-xs">
+																	<Tooltip.Arrow />
+																	<p className="text-xs leading-relaxed">
+																		{ingestErrorMessage}
+																	</p>
+																</Tooltip.Content>
+															</Tooltip>
+														</>
+													) : (
+														<p className="text-xs font-medium break-words text-red-600">
+															{ingestErrorMessage}
+														</p>
+													)}
+													{canManageMaterials ? (
+														<p className="text-xs break-words text-amber-700">
+															문제를 수정한 뒤 다시 적재를 눌러주세요.
+														</p>
+													) : null}
+												</div>
+											) : (
+												<p className="text-neutral-gray-500 text-xs break-words">
+													{getMaterialIngestStatusDescription(material.ingest_status)}
+												</p>
+											)}
 										</div>
 									</Table.Cell>
 									<Table.Cell>
-										<span className="block w-24 truncate font-medium text-slate-700">
+										<span className="text-neutral-gray-700 block w-24 truncate font-medium">
 											{material.file ? formatMaterialFileSize(material.file.file_size) : '링크'}
 										</span>
 									</Table.Cell>
 									<Table.Cell>
 										<div className="w-40 overflow-hidden text-sm">
-											<p className="truncate font-medium text-slate-700">
+											<p className="text-neutral-gray-700 truncate font-medium">
 												{formatMaterialDateTime(material.uploaded_at)}
 											</p>
 										</div>

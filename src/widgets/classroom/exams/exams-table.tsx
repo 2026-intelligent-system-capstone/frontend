@@ -33,8 +33,11 @@ export function ExamsTable({ exams, onSelectExam }: ExamsTableProps) {
 					</Table.Header>
 					<Table.Body
 						renderEmptyState={() => (
-							<EmptyState className="flex w-full flex-col items-center justify-center py-10 text-center">
-								<span className="text-sm text-slate-500">생성된 시험이 없습니다.</span>
+							<EmptyState
+								className="border-border-subtle bg-surface flex w-full flex-col items-center
+									justify-center rounded-2xl border border-dashed py-10 text-center"
+							>
+								<span className="text-neutral-gray-500 text-sm">생성된 시험이 없습니다.</span>
 							</EmptyState>
 						)}
 					>
@@ -48,15 +51,15 @@ export function ExamsTable({ exams, onSelectExam }: ExamsTableProps) {
 										onClick={() => onSelectExam(exam.id)}
 									>
 										<div className="flex items-center gap-2 overflow-hidden">
-											<DocumentIcon className="size-4 shrink-0 text-slate-500" />
+											<DocumentIcon className="text-neutral-gray-500 size-4 shrink-0" />
 											<p
-												className="truncate font-medium text-slate-900 underline-offset-2
+												className="text-neutral-text truncate font-medium underline-offset-2
 													hover:underline"
 											>
 												{exam.title}
 											</p>
 										</div>
-										<p className="truncate text-sm text-slate-600">
+										<p className="text-neutral-gray-500 truncate text-sm">
 											{exam.description ?? '설명 없음'}
 										</p>
 									</button>
@@ -83,17 +86,20 @@ export function ExamsTable({ exams, onSelectExam }: ExamsTableProps) {
 										>
 											<Chip.Label>{getExamStatusLabel(exam.status)}</Chip.Label>
 										</Chip>
-										<div className="flex items-center gap-2 overflow-hidden text-sm text-slate-600">
+										<div
+											className="text-neutral-gray-500 flex items-center gap-2 overflow-hidden
+												text-sm"
+										>
 											<ClockIcon className="size-4 shrink-0 text-amber-500" />
 											<span className="truncate">{exam.duration_minutes}분</span>
 										</div>
-										<p className="truncate text-sm text-slate-600">
+										<p className="text-neutral-gray-500 truncate text-sm">
 											{getExamMaxAttemptsLabel(exam.max_attempts)}
 										</p>
 									</div>
 								</Table.Cell>
 								<Table.Cell>
-									<div className="w-80 space-y-1 overflow-hidden text-sm text-slate-700">
+									<div className="text-neutral-gray-700 w-80 space-y-1 overflow-hidden text-sm">
 										<div className="flex items-center gap-2 overflow-hidden">
 											<CalendarIcon className="size-4 shrink-0 text-blue-500" />
 											<span className="truncate">시작 {formatExamDateTime(exam.starts_at)}</span>
@@ -105,7 +111,10 @@ export function ExamsTable({ exams, onSelectExam }: ExamsTableProps) {
 									</div>
 								</Table.Cell>
 								<Table.Cell>
-									<span className="block w-24 truncate text-left text-sm font-medium text-slate-700">
+									<span
+										className="text-neutral-gray-700 block w-24 truncate text-left text-sm
+											font-medium"
+									>
 										{exam.questions.length}개
 									</span>
 								</Table.Cell>

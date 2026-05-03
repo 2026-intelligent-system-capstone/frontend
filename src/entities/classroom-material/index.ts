@@ -17,6 +17,7 @@ export {
 	getMaterialIngestStatusLabel,
 	getMaterialSourceKindColor,
 	getMaterialSourceKindLabel,
+	MATERIAL_FILE_ACCEPT,
 	MATERIAL_FILE_GUIDE,
 } from './lib/presentation';
 export { getClassroomMaterialDetailQueryKey, getClassroomMaterialsQueryKey } from './model/query-keys';

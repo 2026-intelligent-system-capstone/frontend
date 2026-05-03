@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { useInviteClassroomStudents, useRemoveClassroomStudent } from '@/entities/classroom';
 import type { User } from '@/entities/user';
 import { ApiClientError } from '@/shared/api/types';
+import { StateBlock } from '@/shared/ui';
 import { Card, Skeleton } from '@heroui/react';
 
 import { StudentInviteModal } from './invite-modal';
@@ -82,8 +83,10 @@ export function ClassroomStudentsPanel({
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<h2 className="text-lg font-semibold text-slate-900">학생 관리</h2>
-					<p className="mt-1 text-sm text-slate-500">강의실에 소속된 학생을 초대하거나 제거할 수 있습니다.</p>
+					<h2 className="text-neutral-text text-lg font-semibold">학생 관리</h2>
+					<p className="text-neutral-gray-500 mt-1 text-sm">
+						강의실에 소속된 학생을 초대하거나 제거할 수 있습니다.
+					</p>
 				</div>
 				{canManageStudents ? (
 					<StudentInviteModal
@@ -102,7 +105,7 @@ export function ClassroomStudentsPanel({
 			{isLoading && students.length === 0 ? (
 				<div className="grid gap-3 md:grid-cols-2">
 					{Array.from({ length: 2 }).map((_, index) => (
-						<Card key={index} className="border border-slate-200 bg-slate-50">
+						<Card key={index} className="border-border-subtle bg-surface border">
 							<Card.Content className="space-y-3 py-4 text-sm text-slate-600">
 								<div className="flex items-start justify-between gap-3">
 									<div className="flex-1 space-y-2">
@@ -117,7 +120,12 @@ export function ClassroomStudentsPanel({
 					))}
 				</div>
 			) : isError ? (
-				<p className="text-sm text-red-600">구성원 목록을 불러오지 못했습니다.</p>
+				<StateBlock
+					className="py-8"
+					description="학생 초대와 구성원 상태를 확인할 수 없습니다."
+					title="구성원 목록을 불러오지 못했습니다."
+					tone="error"
+				/>
 			) : (
 				<StudentsTable
 					canManageStudents={canManageStudents}

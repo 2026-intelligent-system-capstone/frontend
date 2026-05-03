@@ -8,6 +8,7 @@ import {
 	useReingestClassroomMaterial,
 } from '@/entities/classroom-material';
 import { ApiClientError } from '@/shared/api/types';
+import { StateBlock } from '@/shared/ui';
 import { Card, ErrorMessage, Skeleton } from '@heroui/react';
 
 import { MaterialDetailModal } from './material-detail-modal';
@@ -61,9 +62,9 @@ export function ClassroomMaterialsPanel({
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<h2 className="text-lg font-semibold text-slate-900">강의 자료</h2>
-					<p className="mt-1 text-sm text-slate-500">
-						파일 또는 YouTube 링크 자료를 등록하고 분석 상태를 관리합니다.
+					<h2 className="text-neutral-text text-lg font-semibold">강의 자료</h2>
+					<p className="text-neutral-gray-500 mt-1 text-sm">
+						파일 또는 HTTP/HTTPS 링크 자료를 등록하고 분석 상태를 관리합니다.
 					</p>
 				</div>
 				{showActions && canManageMaterials && actionWeek ? (
@@ -76,7 +77,7 @@ export function ClassroomMaterialsPanel({
 			{isLoading && materials.length === 0 ? (
 				<div className="space-y-3">
 					{Array.from({ length: 2 }).map((_, index) => (
-						<Card key={index} className="border border-slate-200 bg-slate-50">
+						<Card key={index} className="border-border-subtle bg-surface border">
 							<Card.Content className="space-y-4 py-4">
 								<div className="flex flex-wrap items-start justify-between gap-3">
 									<div className="space-y-2">
@@ -99,7 +100,12 @@ export function ClassroomMaterialsPanel({
 					))}
 				</div>
 			) : isError ? (
-				<ErrorMessage>자료 목록을 불러오지 못했습니다.</ErrorMessage>
+				<StateBlock
+					className="py-8"
+					description="자료 분석 상태와 업로드 목록을 확인할 수 없습니다."
+					title="자료 목록을 불러오지 못했습니다."
+					tone="error"
+				/>
 			) : (
 				<>
 					<MaterialsTable
