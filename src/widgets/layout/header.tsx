@@ -54,21 +54,38 @@ export function Header({ initialUser }: HeaderProps) {
 	};
 
 	return (
-		<header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-			<div>
-				<p className="text-sm text-slate-500">반갑습니다.</p>
-				<h1 className="text-lg font-semibold text-slate-900">{currentUser.name}님</h1>
+		<header
+			className="border-border-subtle bg-surface flex items-center justify-between gap-4 border-b px-4 py-4
+				sm:px-6"
+		>
+			<div className="min-w-0">
+				<p className="text-neutral-gray-500 text-sm">반갑습니다.</p>
+				<h1 className="text-neutral-text truncate text-lg font-semibold tracking-[-0.01em]">
+					{currentUser.name}님
+				</h1>
 			</div>
 
-			<div className="flex items-center gap-3">
-				<div className="hidden text-right sm:block">
-					<p className="text-sm font-medium text-slate-900">{currentUser.login_id}</p>
-					<p className="text-xs tracking-wide text-slate-400 uppercase">{currentUser.role}</p>
+			<div
+				className="border-border-subtle bg-surface-muted flex min-w-0 items-center gap-3 rounded-full border
+					px-2 py-1.5 sm:px-3"
+			>
+				<div className="hidden min-w-0 text-right sm:block">
+					<p className="text-neutral-text truncate text-sm font-medium">{currentUser.login_id}</p>
+					<p className="text-neutral-gray-500 font-mono text-xs font-semibold tracking-[0.08em] uppercase">
+						{currentUser.role}
+					</p>
 				</div>
-				<Avatar size="sm">
+				<Avatar className="border-border-subtle bg-surface text-brand-deep border" size="sm">
 					<Avatar.Fallback>{initials}</Avatar.Fallback>
 				</Avatar>
-				<Button isPending={logoutPending} size="sm" variant="outline" onPress={handleLogout}>
+				<Button
+					className="border-border-subtle bg-surface text-neutral-gray-700 hover:text-neutral-text
+						rounded-full px-4"
+					isPending={logoutPending}
+					size="sm"
+					variant="outline"
+					onPress={handleLogout}
+				>
 					로그아웃
 				</Button>
 			</div>
