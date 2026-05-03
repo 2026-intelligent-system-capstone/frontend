@@ -67,6 +67,9 @@
 	--font-mono: var(--font-mono);
 	--shadow-card: var(--shadow-card);
 	--shadow-button: var(--shadow-button);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-focus: var(--focus);
 }
 
 * {
