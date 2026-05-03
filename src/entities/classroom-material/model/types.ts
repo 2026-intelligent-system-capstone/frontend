@@ -46,7 +46,7 @@ export interface ClassroomMaterialLinkSource extends ClassroomMaterialBase {
 export type ClassroomMaterial = ClassroomMaterialFileSource | ClassroomMaterialLinkSource;
 
 export interface CreateClassroomMaterialFileRequest {
-	title: string;
+	title?: string;
 	week: number;
 	source_kind: 'file';
 	uploaded_file: File;
