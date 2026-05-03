@@ -16,7 +16,7 @@ interface StateBlockProps {
 const toneClassName: Record<StateBlockTone, string> = {
 	loading: 'border-border-subtle bg-surface-muted text-neutral-gray-500',
 	empty: 'border-border-subtle bg-surface-raised text-neutral-gray-500',
-	error: 'border-red-200 bg-danger-soft text-danger-text',
+	error: 'border-danger-text/20 bg-danger-soft text-danger-text',
 	disabled: 'border-border-subtle bg-surface-muted text-neutral-gray-400',
 };
 
