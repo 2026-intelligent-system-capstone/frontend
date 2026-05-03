@@ -10,7 +10,8 @@ export function SurfaceCard({ children, className, ...props }: SurfaceCardProps)
 	return (
 		<Card
 			className={cn(
-				'border-border-subtle bg-surface text-neutral-text shadow-card rounded-3xl border p-6 sm:p-8',
+				`border-border-subtle bg-surface-raised text-neutral-text shadow-card focus-within:border-border-medium
+				hover:border-border-medium rounded-3xl border p-6 transition-colors sm:p-8`,
 				className,
 			)}
 			{...props}

@@ -17,7 +17,9 @@ export function AppShell({ children, role, currentUser }: AppShellProps) {
 			<Sidebar role={role} />
 			<div className="flex min-h-screen min-w-0 flex-1 flex-col">
 				<Header initialUser={currentUser} />
-				<main className="min-w-0 flex-1">{children}</main>
+				<main id="main-content" className="bg-surface-muted/35 min-w-0 flex-1">
+					{children}
+				</main>
 			</div>
 		</div>
 	);

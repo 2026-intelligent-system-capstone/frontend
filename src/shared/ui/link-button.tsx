@@ -14,11 +14,11 @@ interface LinkButtonProps extends ComponentPropsWithoutRef<typeof Link> {
 }
 
 const variantClassName: Record<LinkButtonVariant, string> = {
-	primary: 'bg-neutral-text text-white shadow-button hover:opacity-90',
+	primary: 'bg-neutral-text text-white shadow-button hover:bg-neutral-gray-700',
 	secondary:
-		'border border-border-subtle bg-surface text-neutral-text hover:border-border-medium hover:bg-surface-muted',
+		'border border-border-medium bg-surface text-neutral-text shadow-button hover:border-border-medium hover:bg-surface-muted',
 	outline:
-		'border border-border-subtle bg-surface text-neutral-gray-700 hover:border-border-medium hover:text-neutral-text',
+		'border border-border-medium bg-surface text-neutral-gray-700 hover:border-border-medium hover:bg-surface-muted hover:text-neutral-text',
 	ghost: 'text-neutral-gray-500 hover:bg-surface-muted hover:text-neutral-text',
 };
 

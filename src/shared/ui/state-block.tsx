@@ -15,8 +15,8 @@ interface StateBlockProps {
 
 const toneClassName: Record<StateBlockTone, string> = {
 	loading: 'border-border-subtle bg-surface-muted text-neutral-gray-500',
-	empty: 'border-border-subtle bg-surface text-neutral-gray-500',
-	error: 'border-red-200 bg-red-50 text-red-700',
+	empty: 'border-border-subtle bg-surface-raised text-neutral-gray-500',
+	error: 'border-red-200 bg-danger-soft text-danger-text',
 	disabled: 'border-border-subtle bg-surface-muted text-neutral-gray-400',
 };
 
@@ -32,8 +32,7 @@ export function StateBlock({ icon, title, description, action, tone = 'empty', c
 		>
 			{icon ? (
 				<div
-					className="bg-brand-light text-brand-deep mb-4 flex size-12 items-center justify-center
-						rounded-full"
+					className="bg-brand-soft text-brand-deep mb-4 flex size-12 items-center justify-center rounded-full"
 				>
 					{icon}
 				</div>

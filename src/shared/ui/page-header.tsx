@@ -26,7 +26,7 @@ export function PageHeader({ eyebrow, title, description, actions, className }: 
 				) : null}
 				<div className="space-y-3">
 					<h1
-						className="text-neutral-text text-4xl leading-tight font-semibold tracking-[-0.02em]
+						className="text-neutral-text text-3xl leading-tight font-semibold tracking-[-0.02em] sm:text-4xl
 							md:text-5xl"
 					>
 						{title}
@@ -36,7 +36,11 @@ export function PageHeader({ eyebrow, title, description, actions, className }: 
 					) : null}
 				</div>
 			</div>
-			{actions ? <div className="flex flex-wrap items-center gap-3 lg:justify-end">{actions}</div> : null}
+			{actions ? (
+				<div className="flex flex-wrap items-center gap-3 self-start lg:justify-end lg:self-auto">
+					{actions}
+				</div>
+			) : null}
 		</header>
 	);
 }
