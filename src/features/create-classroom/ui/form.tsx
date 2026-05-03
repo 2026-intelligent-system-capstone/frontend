@@ -6,13 +6,12 @@ import { useRouter } from 'next/navigation';
 
 import { type CreateClassroomRequest } from '@/entities/classroom';
 import { useViewer } from '@/entities/viewer/client';
+import { useCreateClassroom } from '@/features/create-classroom';
 import { ApiClientError } from '@/shared/api/types';
 import { SEOUL_TIME_ZONE, dayjs } from '@/shared/lib/dayjs';
 import { Button, Checkbox, ErrorMessage, Input, Label, TextArea, TextField } from '@heroui/react';
 
-import { useCreateClassroom } from '../model/use-create-classroom';
-
-const gradeOptions = [1, 2, 3, 4, 5, 6] as const;
+const gradeOptions = [1, 2, 3, 4] as const;
 
 export function CreateClassroomForm() {
 	const router = useRouter();
