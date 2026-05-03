@@ -125,6 +125,7 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 
 										<div className="grid gap-4 md:grid-cols-2">
 											<Select
+												isRequired
 												className="w-full"
 												value={examType}
 												onChange={(value) => {

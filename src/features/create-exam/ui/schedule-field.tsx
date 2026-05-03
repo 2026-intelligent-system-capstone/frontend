@@ -13,6 +13,7 @@ interface CreateExamScheduleFieldProps {
 export function CreateExamScheduleField({ scheduleRange, onScheduleRangeChange }: CreateExamScheduleFieldProps) {
 	return (
 		<DateRangePicker
+			isRequired
 			className="w-full"
 			granularity="minute"
 			hideTimeZone
