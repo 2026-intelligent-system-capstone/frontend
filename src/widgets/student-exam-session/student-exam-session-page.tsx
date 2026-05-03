@@ -120,6 +120,13 @@ function getExpiresAtRemainingSeconds(expiresAt: string): number {
 	return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / TIMER_TICK_MS));
 }
 
+function getInitialRemainingSeconds(sheet: { duration_minutes?: number } | null | undefined, session: ExamSession | null): number {
+	if (session?.expires_at) {
+		return getExpiresAtRemainingSeconds(session.expires_at);
+	}
+	return getFallbackRemainingSeconds(sheet?.duration_minutes);
+}
+
 function getQuestionInputMode(questionType: StudentExamSessionQuestion['question_type']): 'choice' | 'text' {
 	return questionType === 'multiple_choice' ? 'choice' : 'text';
 }
@@ -217,14 +224,14 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		refetch: refetchSheet,
 	} = useStudentExamSessionSheet(examId);
 	const questions = useMemo(() => sheet?.questions ?? [], [sheet?.questions]);
-	const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
+	const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
 	const [showEndConfirm, setShowEndConfirm] = useState(false);
 	const [showConversationTree, setShowConversationTree] = useState(false);
 	const [answeredIds, setAnsweredIds] = useState<Set<string>>(new Set());
 	const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState<Record<string, number[]>>({});
-	const [multipleChoiceSelected, setMultipleChoiceSelected] = useState<number[]>([]);
+	const [multipleChoiceDrafts, setMultipleChoiceDrafts] = useState<Record<string, number[]>>({});
 	const [subjectiveAnswers, setSubjectiveAnswers] = useState<Record<string, string>>({});
-	const [subjectiveInput, setSubjectiveInput] = useState('');
+	const [subjectiveDrafts, setSubjectiveDrafts] = useState<Record<string, string>>({});
 	const [isFinished, setIsFinished] = useState(false);
 	const [remainingSeconds, setRemainingSeconds] = useState(getFallbackRemainingSeconds(undefined));
 	const [session, setSession] = useState<ExamSession | null>(null);
@@ -234,7 +241,9 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const [isAnswerSubmitting, setIsAnswerSubmitting] = useState(false);
 	const [isFinishing, setIsFinishing] = useState(false);
 	const [sessionStartRetryCount, setSessionStartRetryCount] = useState(0);
-	const [cameraStatus, setCameraStatus] = useState<CameraStatus>('checking');
+	const [cameraStatus, setCameraStatus] = useState<CameraStatus>(() =>
+		typeof navigator !== 'undefined' && !navigator.mediaDevices?.getUserMedia ? 'unavailable' : 'checking',
+	);
 
 	// Oral question state
 	const [oralTurns, setOralTurns] = useState<OralTurn[]>([]);
@@ -251,6 +260,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const continueButtonRef = useRef<HTMLButtonElement>(null);
 	const previousFocusedElementRef = useRef<HTMLElement | null>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
+	const supportsCamera = typeof navigator === 'undefined' || Boolean(navigator.mediaDevices?.getUserMedia);
 	const { isSpeaking, speak, stop: stopTTS } = useTTS();
 	const {
 		isListening: isSubjectiveListening,
@@ -258,7 +268,10 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		isPermissionBlocked: isSubjectiveSttPermissionBlocked,
 		errorMessage: subjectiveSttErrorMessage,
 		toggle: toggleSubjectiveMic,
-	} = useSTT((text) => setSubjectiveInput(text));
+	} = useSTT((text) => {
+		if (!currentQuestionId) return;
+		setSubjectiveDrafts((prev) => ({ ...prev, [currentQuestionId]: text }));
+	});
 	const {
 		isListening,
 		isSupported: isOralSttSupported,
@@ -267,10 +280,15 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		toggle: toggleMic,
 	} = useSTT((text) => setOralInput(text));
 
-	const currentQuestion = questions.find((q) => q.id === currentQuestionId) ?? questions[0] ?? null;
+	const currentQuestion = questions.find((q) => q.id === selectedQuestionId) ?? questions[0] ?? null;
+	const currentQuestionId = currentQuestion?.id ?? null;
 	const unansweredCount = Math.max(0, questions.length - answeredIds.size);
 	const isSessionReady = Boolean(session && !sessionError);
 	const cameraStatusMessage = getCameraStatusMessage(cameraStatus);
+	const multipleChoiceSelected = currentQuestionId
+		? (multipleChoiceDrafts[currentQuestionId] ?? multipleChoiceAnswers[currentQuestionId] ?? [])
+		: [];
+	const subjectiveInput = currentQuestionId ? (subjectiveDrafts[currentQuestionId] ?? subjectiveAnswers[currentQuestionId] ?? '') : '';
 	const currentAssistantTurn = useMemo<OralTurn | null>(() => {
 		if (currentQuestion?.question_type !== 'oral') return null;
 		return (
@@ -292,12 +310,6 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	});
 
 	useEffect(() => {
-		if (!currentQuestionId && questions.length > 0) {
-			setCurrentQuestionId(questions[0].id);
-		}
-	}, [currentQuestionId, questions]);
-
-	useEffect(() => {
 		if (showEndConfirm) {
 			previousFocusedElementRef.current =
 				document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -317,7 +329,10 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		setSessionError(null);
 		examsApi
 			.startSession(examId)
-			.then((startedSession) => setSession(startedSession))
+			.then((startedSession) => {
+				setSession(startedSession);
+				setRemainingSeconds(getInitialRemainingSeconds(sheet, startedSession));
+			})
 			.catch((error: unknown) => {
 				setSessionError(getErrorMessage(error));
 			});
@@ -338,15 +353,11 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	// Camera setup
 	useEffect(() => {
 		const videoElement = videoRef.current;
-		if (!navigator.mediaDevices?.getUserMedia) {
-			setCameraStatus('unavailable');
-			return undefined;
-		}
+		if (!supportsCamera) return undefined;
 
 		let isCancelled = false;
 		let activeStream: MediaStream | null = null;
 
-		setCameraStatus('checking');
 		navigator.mediaDevices
 			.getUserMedia({ video: true, audio: false })
 			.then((stream) => {
@@ -372,30 +383,20 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 				videoElement.srcObject = null;
 			}
 		};
-	}, []);
+	}, [supportsCamera]);
 
-	// Timer
-	useEffect(() => {
-		if (!sheet) return;
-
-		setRemainingSeconds(
-			session?.expires_at
-				? getExpiresAtRemainingSeconds(session.expires_at)
-				: getFallbackRemainingSeconds(sheet.duration_minutes),
-		);
-	}, [session?.expires_at, sheet]);
-
-	// Restore selections when switching questions
-	useEffect(() => {
-		if (!currentQuestionId) return;
-		setMultipleChoiceSelected(multipleChoiceAnswers[currentQuestionId] ?? []);
-		setSubjectiveInput(subjectiveAnswers[currentQuestionId] ?? '');
+	const resetOralQuestionState = () => {
 		setOralInput('');
 		setOralTurns([]);
 		setShowTextInput(false);
 		setTurnError(null);
 		lastSpokenAssistantTurnIdRef.current = null;
-	}, [currentQuestionId, multipleChoiceAnswers, subjectiveAnswers]);
+	};
+
+	const selectQuestion = (questionId: string) => {
+		resetOralQuestionState();
+		setSelectedQuestionId(questionId);
+	};
 
 	const retryStartSession = () => {
 		hasStartedSessionRef.current = false;
@@ -407,7 +408,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const goToNextQuestion = (currentId: string) => {
 		const currentIndex = questions.findIndex((q) => q.id === currentId);
 		if (currentIndex >= 0 && currentIndex < questions.length - 1) {
-			setCurrentQuestionId(questions[currentIndex + 1].id);
+			selectQuestion(questions[currentIndex + 1].id);
 		}
 	};
 
@@ -432,6 +433,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		try {
 			await recordAnswerTurn(currentQuestion, buildTurnPayload(currentQuestion, content, metadata));
 			setMultipleChoiceAnswers((prev) => ({ ...prev, [currentQuestion.id]: selected }));
+			setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }));
 			setAnsweredIds((prev) => new Set([...prev, currentQuestion.id]));
 			goToNextQuestion(currentQuestion.id);
 		} catch (error: unknown) {
@@ -450,6 +452,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 			const answer = subjectiveInput.trim();
 			await recordAnswerTurn(currentQuestion, buildTurnPayload(currentQuestion, answer));
 			setSubjectiveAnswers((prev) => ({ ...prev, [currentQuestion.id]: answer }));
+			setSubjectiveDrafts((prev) => ({ ...prev, [currentQuestion.id]: answer }));
 			setAnsweredIds((prev) => new Set([...prev, currentQuestion.id]));
 			goToNextQuestion(currentQuestion.id);
 		} catch (error: unknown) {
@@ -762,7 +765,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 					questions={questions}
 					currentId={currentQuestion.id}
 					answeredIds={answeredIds}
-					onSelect={setCurrentQuestionId}
+					onSelect={selectQuestion}
 				/>
 
 				<div
@@ -797,7 +800,9 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								isSubmitting={isAnswerSubmitting}
 								options={currentQuestion.answer_options}
 								selected={multipleChoiceSelected}
-								onChange={setMultipleChoiceSelected}
+								onChange={(selected) =>
+										setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }))
+									}
 								onSubmit={(selected) => void handleMultipleChoiceSubmit(selected)}
 							/>
 						</div>
@@ -831,7 +836,9 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 									placeholder="답변을 입력하거나 마이크로 말하세요."
 									rows={6}
 									value={subjectiveInput}
-									onChange={(event) => setSubjectiveInput(event.target.value)}
+									onChange={(event) =>
+										setSubjectiveDrafts((prev) => ({ ...prev, [currentQuestion.id]: event.target.value }))
+									}
 								/>
 								<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 									<div className="flex items-center gap-3">
