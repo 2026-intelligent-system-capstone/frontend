@@ -215,75 +215,52 @@ export function MaterialsTable({
 										<div className="w-32 overflow-hidden">
 											<ButtonGroup size="md">
 												{canManageMaterials ? (
-													<Tooltip delay={0}>
-														<Tooltip.Trigger>
-															<Button
-																aria-label={`${material.title} 다시 적재`}
-																isIconOnly
-																isPending={isProcessing}
-																variant="secondary"
-																onPress={() => void onReingest(material.id)}
-															>
-																<RefreshIcon className="size-5" />
-															</Button>
-														</Tooltip.Trigger>
-														<Tooltip.Content showArrow>
-															<Tooltip.Arrow />
-															<p>다시 적재</p>
-														</Tooltip.Content>
-													</Tooltip>
+													<Button
+														aria-label={`${material.title} 다시 적재`}
+														isIconOnly
+														isPending={isProcessing}
+														variant="secondary"
+														onPress={() => void onReingest(material.id)}
+													>
+														<RefreshIcon className="size-5" />
+													</Button>
 												) : null}
-												<Tooltip delay={0}>
-													<Tooltip.Trigger>
-														<Button
-															aria-label={
-																canDownload
-																	? `${material.title} 다운로드`
-																	: `${material.title} 링크 자료`
-															}
-															isDisabled={!canDownload}
-															isIconOnly
-															variant="secondary"
-															onPress={() => {
-																if (canDownload) {
-																	handleDownload(material.id);
-																}
-															}}
-														>
-															{canManageMaterials ? <ButtonGroup.Separator /> : null}
-															<DownloadIcon className="size-5" />
-														</Button>
-													</Tooltip.Trigger>
-													<Tooltip.Content showArrow>
-														<Tooltip.Arrow />
-														<p>
-															{canDownload
-																? '다운로드'
-																: '링크형 자료는 상세에서 확인하세요'}
-														</p>
-													</Tooltip.Content>
-												</Tooltip>
+												<Button
+													aria-label={
+														canDownload
+															? `${material.title} 다운로드`
+															: `${material.title} 다운로드할 수 없음. 링크형 자료는 상세에서 확인하세요`
+													}
+													isDisabled={!canDownload}
+													isIconOnly
+													variant="secondary"
+													onPress={() => {
+														if (canDownload) {
+															handleDownload(material.id);
+														}
+													}}
+												>
+													{canManageMaterials ? <ButtonGroup.Separator /> : null}
+													<DownloadIcon className="size-5" />
+												</Button>
 												{canManageMaterials ? (
-													<Tooltip delay={0}>
-														<Tooltip.Trigger>
-															<Button
-																aria-label={`${material.title} 삭제`}
-																isIconOnly
-																isPending={deletePending}
-																variant="danger-soft"
-																onPress={() => onDelete(material.id)}
-															>
-																<ButtonGroup.Separator />
-																<TrashIcon className="size-5" />
-															</Button>
-														</Tooltip.Trigger>
-														<Tooltip.Content showArrow>
-															<Tooltip.Arrow />
-															<p>삭제</p>
-														</Tooltip.Content>
-													</Tooltip>
+													<Button
+														aria-label={`${material.title} 삭제`}
+														isIconOnly
+														isPending={deletePending}
+														variant="danger-soft"
+														onPress={() => onDelete(material.id)}
+													>
+														<ButtonGroup.Separator />
+														<TrashIcon className="size-5" />
+													</Button>
 												) : null}
 											</ButtonGroup>
+											{canDownload ? null : (
+												<p className="text-neutral-gray-500 mt-1 truncate text-xs">
+													링크는 상세에서 확인
+												</p>
+											)}
 										</div>
 									</Table.Cell>
 								</Table.Row>
