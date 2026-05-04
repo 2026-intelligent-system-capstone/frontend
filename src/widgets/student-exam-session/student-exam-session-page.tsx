@@ -639,9 +639,9 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	if (isSheetError) {
 		return (
 			<div className="bg-surface-muted flex h-screen items-center justify-center px-6">
-				<div className="shadow-card w-full max-w-md rounded-3xl border border-red-200 bg-white p-6 text-center">
-					<h1 className="text-lg font-semibold text-red-700">시험지를 불러오지 못했습니다.</h1>
-					<p className="mt-2 text-sm text-red-600">{getErrorMessage(sheetError)}</p>
+				<div className="shadow-card w-full max-w-md rounded-3xl border-danger-text/20 bg-danger-soft border p-6 text-center">
+					<h1 className="text-danger-text text-lg font-semibold">시험지를 불러오지 못했습니다.</h1>
+					<p className="text-danger-text mt-2 text-sm">{getErrorMessage(sheetError)}</p>
 					<Button className="shadow-button mt-5" variant="primary" onPress={() => void refetchSheet()}>
 						다시 시도
 					</Button>
@@ -681,7 +681,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 						</h2>
 						<div id="end-exam-description">
 							{unansweredCount > 0 ? (
-								<p className="mt-2 text-sm text-amber-400">
+								<p className="text-warning-text mt-2 text-sm">
 									아직 {unansweredCount}개 문제가 답변되지 않았습니다.
 								</p>
 							) : (
@@ -731,7 +731,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 			/>
 
 			{sessionError && (
-				<div className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:px-6">
+				<div className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6">
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<span>시험 세션을 시작하지 못했습니다. {sessionError}</span>
 						<Button size="sm" variant="outline" onPress={retryStartSession}>
@@ -742,20 +742,20 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 			)}
 
 			{turnError && (
-				<div className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:px-6">
+				<div className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6">
 					답변을 제출하지 못했습니다. {turnError}
 				</div>
 			)}
 
 			{finishError && (
-				<div className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:px-6">
+				<div className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6">
 					평가 종료 처리에 실패했습니다. {finishError}
 				</div>
 			)}
 
 			{isFinishing && (
 				<div
-					className="border-brand/20 bg-brand-light text-brand-deep border-b px-4 py-3 text-sm font-medium
+					className="border-brand-border bg-brand-soft text-brand-deep border-b px-4 py-3 text-sm font-medium
 						sm:px-6"
 				>
 					평가를 종료하고 결과를 생성하는 중입니다...
@@ -817,7 +817,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								className="border-border-subtle bg-surface shadow-card rounded-3xl border px-5 py-4
 									sm:px-6"
 							>
-								<span className="mb-2 block text-xs font-medium text-amber-400">주관식</span>
+								<span className="text-warning-text mb-2 block text-xs font-medium">주관식</span>
 								<p className="text-neutral-text text-base leading-relaxed font-medium">
 									<LatexText text={currentQuestion.question_text} />
 								</p>
@@ -829,7 +829,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								<textarea
 									aria-label="주관식 답변 입력"
 									className="border-border-subtle bg-surface-muted text-neutral-text
-										placeholder:text-neutral-gray-500 focus:border-brand/50 w-full resize-none
+										placeholder:text-neutral-gray-500 focus:border-brand-border w-full resize-none
 										rounded-2xl border px-4 py-3 text-sm focus:bg-white focus:outline-none
 										disabled:cursor-not-allowed disabled:opacity-70"
 									disabled={
@@ -922,7 +922,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 										.map((turn) => (
 											<div key={turn.id} className="flex justify-end">
 												<div
-													className="border-brand/20 bg-brand-light text-brand-deep
+													className="border-brand-border bg-brand-soft text-brand-deep
 														shadow-button max-w-[85%] rounded-2xl border px-4 py-2 text-sm"
 												>
 													{turn.content}
@@ -964,14 +964,14 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 					<div
 						className={cn(
 							`border-border-subtle bg-neutral-text shadow-card absolute right-4 bottom-4 overflow-hidden
-							rounded-2xl border transition-all duration-300`,
+							rounded-2xl border transition-[right,transform,opacity] duration-300`,
 							showConversationTree && 'md:right-76',
 						)}
 					>
 						{cameraStatusMessage ? (
 							<div
 								className="flex h-24 w-36 items-center justify-center p-3 text-center text-xs
-									leading-relaxed text-red-100 sm:h-32 sm:w-44"
+									text-danger-soft leading-relaxed sm:h-32 sm:w-44"
 								role="status"
 							>
 								{cameraStatusMessage}

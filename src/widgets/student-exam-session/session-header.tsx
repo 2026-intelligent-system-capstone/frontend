@@ -70,8 +70,8 @@ export function SessionHeader({
 						className={cn(
 							'shadow-button rounded-full border px-4 py-2 font-mono text-sm font-semibold',
 							isWarning
-								? 'animate-pulse border-red-200 bg-red-50 text-red-700'
-								: 'border-brand/20 bg-brand-light text-brand-deep',
+								? 'border-danger-text/20 bg-danger-soft text-danger-text animate-pulse'
+								: 'border-brand-border bg-brand-soft text-brand-deep',
 						)}
 						role="timer"
 					>
@@ -90,7 +90,7 @@ export function SessionHeader({
 					</Button>
 					{!isFinished && (
 						<Button
-							className="border-red-200 bg-white text-red-700 hover:bg-red-50"
+							className="border-danger-text/20 bg-danger-soft text-danger-text hover:bg-danger-soft/80"
 							size="sm"
 							variant="outline"
 							onPress={onEndExam}

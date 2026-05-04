@@ -58,8 +58,8 @@ function getErrorMessage(error: unknown): string {
 function getScoreClassName(score: number | null): string {
 	if (score === null) return 'text-neutral-gray-500';
 	if (score >= 80) return 'text-brand-deep';
-	if (score >= 60) return 'text-amber-700';
-	return 'text-red-700';
+	if (score >= 60) return 'text-warning-text';
+	return 'text-danger-text';
 }
 
 function LoadingState(): ReactElement {
@@ -110,14 +110,14 @@ function PendingState({ result }: { result: StudentExamResult }): ReactElement {
 
 	return (
 		<ResultShell>
-			<SurfaceCard className="space-y-4 border-amber-200 bg-amber-50">
-				<p className="font-mono text-xs font-semibold tracking-[0.05em] text-amber-700 uppercase">
+			<SurfaceCard className="border-warning-text/20 bg-warning-soft space-y-4">
+				<p className="font-mono text-xs font-semibold tracking-[0.05em] text-warning-text uppercase">
 					Scoring in progress
 				</p>
 				<div className="space-y-2">
-					<p className="text-sm font-medium text-amber-800">{classroomName}</p>
-					<h1 className="text-2xl font-semibold tracking-[-0.02em] text-amber-950">{examTitle}</h1>
-					<p className="text-sm leading-6 text-amber-800">
+					<p className="text-sm font-medium text-warning-text">{classroomName}</p>
+					<h1 className="text-warning-text text-2xl font-semibold tracking-[-0.02em]">{examTitle}</h1>
+					<p className="text-sm leading-6 text-warning-text">
 						평가 결과를 생성하는 중입니다. 점수와 피드백이 준비되면 결과 리포트가 표시됩니다.
 					</p>
 				</div>
@@ -146,13 +146,13 @@ function FeedbackList({ items, tone }: { items: string[]; tone: 'strength' | 'we
 
 	return (
 		<SurfaceCard
-			className={cn('space-y-4', isStrength ? 'border-brand/20 bg-brand-light' : 'border-red-200 bg-red-50')}
+			className={cn('space-y-4', isStrength ? 'border-brand-border bg-brand-soft' : 'border-danger-text/20 bg-danger-soft')}
 		>
 			<div>
 				<p
 					className={cn(
 						'font-mono text-xs font-semibold tracking-[0.05em] uppercase',
-						isStrength ? 'text-brand-deep' : 'text-red-700',
+						isStrength ? 'text-brand-deep' : 'text-danger-text',
 					)}
 				>
 					Feedback
@@ -160,7 +160,7 @@ function FeedbackList({ items, tone }: { items: string[]; tone: 'strength' | 'we
 				<h2
 					className={cn(
 						'mt-2 text-xl font-semibold tracking-[-0.01em]',
-						isStrength ? 'text-neutral-text' : 'text-red-950',
+						isStrength ? 'text-brand-deep' : 'text-danger-text',
 					)}
 				>
 					{title}
@@ -173,7 +173,7 @@ function FeedbackList({ items, tone }: { items: string[]; tone: 'strength' | 'we
 							key={item}
 							className={cn(
 								'flex items-start gap-3 text-sm leading-6',
-								isStrength ? 'text-brand-deep' : 'text-red-800',
+								isStrength ? 'text-brand-deep' : 'text-danger-text',
 							)}
 						>
 							<span aria-hidden="true" className="mt-1 size-1.5 shrink-0 rounded-full bg-current" />
@@ -182,7 +182,7 @@ function FeedbackList({ items, tone }: { items: string[]; tone: 'strength' | 'we
 					))}
 				</ul>
 			) : (
-				<p className={cn('text-sm leading-6', isStrength ? 'text-brand-deep' : 'text-red-800')}>
+				<p className={cn('text-sm leading-6', isStrength ? 'text-brand-deep' : 'text-danger-text')}>
 					{emptyMessage}
 				</p>
 			)}
@@ -282,17 +282,17 @@ function ImprovementSuggestions({ suggestions }: { suggestions: string[] }): Rea
 	if (suggestions.length === 0) return null;
 
 	return (
-		<SurfaceCard className="space-y-4 border-violet-200 bg-violet-50">
+		<SurfaceCard className="border-brand-border bg-brand-soft space-y-4">
 			<div>
-				<p className="font-mono text-xs font-semibold tracking-[0.05em] text-violet-700 uppercase">
+				<p className="font-mono text-xs font-semibold tracking-[0.05em] text-brand-deep uppercase">
 					Next review
 				</p>
-				<h2 className="mt-2 text-xl font-semibold tracking-[-0.01em] text-violet-950">학습 개선 제안</h2>
+				<h2 className="mt-2 text-xl font-semibold tracking-[-0.01em] text-brand-deep">학습 개선 제안</h2>
 			</div>
 			<div className="space-y-3">
 				{suggestions.map((suggestion) => (
-					<div key={suggestion} className="flex items-start gap-3 text-sm leading-6 text-violet-800">
-						<span className="mt-1 size-1.5 shrink-0 rounded-full bg-violet-500" aria-hidden="true" />
+					<div key={suggestion} className="flex items-start gap-3 text-sm leading-6 text-brand-deep">
+						<span className="mt-1 size-1.5 shrink-0 rounded-full bg-brand-deep" aria-hidden="true" />
 						<span>{suggestion}</span>
 					</div>
 				))}

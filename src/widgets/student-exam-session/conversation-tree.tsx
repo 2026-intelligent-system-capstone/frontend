@@ -27,7 +27,7 @@ export function ConversationTree({ turns, isOpen, onClose }: ConversationTreePro
 				<p className="text-neutral-text text-sm font-semibold">대화 흐름</p>
 				<button
 					aria-label="대화 흐름 닫기"
-					className="border-border-subtle bg-surface-muted text-neutral-gray-500 hover:bg-brand-light
+					className="border-border-subtle bg-surface-muted text-neutral-gray-500 hover:bg-brand-soft
 						hover:text-brand-deep rounded-full border px-2 py-1 text-xs transition-colors"
 					type="button"
 					onClick={onClose}
@@ -63,7 +63,7 @@ export function ConversationTree({ turns, isOpen, onClose }: ConversationTreePro
 									<div
 										className={`rounded-2xl border px-3 py-2 text-xs leading-relaxed ${
 											isAI
-												? 'border-brand/20 bg-brand-light text-brand-deep'
+												? 'border-brand-border bg-brand-soft text-brand-deep'
 												: 'border-border-subtle bg-surface-muted text-neutral-text'
 											}`}
 									>

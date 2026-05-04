@@ -41,13 +41,13 @@ export function MultipleChoiceInput({
 						<label
 							key={index}
 							className={cn(
-								`has-[:focus-visible]:ring-brand/30 flex items-center gap-3 rounded-2xl border px-4 py-3
-								text-left text-sm transition-all has-[:focus-visible]:ring-2
+								`has-[:focus-visible]:ring-brand-border flex items-center gap-3 rounded-2xl border px-4 py-3
+								text-left text-sm transition-[border-color,background-color,color,box-shadow] has-[:focus-visible]:ring-2
 								has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-white`,
 								isSelected
-									? 'border-brand/40 bg-brand-light text-brand-deep shadow-button'
-									: `border-border-subtle bg-surface-muted text-neutral-text hover:border-brand/30
-										hover:bg-white`,
+									? 'border-brand-border bg-brand-soft text-brand-deep shadow-button'
+									: `border-border-subtle bg-surface-muted text-neutral-text hover:border-brand-border
+										hover:bg-surface`,
 								isInteractionDisabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
 							)}
 						>
@@ -66,8 +66,8 @@ export function MultipleChoiceInput({
 									`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-xs
 									font-bold`,
 									isSelected
-										? 'border-brand bg-brand text-white'
-										: 'border-border-subtle text-neutral-gray-500 bg-white',
+										? 'border-brand-border bg-brand-soft text-brand-deep'
+										: 'border-border-subtle bg-surface text-neutral-gray-500',
 								)}
 							>
 								{isSelected ? '✓' : String.fromCharCode(65 + index)}

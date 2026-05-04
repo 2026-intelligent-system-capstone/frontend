@@ -56,7 +56,7 @@ export function SessionControls({
 					onToggle={onMicToggle}
 				/>
 				<button
-					className="border-border-subtle bg-surface-muted text-neutral-text hover:bg-brand-light
+					className="border-border-subtle bg-surface-muted text-neutral-text hover:bg-brand-soft
 						hover:text-brand-deep rounded-full border px-4 py-2 text-xs font-medium transition-colors
 						disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={isTextToggleDisabled}
@@ -80,7 +80,7 @@ export function SessionControls({
 					<textarea
 						aria-label="구술형 답변 입력"
 						className="border-border-subtle bg-surface-muted text-neutral-text
-							placeholder:text-neutral-gray-500 focus:border-brand/50 flex-1 resize-none rounded-2xl
+							placeholder:text-neutral-gray-500 focus:border-brand-border flex-1 resize-none rounded-2xl
 							border px-4 py-3 text-sm focus:bg-white focus:outline-none disabled:cursor-not-allowed
 							disabled:opacity-70"
 						disabled={isSubmitting || isDisabled}
