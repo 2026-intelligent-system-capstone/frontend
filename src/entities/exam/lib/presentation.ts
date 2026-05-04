@@ -32,7 +32,7 @@ export const getExamTypeLabel = (type: Exam['exam_type']) => {
 export const getExamTypeColor = (type: Exam['exam_type']): ChipProps['color'] => {
 	switch (type) {
 		case 'weekly':
-			return 'accent';
+			return 'default';
 		case 'midterm':
 			return 'warning';
 		case 'final':
@@ -40,7 +40,7 @@ export const getExamTypeColor = (type: Exam['exam_type']): ChipProps['color'] =>
 		case 'mock':
 			return 'success';
 		case 'project':
-			return 'default';
+			return 'accent';
 	}
 };
 
@@ -58,7 +58,7 @@ export const getExamStatusLabel = (status: Exam['status']) => {
 export const getExamStatusColor = (status: Exam['status']): ChipProps['color'] => {
 	switch (status) {
 		case 'ready':
-			return 'accent';
+			return 'default';
 		case 'in_progress':
 			return 'success';
 		case 'closed':
@@ -137,7 +137,7 @@ export const getBloomLevelColor = (level: BloomLevel): ChipProps['color'] => {
 		case 'remember':
 			return 'default';
 		case 'understand':
-			return 'accent';
+			return 'default';
 		case 'apply':
 			return 'success';
 		case 'analyze':
@@ -189,7 +189,7 @@ export const getQuestionTypeColor = (questionType: ExamQuestionType): ChipProps[
 		case 'none':
 			return 'default';
 		case 'multiple_choice':
-			return 'accent';
+			return 'default';
 		case 'subjective':
 			return 'warning';
 		case 'oral':
@@ -211,7 +211,7 @@ export const getQuestionStatusLabel = (status: ExamQuestionStatus) => {
 export const getQuestionStatusColor = (status: ExamQuestionStatus): ChipProps['color'] => {
 	switch (status) {
 		case 'generated':
-			return 'accent';
+			return 'default';
 		case 'reviewed':
 			return 'success';
 		case 'deleted':

@@ -330,7 +330,7 @@ export function ExamManagementScreen({
 						{getExamGenerationStatusDescription(exam.generation_status)}
 					</p>
 					{exam.generation_error ? (
-						<p className="mt-2 text-sm text-red-600">오류 {exam.generation_error}</p>
+						<p className="text-danger-text mt-2 text-sm">오류 {exam.generation_error}</p>
 					) : null}
 				</div>
 			</SurfaceCard>
@@ -451,9 +451,9 @@ export function ExamManagementScreen({
 					<h2 className="text-neutral-text text-lg font-semibold">문항 목록</h2>
 					<p className="text-neutral-gray-500 mt-1 text-sm">총 {exam.questions.length}개</p>
 				</div>
-				{deleteErrorMessage ? <p className="text-sm text-red-600">{deleteErrorMessage}</p> : null}
+				{deleteErrorMessage ? <p className="text-danger-text text-sm">{deleteErrorMessage}</p> : null}
 				{isMaterialsError || materialsQuery.isError ? (
-					<p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+					<p className="border-warning-text/20 bg-warning-soft text-warning-text rounded-2xl border px-4 py-3 text-sm">
 						참고 자료 정보를 불러오지 못해 연결 자료 표시는 일부 제한될 수 있습니다.
 					</p>
 				) : null}

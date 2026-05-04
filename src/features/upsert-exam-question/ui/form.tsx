@@ -165,8 +165,8 @@ export function UpsertExamQuestionForm({
 		<form className="space-y-4" id={formId} onSubmit={handleSubmit}>
 			{hideHeader ? null : (
 				<div>
-					<h3 className="text-base font-semibold text-slate-900">{title}</h3>
-					<p className="mt-1 text-sm text-slate-500">
+					<h3 className="text-base font-semibold text-neutral-text">{title}</h3>
+					<p className="mt-1 text-sm text-neutral-gray-500">
 						문항 내용과 연결 자료를 현재 시험 문맥에서 바로 수정합니다.
 					</p>
 				</div>

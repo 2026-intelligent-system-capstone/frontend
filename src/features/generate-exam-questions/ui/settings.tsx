@@ -84,7 +84,7 @@ export function GenerateExamQuestionsSettings({
 				/>
 			</TextField>
 
-			<div className="rounded-large space-y-4 border border-slate-200 bg-slate-50 p-4">
+			<div className="rounded-large space-y-4 border border-border-subtle bg-surface-muted p-4">
 				<GenerateExamQuestionsBloomSummary totalCount={totalCount} />
 
 				<div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] md:items-start">
@@ -95,7 +95,7 @@ export function GenerateExamQuestionsSettings({
 					/>
 				</div>
 
-				<div className="rounded-large space-y-4 border border-slate-200 bg-white p-4">
+				<div className="rounded-large space-y-4 border border-border-subtle bg-surface p-4">
 					<Select
 						className="w-full"
 						value={questionTypeStrategy}
@@ -121,7 +121,7 @@ export function GenerateExamQuestionsSettings({
 									<ListBox.Item key={option.value} id={option.value} textValue={option.label}>
 										<div className="space-y-1">
 											<p>{option.label}</p>
-											<p className="text-xs text-slate-500">{option.description}</p>
+											<p className="text-xs text-neutral-gray-500">{option.description}</p>
 										</div>
 										<ListBox.ItemIndicator />
 									</ListBox.Item>

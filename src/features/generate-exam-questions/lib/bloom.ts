@@ -187,12 +187,12 @@ export const bloomPyramidWidthClassNames: Record<BloomLevel, string> = {
 };
 
 export const bloomPyramidToneClassNames: Record<BloomLevel, string> = {
-	create: 'bg-violet-100 text-violet-900',
-	evaluate: 'bg-rose-100 text-rose-900',
-	analyze: 'bg-amber-100 text-amber-900',
-	apply: 'bg-emerald-100 text-emerald-900',
-	understand: 'bg-sky-100 text-sky-900',
-	remember: 'bg-slate-200 text-slate-800',
+	create: 'bg-brand-soft text-brand-deep',
+	evaluate: 'bg-danger-soft text-danger-text',
+	analyze: 'bg-warning-soft text-warning-text',
+	apply: 'bg-success-soft text-success-text',
+	understand: 'bg-surface-muted text-neutral-gray-700',
+	remember: 'bg-surface-muted text-neutral-gray-700',
 };
 
 export const getDisplayCountValue = (value: string, maxValue = MAX_BLOOM_LEVEL_QUESTION_COUNT) => {
