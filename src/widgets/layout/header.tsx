@@ -8,6 +8,10 @@ import type { User } from '@/entities/user';
 import { useViewer, useViewerAuthActions } from '@/entities/viewer/client';
 import { Avatar, Button } from '@heroui/react';
 
+export const shouldRedirectUnauthenticatedViewer = (userUnauthenticated: boolean): boolean => {
+	return userUnauthenticated;
+};
+
 const getInitials = (name: string) => {
 	return name
 		.split(' ')
@@ -25,8 +29,8 @@ export function Header({ initialUser }: HeaderProps) {
 	const router = useRouter();
 	const { user, userUnauthenticated } = useViewer();
 	const { logout, logoutPending } = useViewerAuthActions();
-	const currentUser = userUnauthenticated ? initialUser : (user ?? initialUser);
-	const shouldRedirectToLogin = userUnauthenticated && !initialUser;
+	const currentUser = userUnauthenticated ? null : (user ?? initialUser);
+	const shouldRedirectToLogin = shouldRedirectUnauthenticatedViewer(userUnauthenticated);
 
 	useEffect(() => {
 		if (!shouldRedirectToLogin) {

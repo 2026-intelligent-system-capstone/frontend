@@ -4,10 +4,28 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://loca
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
 	body?: BodyInit | FormData | object | null;
+	skipAuthRefresh?: boolean;
 }
+
+const AUTH_REFRESH_PATH = '/api/auth/refresh';
+const AUTH_REFRESH_EXCLUDED_PATHS = new Set(['/api/auth/login', '/api/auth/logout', AUTH_REFRESH_PATH]);
+
+let refreshPromise: Promise<void> | null = null;
 
 const isFormData = (value: RequestOptions['body']): value is FormData => {
 	return typeof FormData !== 'undefined' && value instanceof FormData;
+};
+
+const normalizePath = (path: string): string => {
+	if (path.startsWith(API_BASE_URL)) {
+		return path.slice(API_BASE_URL.length);
+	}
+
+	return path.startsWith('/') ? path : `/${path}`;
+};
+
+const shouldAttemptAuthRefresh = (path: string, status: number, skipAuthRefresh: boolean): boolean => {
+	return status === 401 && !skipAuthRefresh && !AUTH_REFRESH_EXCLUDED_PATHS.has(normalizePath(path));
 };
 
 export const buildApiUrl = (path: string): string => {
@@ -63,23 +81,48 @@ const toRequestBody = (body: RequestOptions['body']): BodyInit | undefined => {
 	return JSON.stringify(body);
 };
 
+const createApiError = async (response: Response): Promise<ApiClientError> => {
+	const error = await parseResponse<ApiErrorResponse>(response).catch(() => undefined);
+
+	return new ApiClientError({
+		status: response.status,
+		message: error?.message ?? '요청 처리 중 오류가 발생했습니다.',
+		errorCode: error?.error_code,
+		detail: error?.detail,
+	});
+};
+
+const refreshAuthSession = async (): Promise<void> => {
+	refreshPromise ??= request<void>(AUTH_REFRESH_PATH, {
+		method: 'POST',
+		skipAuthRefresh: true,
+	}).finally(() => {
+		refreshPromise = null;
+	});
+
+	return refreshPromise;
+};
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+	const { body, skipAuthRefresh = false, ...fetchOptions } = options;
 	const response = await fetch(buildApiUrl(path), {
-		...options,
-		body: toRequestBody(options.body),
+		...fetchOptions,
+		body: toRequestBody(body),
 		credentials: 'include',
-		headers: buildHeaders(options.headers, options.body),
+		headers: buildHeaders(fetchOptions.headers, body),
 	});
 
 	if (!response.ok) {
-		const error = await parseResponse<ApiErrorResponse>(response).catch(() => undefined);
+		if (shouldAttemptAuthRefresh(path, response.status, skipAuthRefresh)) {
+			try {
+				await refreshAuthSession();
+				return request<T>(path, { ...options, skipAuthRefresh: true });
+			} catch {
+				throw await createApiError(response);
+			}
+		}
 
-		throw new ApiClientError({
-			status: response.status,
-			message: error?.message ?? '요청 처리 중 오류가 발생했습니다.',
-			errorCode: error?.error_code,
-			detail: error?.detail,
-		});
+		throw await createApiError(response);
 	}
 
 	return parseResponse<T>(response);

@@ -23,6 +23,9 @@ const authApi = {
 	logout: async (): Promise<void> => {
 		await apiClient.post<void>('/api/auth/logout');
 	},
+	refresh: async (): Promise<void> => {
+		await apiClient.post<void>('/api/auth/refresh', undefined, { skipAuthRefresh: true });
+	},
 };
 
 export const VIEWER_QUERY_KEY = ['viewer', 'me'] as const;
