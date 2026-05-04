@@ -268,6 +268,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		isPermissionBlocked: isSubjectiveSttPermissionBlocked,
 		errorMessage: subjectiveSttErrorMessage,
 		toggle: toggleSubjectiveMic,
+		stop: stopSubjectiveMic,
 	} = useSTT((text) => {
 		if (!currentQuestionId) return;
 		setSubjectiveDrafts((prev) => ({ ...prev, [currentQuestionId]: text }));
@@ -394,6 +395,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	};
 
 	const selectQuestion = (questionId: string) => {
+		stopSubjectiveMic();
 		resetOralQuestionState();
 		setSelectedQuestionId(questionId);
 	};

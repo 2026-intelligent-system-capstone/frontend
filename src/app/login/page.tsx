@@ -23,7 +23,8 @@ export default async function LoginPage() {
 	}
 
 	return (
-		<div
+		<main
+			id="main-content"
 			className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white
 				to-white px-4 py-16"
 		>
@@ -39,6 +40,6 @@ export default async function LoginPage() {
 					organizationsLoadFailed={organizations === null}
 				/>
 			</div>
-		</div>
+		</main>
 	);
 }
