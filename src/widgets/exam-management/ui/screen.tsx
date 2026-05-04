@@ -453,7 +453,10 @@ export function ExamManagementScreen({
 				</div>
 				{deleteErrorMessage ? <p className="text-danger-text text-sm">{deleteErrorMessage}</p> : null}
 				{isMaterialsError || materialsQuery.isError ? (
-					<p className="border-warning-text/20 bg-warning-soft text-warning-text rounded-2xl border px-4 py-3 text-sm">
+					<p
+						className="border-warning-text/20 bg-warning-soft text-warning-text rounded-2xl border px-4 py-3
+							text-sm"
+					>
 						참고 자료 정보를 불러오지 못해 연결 자료 표시는 일부 제한될 수 있습니다.
 					</p>
 				) : null}

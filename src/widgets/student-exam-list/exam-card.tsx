@@ -80,8 +80,8 @@ export function ExamCard({ exam }: ExamCardProps) {
 								</Chip>
 								{isActive ? (
 									<span
-										className="border-brand-border bg-brand-soft text-brand-deep inline-flex items-center gap-1
-											rounded-full border px-2.5 py-1 text-xs font-medium"
+										className="border-brand-border bg-brand-soft text-brand-deep inline-flex
+											items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium"
 									>
 										<span className="bg-brand-deep size-1.5 rounded-full" aria-hidden="true" />
 										지금 응시 가능

@@ -26,14 +26,16 @@ export function GenerateExamQuestionsMaterials({
 	onAppendScopeCandidate,
 }: GenerateExamQuestionsMaterialsProps) {
 	return (
-		<div className="rounded-large space-y-3 border border-border-subtle bg-surface-muted p-4">
+		<div className="rounded-large border-border-subtle bg-surface-muted space-y-3 border p-4">
 			<div>
-				<p className="text-sm font-medium text-neutral-text">참고 자료 선택</p>
-				<p className="mt-1 text-xs text-neutral-gray-500">적재 완료된 자료를 선택하면 RAG 검색 품질이 좋아집니다.</p>
+				<p className="text-neutral-text text-sm font-medium">참고 자료 선택</p>
+				<p className="text-neutral-gray-500 mt-1 text-xs">
+					적재 완료된 자료를 선택하면 RAG 검색 품질이 좋아집니다.
+				</p>
 			</div>
 			<div className="grid gap-3">
 				{materials.map((material) => (
-					<div key={material.id} className="rounded-medium border border-border-subtle bg-surface p-3">
+					<div key={material.id} className="rounded-medium border-border-subtle bg-surface border p-3">
 						<Checkbox
 							className="w-full items-start justify-between gap-3"
 							isDisabled={material.ingest_status !== 'completed'}
@@ -47,7 +49,7 @@ export function GenerateExamQuestionsMaterials({
 							</Checkbox.Control>
 							<Checkbox.Content className="min-w-0 flex-1">
 								<div className="flex min-w-0 flex-wrap items-center gap-2">
-									<p className="truncate text-sm font-medium text-neutral-text">{material.title}</p>
+									<p className="text-neutral-text truncate text-sm font-medium">{material.title}</p>
 									<Chip
 										color={getMaterialSourceKindColor(material.source_kind)}
 										size="sm"
@@ -63,11 +65,11 @@ export function GenerateExamQuestionsMaterials({
 										<Chip.Label>{getMaterialIngestStatusLabel(material.ingest_status)}</Chip.Label>
 									</Chip>
 								</div>
-								<p className="mt-1 truncate text-xs text-neutral-gray-500">
+								<p className="text-neutral-gray-500 mt-1 truncate text-xs">
 									{getMaterialDisplayName(material)}
 								</p>
 								{material.ingest_error ? (
-									<p className="mt-1 text-xs text-danger-text">{material.ingest_error}</p>
+									<p className="text-danger-text mt-1 text-xs">{material.ingest_error}</p>
 								) : null}
 							</Checkbox.Content>
 						</Checkbox>
@@ -90,7 +92,7 @@ export function GenerateExamQuestionsMaterials({
 				))}
 			</div>
 			{!hasCompletedMaterials ? (
-				<p className="text-xs text-warning-text">
+				<p className="text-warning-text text-xs">
 					아직 적재 완료된 강의 자료가 없습니다. 자료 적재가 완료된 뒤 다시 시도하세요.
 				</p>
 			) : null}

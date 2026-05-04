@@ -139,8 +139,8 @@ function GenerateExamQuestionsFormBody({
 		<form className="space-y-5" id={formId} onSubmit={handleSubmit}>
 			{hideHeader ? null : (
 				<div>
-					<h3 className="text-base font-semibold text-neutral-text">AI 문항 생성</h3>
-					<p className="mt-1 text-sm text-neutral-gray-500">
+					<h3 className="text-neutral-text text-base font-semibold">AI 문항 생성</h3>
+					<p className="text-neutral-gray-500 mt-1 text-sm">
 						적재 완료된 강의 자료와 추출 범위를 기반으로 문항을 생성합니다.
 					</p>
 				</div>

@@ -21,11 +21,11 @@ export function GenerateExamQuestionsBloomEditorRow({
 	const countValue = getDisplayCountValue(bloomCounts[option.value]);
 
 	return (
-		<div className="rounded-large border border-border-subtle bg-surface p-3">
+		<div className="rounded-large border-border-subtle bg-surface border p-3">
 			<div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
 				<div className="space-y-1">
 					<div className="flex items-center gap-2">
-						<p className="text-sm font-medium text-neutral-text">{option.label}</p>
+						<p className="text-neutral-text text-sm font-medium">{option.label}</p>
 						<Tooltip delay={0}>
 							<Tooltip.Trigger>
 								<Button
@@ -40,14 +40,14 @@ export function GenerateExamQuestionsBloomEditorRow({
 							<Tooltip.Content showArrow>
 								<Tooltip.Arrow />
 								<div className="max-w-xs space-y-1 p-1 text-xs leading-5">
-									<p className="font-semibold text-neutral-text">{option.label}</p>
+									<p className="text-neutral-text font-semibold">{option.label}</p>
 									<p className="text-neutral-gray-700">{option.evaluationFocus}</p>
 									<p className="text-neutral-gray-500">예: {option.exampleQuestion}</p>
 								</div>
 							</Tooltip.Content>
 						</Tooltip>
 					</div>
-					<p className="text-xs text-neutral-gray-500">{option.description}</p>
+					<p className="text-neutral-gray-500 text-xs">{option.description}</p>
 				</div>
 				<NumberField
 					aria-label={`${option.label} 문항 수`}

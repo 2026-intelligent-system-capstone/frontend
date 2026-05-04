@@ -35,7 +35,10 @@ export function ClassroomList({ classrooms, isError }: ClassroomListProps) {
 				<SurfaceCard key={classroom.id} className="flex flex-col gap-5 p-5 sm:p-6">
 					<div className="flex items-start justify-between gap-4">
 						<div className="min-w-0 space-y-2">
-							<h2 className="text-neutral-text truncate text-xl font-semibold leading-6 tracking-[-0.01em]">
+							<h2
+								className="text-neutral-text truncate text-xl leading-6 font-semibold
+									tracking-[-0.01em]"
+							>
 								{classroom.name}
 							</h2>
 							<p className="text-neutral-gray-500 truncate text-sm leading-6">
@@ -55,10 +58,15 @@ export function ClassroomList({ classrooms, isError }: ClassroomListProps) {
 					</p>
 
 					<div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-						<span className="border-border-subtle bg-surface-muted text-neutral-gray-700 rounded-full border px-3 py-1">
+						<span
+							className="border-border-subtle bg-surface-muted text-neutral-gray-700 rounded-full border
+								px-3 py-1"
+						>
 							교수자 {classroom.professor_ids.length}명
 						</span>
-						<span className="border-brand-border bg-brand-soft text-brand-deep rounded-full border px-3 py-1">
+						<span
+							className="border-brand-border bg-brand-soft text-brand-deep rounded-full border px-3 py-1"
+						>
 							자료 열람 {classroom.allow_student_material_access ? '허용' : '제한'}
 						</span>
 					</div>

@@ -120,7 +120,10 @@ function getExpiresAtRemainingSeconds(expiresAt: string): number {
 	return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / TIMER_TICK_MS));
 }
 
-function getInitialRemainingSeconds(sheet: { duration_minutes?: number } | null | undefined, session: ExamSession | null): number {
+function getInitialRemainingSeconds(
+	sheet: { duration_minutes?: number } | null | undefined,
+	session: ExamSession | null,
+): number {
 	if (session?.expires_at) {
 		return getExpiresAtRemainingSeconds(session.expires_at);
 	}
@@ -289,7 +292,9 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const multipleChoiceSelected = currentQuestionId
 		? (multipleChoiceDrafts[currentQuestionId] ?? multipleChoiceAnswers[currentQuestionId] ?? [])
 		: [];
-	const subjectiveInput = currentQuestionId ? (subjectiveDrafts[currentQuestionId] ?? subjectiveAnswers[currentQuestionId] ?? '') : '';
+	const subjectiveInput = currentQuestionId
+		? (subjectiveDrafts[currentQuestionId] ?? subjectiveAnswers[currentQuestionId] ?? '')
+		: '';
 	const currentAssistantTurn = useMemo<OralTurn | null>(() => {
 		if (currentQuestion?.question_type !== 'oral') return null;
 		return (
@@ -639,7 +644,10 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	if (isSheetError) {
 		return (
 			<div className="bg-surface-muted flex h-screen items-center justify-center px-6">
-				<div className="shadow-card w-full max-w-md rounded-3xl border-danger-text/20 bg-danger-soft border p-6 text-center">
+				<div
+					className="shadow-card border-danger-text/20 bg-danger-soft w-full max-w-md rounded-3xl border p-6
+						text-center"
+				>
 					<h1 className="text-danger-text text-lg font-semibold">시험지를 불러오지 못했습니다.</h1>
 					<p className="text-danger-text mt-2 text-sm">{getErrorMessage(sheetError)}</p>
 					<Button className="shadow-button mt-5" variant="primary" onPress={() => void refetchSheet()}>
@@ -731,7 +739,9 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 			/>
 
 			{sessionError && (
-				<div className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6">
+				<div
+					className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6"
+				>
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<span>시험 세션을 시작하지 못했습니다. {sessionError}</span>
 						<Button size="sm" variant="outline" onPress={retryStartSession}>
@@ -742,13 +752,17 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 			)}
 
 			{turnError && (
-				<div className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6">
+				<div
+					className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6"
+				>
 					답변을 제출하지 못했습니다. {turnError}
 				</div>
 			)}
 
 			{finishError && (
-				<div className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6">
+				<div
+					className="border-danger-text/20 bg-danger-soft text-danger-text border-b px-4 py-3 text-sm sm:px-6"
+				>
 					평가 종료 처리에 실패했습니다. {finishError}
 				</div>
 			)}
@@ -803,8 +817,8 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								options={currentQuestion.answer_options}
 								selected={multipleChoiceSelected}
 								onChange={(selected) =>
-										setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }))
-									}
+									setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }))
+								}
 								onSubmit={(selected) => void handleMultipleChoiceSubmit(selected)}
 							/>
 						</div>
@@ -839,7 +853,10 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 									rows={6}
 									value={subjectiveInput}
 									onChange={(event) =>
-										setSubjectiveDrafts((prev) => ({ ...prev, [currentQuestion.id]: event.target.value }))
+										setSubjectiveDrafts((prev) => ({
+											...prev,
+											[currentQuestion.id]: event.target.value,
+										}))
 									}
 								/>
 								<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -970,8 +987,8 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 					>
 						{cameraStatusMessage ? (
 							<div
-								className="flex h-24 w-36 items-center justify-center p-3 text-center text-xs
-									text-danger-soft leading-relaxed sm:h-32 sm:w-44"
+								className="text-danger-soft flex h-24 w-36 items-center justify-center p-3 text-center
+									text-xs leading-relaxed sm:h-32 sm:w-44"
 								role="status"
 							>
 								{cameraStatusMessage}

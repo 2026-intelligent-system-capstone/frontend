@@ -69,10 +69,7 @@ export function SessionControls({
 				</button>
 			</div>
 
-			<p
-				className="text-neutral-gray-500 text-center text-xs"
-				role={controlStatusMessage ? 'status' : undefined}
-			>
+			<p className="text-neutral-gray-500 text-center text-xs" role={controlStatusMessage ? 'status' : undefined}>
 				{controlStatusMessage ??
 					(isListening ? '음성 인식 중... 말씀해주세요.' : '마이크를 눌러 답변하거나 텍스트로 입력하세요.')}
 			</p>

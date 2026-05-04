@@ -59,9 +59,13 @@ export function SignInForm({ initialOrganizations, organizationsLoadFailed }: Si
 	};
 
 	return (
-		<Card className="border-border-subtle bg-surface-raised shadow-card w-full max-w-xl rounded-3xl border p-6 sm:p-8">
+		<Card
+			className="border-border-subtle bg-surface-raised shadow-card w-full max-w-xl rounded-3xl border p-6 sm:p-8"
+		>
 			<Card.Header className="gap-2 px-0 pt-0">
-				<Card.Title className="text-neutral-text text-2xl font-semibold tracking-[-0.01em]">Dialearn 로그인</Card.Title>
+				<Card.Title className="text-neutral-text text-2xl font-semibold tracking-[-0.01em]">
+					Dialearn 로그인
+				</Card.Title>
 				<Card.Description className="text-neutral-gray-500 text-sm leading-6">
 					학교를 선택하고 계정으로 로그인하세요.
 				</Card.Description>
@@ -126,7 +130,12 @@ export function SignInForm({ initialOrganizations, organizationsLoadFailed }: Si
 
 				{errorMessage ? <ErrorMessage className="w-full">{errorMessage}</ErrorMessage> : null}
 
-				<Button className="shadow-button w-full rounded-full" isPending={loginPending} type="submit" variant="primary">
+				<Button
+					className="shadow-button w-full rounded-full"
+					isPending={loginPending}
+					type="submit"
+					variant="primary"
+				>
 					로그인
 				</Button>
 			</Form>

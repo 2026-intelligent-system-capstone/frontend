@@ -111,13 +111,13 @@ function PendingState({ result }: { result: StudentExamResult }): ReactElement {
 	return (
 		<ResultShell>
 			<SurfaceCard className="border-warning-text/20 bg-warning-soft space-y-4">
-				<p className="font-mono text-xs font-semibold tracking-[0.05em] text-warning-text uppercase">
+				<p className="text-warning-text font-mono text-xs font-semibold tracking-[0.05em] uppercase">
 					Scoring in progress
 				</p>
 				<div className="space-y-2">
-					<p className="text-sm font-medium text-warning-text">{classroomName}</p>
+					<p className="text-warning-text text-sm font-medium">{classroomName}</p>
 					<h1 className="text-warning-text text-2xl font-semibold tracking-[-0.02em]">{examTitle}</h1>
-					<p className="text-sm leading-6 text-warning-text">
+					<p className="text-warning-text text-sm leading-6">
 						평가 결과를 생성하는 중입니다. 점수와 피드백이 준비되면 결과 리포트가 표시됩니다.
 					</p>
 				</div>
@@ -146,7 +146,10 @@ function FeedbackList({ items, tone }: { items: string[]; tone: 'strength' | 'we
 
 	return (
 		<SurfaceCard
-			className={cn('space-y-4', isStrength ? 'border-brand-border bg-brand-soft' : 'border-danger-text/20 bg-danger-soft')}
+			className={cn(
+				'space-y-4',
+				isStrength ? 'border-brand-border bg-brand-soft' : 'border-danger-text/20 bg-danger-soft',
+			)}
 		>
 			<div>
 				<p
@@ -284,15 +287,15 @@ function ImprovementSuggestions({ suggestions }: { suggestions: string[] }): Rea
 	return (
 		<SurfaceCard className="border-brand-border bg-brand-soft space-y-4">
 			<div>
-				<p className="font-mono text-xs font-semibold tracking-[0.05em] text-brand-deep uppercase">
+				<p className="text-brand-deep font-mono text-xs font-semibold tracking-[0.05em] uppercase">
 					Next review
 				</p>
-				<h2 className="mt-2 text-xl font-semibold tracking-[-0.01em] text-brand-deep">학습 개선 제안</h2>
+				<h2 className="text-brand-deep mt-2 text-xl font-semibold tracking-[-0.01em]">학습 개선 제안</h2>
 			</div>
 			<div className="space-y-3">
 				{suggestions.map((suggestion) => (
-					<div key={suggestion} className="flex items-start gap-3 text-sm leading-6 text-brand-deep">
-						<span className="mt-1 size-1.5 shrink-0 rounded-full bg-brand-deep" aria-hidden="true" />
+					<div key={suggestion} className="text-brand-deep flex items-start gap-3 text-sm leading-6">
+						<span className="bg-brand-deep mt-1 size-1.5 shrink-0 rounded-full" aria-hidden="true" />
 						<span>{suggestion}</span>
 					</div>
 				))}

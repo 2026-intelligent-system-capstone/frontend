@@ -41,9 +41,10 @@ export function MultipleChoiceInput({
 						<label
 							key={index}
 							className={cn(
-								`has-[:focus-visible]:ring-brand-border flex items-center gap-3 rounded-2xl border px-4 py-3
-								text-left text-sm transition-[border-color,background-color,color,box-shadow] has-[:focus-visible]:ring-2
-								has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-white`,
+								`has-[:focus-visible]:ring-brand-border flex items-center gap-3 rounded-2xl border px-4
+								py-3 text-left text-sm transition-[border-color,background-color,color,box-shadow]
+								has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-2
+								has-[:focus-visible]:ring-offset-white`,
 								isSelected
 									? 'border-brand-border bg-brand-soft text-brand-deep shadow-button'
 									: `border-border-subtle bg-surface-muted text-neutral-text hover:border-brand-border

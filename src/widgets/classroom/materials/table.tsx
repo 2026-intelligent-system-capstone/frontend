@@ -152,8 +152,8 @@ export function MaterialsTable({
 													{shouldShowIngestErrorTooltip ? (
 														<>
 															<p
-																className="line-clamp-2 text-xs font-medium break-words
-																	text-danger-text"
+																className="text-danger-text line-clamp-2 text-xs
+																	font-medium break-words"
 															>
 																{ingestErrorMessage}
 															</p>
@@ -162,8 +162,8 @@ export function MaterialsTable({
 																	<button
 																		type="button"
 																		aria-label="분석 실패 원인 전체 보기"
-																		className="w-fit text-xs font-medium
-																			text-danger-text underline underline-offset-2
+																		className="text-danger-text w-fit text-xs
+																			font-medium underline underline-offset-2
 																			transition-colors hover:opacity-80
 																			focus-visible:outline
 																			focus-visible:outline-2
@@ -182,12 +182,12 @@ export function MaterialsTable({
 															</Tooltip>
 														</>
 													) : (
-														<p className="text-xs font-medium break-words text-danger-text">
+														<p className="text-danger-text text-xs font-medium break-words">
 															{ingestErrorMessage}
 														</p>
 													)}
 													{canManageMaterials ? (
-														<p className="text-xs break-words text-warning-text">
+														<p className="text-warning-text text-xs break-words">
 															문제를 수정한 뒤 다시 적재를 눌러주세요.
 														</p>
 													) : null}

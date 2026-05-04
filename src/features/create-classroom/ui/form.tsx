@@ -80,8 +80,10 @@ export function CreateClassroomForm() {
 				<label className="text-neutral-gray-700 flex flex-col gap-2 text-sm font-medium">
 					<span>학년</span>
 					<select
-						className="border-border-subtle bg-surface text-neutral-text rounded-medium focus:border-brand-border h-10 border px-3
-							text-sm transition outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
+						className="border-border-subtle bg-surface text-neutral-text rounded-medium
+							focus:border-brand-border h-10 border px-3 text-sm transition outline-none
+							focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+							focus-visible:outline-[var(--focus)]"
 						defaultValue={1}
 						name="grade"
 					>

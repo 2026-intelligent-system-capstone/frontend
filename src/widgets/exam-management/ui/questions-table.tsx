@@ -111,7 +111,10 @@ export function ExamManagementQuestionsTable({
 											{question.question_text}
 										</p>
 										{question.answer_options.length > 0 ? (
-											<div className="border-brand-border bg-brand-soft mt-2 flex flex-col gap-1 rounded-lg border px-3 py-2">
+											<div
+												className="border-brand-border bg-brand-soft mt-2 flex flex-col gap-1
+													rounded-lg border px-3 py-2"
+											>
 												<p
 													className="text-brand-deep mb-1 text-[10px] font-semibold
 														tracking-wide uppercase"

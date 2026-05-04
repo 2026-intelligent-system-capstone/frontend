@@ -37,8 +37,8 @@ export function ExamCriteriaCard({ criteria }: ExamCriteriaCardProps) {
 									) : null}
 								</div>
 								<span
-									className="border-brand-border bg-brand-soft text-brand-deep inline-flex w-fit rounded-full border px-3
-										py-1 text-xs font-semibold"
+									className="border-brand-border bg-brand-soft text-brand-deep inline-flex w-fit
+										rounded-full border px-3 py-1 text-xs font-semibold"
 								>
 									가중치 {criterion.weight}%
 								</span>
