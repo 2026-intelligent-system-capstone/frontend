@@ -59,10 +59,10 @@ export function SignInForm({ initialOrganizations, organizationsLoadFailed }: Si
 	};
 
 	return (
-		<Card className="w-full max-w-xl border border-slate-100 bg-white p-6 shadow-sm">
+		<Card className="border-border-subtle bg-surface-raised shadow-card w-full max-w-xl rounded-3xl border p-6 sm:p-8">
 			<Card.Header className="gap-2 px-0 pt-0">
-				<Card.Title className="text-2xl font-semibold text-slate-900">Dialearn 로그인</Card.Title>
-				<Card.Description className="text-sm text-slate-500">
+				<Card.Title className="text-neutral-text text-2xl font-semibold tracking-[-0.01em]">Dialearn 로그인</Card.Title>
+				<Card.Description className="text-neutral-gray-500 text-sm leading-6">
 					학교를 선택하고 계정으로 로그인하세요.
 				</Card.Description>
 			</Card.Header>
@@ -110,7 +110,7 @@ export function SignInForm({ initialOrganizations, organizationsLoadFailed }: Si
 					</Select>
 					{organizationsLoadFailed ? <ErrorMessage>학교 목록을 불러오지 못했습니다.</ErrorMessage> : null}
 					{!organizationsLoadFailed && initialOrganizations.length === 0 ? (
-						<p className="text-sm text-slate-500">선택 가능한 학교가 없습니다.</p>
+						<p className="text-neutral-gray-500 text-sm">선택 가능한 학교가 없습니다.</p>
 					) : null}
 				</div>
 
@@ -126,7 +126,7 @@ export function SignInForm({ initialOrganizations, organizationsLoadFailed }: Si
 
 				{errorMessage ? <ErrorMessage className="w-full">{errorMessage}</ErrorMessage> : null}
 
-				<Button className="w-full rounded-full" isPending={loginPending} type="submit">
+				<Button className="shadow-button w-full rounded-full" isPending={loginPending} type="submit" variant="primary">
 					로그인
 				</Button>
 			</Form>
