@@ -63,8 +63,8 @@ export function ExamCard({ exam }: ExamCardProps) {
 	return (
 		<SurfaceCard
 			className={cn(
-				'group hover:border-brand/45 hover:bg-surface p-0 shadow-none transition-colors',
-				isActive && 'border-brand/35 ring-brand/15 ring-1',
+				'group hover:border-border-medium hover:bg-surface p-0 shadow-none transition-colors',
+				isActive && 'border-brand-border bg-brand-soft/45 ring-brand-border ring-1',
 			)}
 		>
 			<div className="flex h-full flex-col">
@@ -80,8 +80,8 @@ export function ExamCard({ exam }: ExamCardProps) {
 								</Chip>
 								{isActive ? (
 									<span
-										className="bg-brand-light text-brand-deep inline-flex items-center gap-1
-											rounded-full px-2.5 py-1 text-xs font-medium"
+										className="border-brand-border bg-brand-soft text-brand-deep inline-flex items-center gap-1
+											rounded-full border px-2.5 py-1 text-xs font-medium"
 									>
 										<span className="bg-brand-deep size-1.5 rounded-full" aria-hidden="true" />
 										지금 응시 가능

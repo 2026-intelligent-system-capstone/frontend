@@ -35,7 +35,7 @@ export function StudentExamListPage() {
 			/>
 
 			<SurfaceCard className="grid gap-4 p-4 sm:grid-cols-3 sm:p-5">
-				<div className="border-brand/20 bg-brand-light rounded-2xl border p-4">
+				<div className="border-brand-border bg-brand-soft rounded-2xl border p-4">
 					<p className="text-brand-deep font-mono text-xs font-semibold tracking-[0.05em] uppercase">Ready</p>
 					<p className="text-neutral-text mt-2 text-3xl font-semibold tracking-[-0.02em]">{enterableCount}</p>
 					<p className="text-neutral-gray-500 mt-1 text-sm">지금 안내 확인 후 입장 가능</p>

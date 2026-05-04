@@ -23,20 +23,20 @@ function getStatusText(status: PermissionState): { label: string; description: s
 		return {
 			label: '준비됨',
 			description: '응시에 필요한 권한이 허용되어 있습니다.',
-			className: 'border-brand/20 bg-brand-light text-brand-deep',
+			className: 'border-brand-border bg-brand-soft text-brand-deep',
 		};
 	}
 	if (status === 'denied') {
 		return {
 			label: '권한 없음',
 			description: '브라우저 설정에서 권한을 다시 허용해야 합니다.',
-			className: 'border-red-200 bg-red-50 text-red-700',
+			className: 'border-danger-soft bg-danger-soft text-danger-text',
 		};
 	}
 	return {
 		label: '허용 필요',
 		description: '입장 시 권한 요청이 표시되면 허용해주세요.',
-		className: 'border-amber-200 bg-amber-50 text-amber-700',
+		className: 'border-warning-soft bg-warning-soft text-warning-text',
 	};
 }
 
@@ -149,8 +149,8 @@ export function ExamEnvCheckCard() {
 			</div>
 			{!allReady && mic !== 'checking' && camera !== 'checking' && (
 				<p
-					className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6
-						text-amber-800"
+					className="border-warning-soft bg-warning-soft text-warning-text rounded-2xl border px-4 py-3
+						text-sm leading-6"
 				>
 					권한이 준비되지 않아도 입장 안내는 확인할 수 있습니다. 실제 응시 전에는 브라우저 설정에서
 					마이크/카메라 권한을 허용해주세요.

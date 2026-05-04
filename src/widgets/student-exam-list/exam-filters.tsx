@@ -38,7 +38,7 @@ export function ExamFilters({ statusFilter, typeFilter, onStatusChange, onTypeCh
 					<Button
 						key={f.value}
 						size="sm"
-						variant={statusFilter === f.value ? 'primary' : 'outline'}
+						variant={statusFilter === f.value ? 'secondary' : 'outline'}
 						onPress={() => onStatusChange(f.value)}
 					>
 						{f.label}
@@ -53,7 +53,7 @@ export function ExamFilters({ statusFilter, typeFilter, onStatusChange, onTypeCh
 					<Button
 						key={f.value}
 						size="sm"
-						variant={typeFilter === f.value ? 'primary' : 'outline'}
+						variant={typeFilter === f.value ? 'secondary' : 'outline'}
 						onPress={() => onTypeChange(f.value)}
 					>
 						{f.label}

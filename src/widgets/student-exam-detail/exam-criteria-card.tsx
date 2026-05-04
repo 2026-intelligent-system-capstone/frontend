@@ -37,15 +37,15 @@ export function ExamCriteriaCard({ criteria }: ExamCriteriaCardProps) {
 									) : null}
 								</div>
 								<span
-									className="bg-brand-light text-brand-deep inline-flex w-fit rounded-full px-3 py-1
-										text-xs font-semibold"
+									className="border-brand-border bg-brand-soft text-brand-deep inline-flex w-fit rounded-full border px-3
+										py-1 text-xs font-semibold"
 								>
 									가중치 {criterion.weight}%
 								</span>
 							</div>
 							<div className="mt-4 grid gap-2 text-xs sm:grid-cols-3">
 								{criterion.excellent_definition && (
-									<div className="border-brand/20 bg-surface rounded-xl border p-3">
+									<div className="border-brand-border bg-brand-soft rounded-xl border p-3">
 										<p className="text-brand-deep mb-1 font-semibold">우수</p>
 										<p className="text-neutral-gray-500 leading-5">
 											{criterion.excellent_definition}
@@ -53,16 +53,16 @@ export function ExamCriteriaCard({ criteria }: ExamCriteriaCardProps) {
 									</div>
 								)}
 								{criterion.average_definition && (
-									<div className="bg-surface rounded-xl border border-amber-200 p-3">
-										<p className="mb-1 font-semibold text-amber-700">보통</p>
+									<div className="border-warning-soft bg-warning-soft rounded-xl border p-3">
+										<p className="text-warning-text mb-1 font-semibold">보통</p>
 										<p className="text-neutral-gray-500 leading-5">
 											{criterion.average_definition}
 										</p>
 									</div>
 								)}
 								{criterion.poor_definition && (
-									<div className="bg-surface rounded-xl border border-red-200 p-3">
-										<p className="mb-1 font-semibold text-red-700">미흡</p>
+									<div className="border-danger-soft bg-danger-soft rounded-xl border p-3">
+										<p className="text-danger-text mb-1 font-semibold">미흡</p>
 										<p className="text-neutral-gray-500 leading-5">{criterion.poor_definition}</p>
 									</div>
 								)}
