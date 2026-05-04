@@ -87,7 +87,7 @@ body {
 	color: var(--foreground);
 	font-family: var(--font-sans);
 	-webkit-font-smoothing: antialiased;
-	-webkit-tap-highlight-color: transparent;
+	-webkit-tap-highlight-color: color-mix(in oklch, var(--color-brand-light) 70%, transparent);
 	text-rendering: optimizeLegibility;
 }
 

@@ -964,8 +964,8 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 					<div
 						className={cn(
 							`border-border-subtle bg-neutral-text shadow-card absolute right-4 bottom-4 overflow-hidden
-							rounded-2xl border transition-[right,transform,opacity] duration-300`,
-							showConversationTree && 'md:right-76',
+							rounded-2xl border transition-transform duration-300`,
+							showConversationTree && 'md:-translate-x-72',
 						)}
 					>
 						{cameraStatusMessage ? (
