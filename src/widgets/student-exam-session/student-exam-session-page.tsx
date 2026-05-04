@@ -776,7 +776,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 				>
 					<div
 						className="pointer-events-none absolute inset-0
-							bg-[radial-gradient(circle_at_top,rgba(24,226,153,0.12),transparent_42%)]"
+							bg-[radial-gradient(circle_at_top,var(--color-brand-soft),transparent_42%)]"
 					/>
 
 					{/* 객관식 */}

@@ -40,6 +40,8 @@ export function SessionControls({
 	const sttUnavailableMessage = !isSttSupported
 		? '이 브라우저는 음성 인식을 지원하지 않습니다. 텍스트 입력으로 답변해주세요.'
 		: sttErrorMessage;
+	const disabledMessage = isDisabled ? '세션 준비 또는 제출 완료 상태라 답변 입력을 사용할 수 없습니다.' : null;
+	const controlStatusMessage = disabledMessage ?? sttUnavailableMessage;
 	const isMicDisabled = isSubmitting || isDisabled || !isSttSupported || isSttPermissionBlocked;
 	const isTextToggleDisabled = isSubmitting || isDisabled;
 
@@ -51,7 +53,7 @@ export function SessionControls({
 			<div className="flex flex-wrap items-center justify-center gap-4">
 				<MicButton
 					disabled={isMicDisabled}
-					disabledReason={sttUnavailableMessage}
+					disabledReason={controlStatusMessage}
 					isListening={isListening}
 					onToggle={onMicToggle}
 				/>
@@ -69,9 +71,9 @@ export function SessionControls({
 
 			<p
 				className="text-neutral-gray-500 text-center text-xs"
-				role={sttUnavailableMessage ? 'status' : undefined}
+				role={controlStatusMessage ? 'status' : undefined}
 			>
-				{sttUnavailableMessage ??
+				{controlStatusMessage ??
 					(isListening ? '음성 인식 중... 말씀해주세요.' : '마이크를 눌러 답변하거나 텍스트로 입력하세요.')}
 			</p>
 
