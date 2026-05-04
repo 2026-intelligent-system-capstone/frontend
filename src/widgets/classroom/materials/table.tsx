@@ -153,7 +153,7 @@ export function MaterialsTable({
 														<>
 															<p
 																className="line-clamp-2 text-xs font-medium break-words
-																	text-red-600"
+																	text-danger-text"
 															>
 																{ingestErrorMessage}
 															</p>
@@ -163,12 +163,12 @@ export function MaterialsTable({
 																		type="button"
 																		aria-label="분석 실패 원인 전체 보기"
 																		className="w-fit text-xs font-medium
-																			text-red-700 underline underline-offset-2
-																			transition-colors hover:text-red-800
+																			text-danger-text underline underline-offset-2
+																			transition-colors hover:opacity-80
 																			focus-visible:outline
 																			focus-visible:outline-2
 																			focus-visible:outline-offset-2
-																			focus-visible:outline-red-500"
+																			focus-visible:outline-[var(--focus)]"
 																	>
 																		전체 보기
 																	</button>
@@ -182,12 +182,12 @@ export function MaterialsTable({
 															</Tooltip>
 														</>
 													) : (
-														<p className="text-xs font-medium break-words text-red-600">
+														<p className="text-xs font-medium break-words text-danger-text">
 															{ingestErrorMessage}
 														</p>
 													)}
 													{canManageMaterials ? (
-														<p className="text-xs break-words text-amber-700">
+														<p className="text-xs break-words text-warning-text">
 															문제를 수정한 뒤 다시 적재를 눌러주세요.
 														</p>
 													) : null}

@@ -32,38 +32,33 @@ export function ClassroomList({ classrooms, isError }: ClassroomListProps) {
 	return (
 		<div className="grid gap-5 xl:grid-cols-2">
 			{classrooms.map((classroom) => (
-				<SurfaceCard key={classroom.id} className="flex flex-col gap-6 p-6 sm:p-7">
+				<SurfaceCard key={classroom.id} className="flex flex-col gap-5 p-5 sm:p-6">
 					<div className="flex items-start justify-between gap-4">
 						<div className="min-w-0 space-y-2">
-							<h2 className="text-neutral-text truncate text-xl font-semibold tracking-[-0.01em]">
+							<h2 className="text-neutral-text truncate text-xl font-semibold leading-6 tracking-[-0.01em]">
 								{classroom.name}
 							</h2>
-							<p className="text-neutral-gray-500 text-sm">
+							<p className="text-neutral-gray-500 truncate text-sm leading-6">
 								{classroom.grade}학년 · {classroom.semester} · {classroom.section}반
 							</p>
 						</div>
 						<div
-							className="bg-surface-muted text-neutral-gray-700 shrink-0 rounded-full px-3 py-1 text-xs
-								font-medium"
+							className="border-border-subtle bg-surface-muted text-neutral-gray-700 shrink-0 rounded-full
+								border px-3 py-1 text-xs font-medium"
 						>
 							학생 {classroom.student_ids.length}명
 						</div>
 					</div>
 
-					<p className="text-neutral-gray-500 text-sm leading-6">
+					<p className="text-neutral-gray-500 line-clamp-2 text-sm leading-6">
 						{classroom.description ?? '강의실 설명이 아직 없습니다.'}
 					</p>
 
 					<div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-						<span
-							className="border-border-subtle bg-surface-muted text-neutral-gray-700 rounded-full border
-								px-3 py-1"
-						>
+						<span className="border-border-subtle bg-surface-muted text-neutral-gray-700 rounded-full border px-3 py-1">
 							교수자 {classroom.professor_ids.length}명
 						</span>
-						<span
-							className="border-brand-light bg-brand-light text-brand-deep rounded-full border px-3 py-1"
-						>
+						<span className="border-brand-border bg-brand-soft text-brand-deep rounded-full border px-3 py-1">
 							자료 열람 {classroom.allow_student_material_access ? '허용' : '제한'}
 						</span>
 					</div>

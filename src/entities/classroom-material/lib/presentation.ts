@@ -40,7 +40,7 @@ export const getMaterialSourceKindColor = (sourceKind: ClassroomMaterialSourceKi
 		case 'file':
 			return 'default';
 		case 'link':
-			return 'accent';
+			return 'success';
 	}
 };
 
@@ -62,29 +62,26 @@ export const getMaterialDisplayName = (material: ClassroomMaterial) => {
 
 export const getMaterialFileChipColor = (material: ClassroomMaterial): ChipProps['color'] => {
 	if (material.source_kind === 'link') {
-		return 'accent';
+		return 'success';
 	}
 
 	switch (material.file.file_extension.toLowerCase()) {
 		case 'pdf':
 			return 'danger';
 		case 'pptx':
-			return 'accent';
-		case 'docx':
 			return 'warning';
+		case 'docx':
 		case 'hwpx':
-			return 'default';
-		case 'avi':
-		case 'mp4':
-			return 'success';
 		case 'txt':
 		case 'md':
 		case 'csv':
 		case 'json':
 		case 'xml':
-			return 'accent';
 		case 'zip':
 			return 'default';
+		case 'avi':
+		case 'mp4':
+			return 'success';
 		default:
 			return 'default';
 	}

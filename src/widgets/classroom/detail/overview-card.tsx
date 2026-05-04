@@ -36,7 +36,7 @@ export function ClassroomOverviewCard({
 					>
 						학생 {classroom.student_ids.length}명
 					</span>
-					<span className="border-brand-light bg-brand-light text-brand-deep rounded-full border px-3 py-1">
+					<span className="border-brand-border bg-brand-soft text-brand-deep rounded-full border px-3 py-1">
 						자료 열람 {classroom.allow_student_material_access ? '허용' : '제한'}
 					</span>
 				</div>

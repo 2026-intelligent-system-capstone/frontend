@@ -77,11 +77,11 @@ export function CreateClassroomForm() {
 					<Input placeholder="예: 자료구조 A" />
 				</TextField>
 
-				<label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+				<label className="text-neutral-gray-700 flex flex-col gap-2 text-sm font-medium">
 					<span>학년</span>
 					<select
-						className="rounded-medium focus:border-primary h-10 border border-slate-200 bg-white px-3
-							text-sm text-slate-900 transition outline-none"
+						className="border-border-subtle bg-surface text-neutral-text rounded-medium focus:border-brand-border h-10 border px-3
+							text-sm transition outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
 						defaultValue={1}
 						name="grade"
 					>

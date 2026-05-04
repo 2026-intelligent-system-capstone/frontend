@@ -46,7 +46,7 @@ export function StudentsTable({ students, canManageStudents, removePending, onRe
 								</Table.Cell>
 								<Table.Cell>
 									<div className="flex w-48 items-center gap-2 overflow-hidden">
-										<UserIcon className="size-4 shrink-0 text-blue-500" />
+										<UserIcon className="text-neutral-gray-400 size-4 shrink-0" />
 										<span className="text-neutral-text truncate font-medium">{student.name}</span>
 									</div>
 								</Table.Cell>
@@ -55,7 +55,7 @@ export function StudentsTable({ students, canManageStudents, removePending, onRe
 										className="text-neutral-gray-700 flex w-64 items-center gap-2 overflow-hidden
 											text-sm"
 									>
-										<MailIcon className="size-4 shrink-0 text-emerald-500" />
+										<MailIcon className="text-neutral-gray-400 size-4 shrink-0" />
 										<span className="truncate">{student.email ?? '-'}</span>
 									</div>
 								</Table.Cell>
