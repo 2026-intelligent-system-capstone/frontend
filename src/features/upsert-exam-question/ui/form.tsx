@@ -3,12 +3,12 @@
 import { useId, useMemo, useState } from 'react';
 
 import type { ClassroomMaterial } from '@/entities/classroom-material';
-import type { CreateExamQuestionRequest, ExamQuestion, UpdateExamQuestionRequest } from '@/entities/exam';
+import type { ExamQuestion, UpdateExamQuestionRequest } from '@/entities/exam';
 import { ApiClientError } from '@/shared/api/types';
 import { Button, ErrorMessage } from '@heroui/react';
 
 import { createQuestionFormValues } from '../lib/form';
-import { useCreateExamQuestion, useUpdateExamQuestion } from '../model/use-upsert-question';
+import { useUpdateExamQuestion } from '../model/use-upsert-question';
 import { UpsertExamQuestionFormFields } from './form-fields';
 import { UpsertExamQuestionMaterialSelector } from './material-selector';
 
@@ -16,7 +16,7 @@ interface UpsertExamQuestionFormProps {
 	classroomId: string;
 	examId: string;
 	materials: ClassroomMaterial[];
-	question?: ExamQuestion;
+	question: ExamQuestion;
 	title: string;
 	formId?: string;
 	hideActions?: boolean;
@@ -46,12 +46,11 @@ export function UpsertExamQuestionForm({
 	const maxScoreId = useId();
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const initialForm = useMemo(() => createQuestionFormValues(question), [question]);
-	const initialQuestionType = question?.question_type;
+	const initialQuestionType = question.question_type;
 	const [form, setForm] = useState(initialForm);
 
-	const createQuestionMutation = useCreateExamQuestion(classroomId, examId);
 	const updateQuestionMutation = useUpdateExamQuestion(classroomId, examId);
-	const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+	const isPending = updateQuestionMutation.isPending;
 
 	const normalizedAnswerOptions = form.answerOptionsText
 		.split('\n')
@@ -110,7 +109,7 @@ export function UpsertExamQuestionForm({
 			return;
 		}
 
-		const basePayload = {
+		const payload = {
 			question_number: parsedQuestionNumber,
 			max_score: parsedMaxScore,
 			bloom_level: form.bloomLevel,
@@ -121,34 +120,16 @@ export function UpsertExamQuestionForm({
 			answer_options: form.questionType === 'multiple_choice' ? normalizedAnswerOptions : [],
 			correct_answer_text: form.questionType === 'oral' ? null : normalizedCorrectAnswerText || null,
 			source_material_ids: form.sourceMaterialIds,
-		};
+			...(form.questionType !== initialQuestionType && form.questionType !== 'none'
+				? { question_type: form.questionType }
+				: {}),
+		} satisfies UpdateExamQuestionRequest;
 
 		try {
-			if (question) {
-				const payload = {
-					...basePayload,
-					...(form.questionType !== initialQuestionType && form.questionType !== 'none'
-						? { question_type: form.questionType }
-						: {}),
-				} satisfies UpdateExamQuestionRequest;
-
-				await updateQuestionMutation.mutateAsync({
-					payload,
-					questionId: question.id,
-				});
-			} else {
-				if (form.questionType === 'none') {
-					setErrorMessage('문제 유형을 선택해주세요.');
-					return;
-				}
-
-				const payload = {
-					...basePayload,
-					question_type: form.questionType,
-				} satisfies CreateExamQuestionRequest;
-
-				await createQuestionMutation.mutateAsync(payload);
-			}
+			await updateQuestionMutation.mutateAsync({
+				payload,
+				questionId: question.id,
+			});
 
 			onSuccess?.();
 		} catch (error) {

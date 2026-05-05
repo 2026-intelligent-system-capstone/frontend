@@ -10,7 +10,7 @@ export {
 	bloomPyramidPreviewLevels,
 	bloomPyramidToneClassNames,
 	bloomPyramidWidthClassNames,
-	getDisplayCountValue,
+	getDisplayWeightValue,
 	questionTypeStrategyOptions,
 	toggleStringValue,
 } from './lib/bloom';

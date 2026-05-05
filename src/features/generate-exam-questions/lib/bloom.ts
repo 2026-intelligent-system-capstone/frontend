@@ -2,13 +2,12 @@ import type {
 	BloomLevel,
 	ExamDifficulty,
 	ExamQuestion,
-	ExamQuestionBloomCountRequest,
+	ExamQuestionBloomWeightRequest,
 	ExamQuestionTypeStrategy,
 	ExamType,
 } from '@/entities/exam';
 
 export interface ExamQuestionGenerationFormValues {
-	difficulty: ExamDifficulty;
 	maxFollowUps: string;
 	scopeText: string;
 	selectedMaterialIds: string[];
@@ -103,76 +102,112 @@ export const questionTypeStrategyOptions: QuestionTypeStrategyOption[] = [
 	},
 ];
 
-export const MAX_BLOOM_LEVEL_QUESTION_COUNT = 5;
-export const MAX_QUESTION_TYPE_QUESTION_COUNT = MAX_BLOOM_LEVEL_QUESTION_COUNT * bloomLevelOptions.length;
+export const MAX_BLOOM_LEVEL_WEIGHT = 10;
 
 export const createEmptyGenerationForm = (): ExamQuestionGenerationFormValues => ({
-	difficulty: 'medium',
 	maxFollowUps: '2',
 	scopeText: '',
 	selectedMaterialIds: [],
 	questionTypeStrategy: 'balanced',
 });
 
-const defaultBloomCountsByExamType: Record<ExamType, Record<BloomLevel, string>> = {
+const defaultBloomWeightsByExamType: Record<ExamType, Record<BloomLevel, string>> = {
 	weekly: {
 		analyze: '0',
 		apply: '1',
 		create: '0',
 		evaluate: '0',
-		remember: '1',
-		understand: '1',
+		remember: '2',
+		understand: '2',
 	},
 	midterm: {
-		analyze: '1',
-		apply: '1',
+		analyze: '2',
+		apply: '2',
 		create: '0',
-		evaluate: '0',
-		remember: '0',
-		understand: '1',
+		evaluate: '1',
+		remember: '1',
+		understand: '2',
 	},
 	final: {
-		analyze: '1',
-		apply: '1',
+		analyze: '2',
+		apply: '2',
 		create: '1',
-		evaluate: '1',
-		remember: '0',
-		understand: '1',
+		evaluate: '2',
+		remember: '1',
+		understand: '2',
 	},
 	mock: {
-		analyze: '1',
-		apply: '1',
-		create: '0',
-		evaluate: '1',
-		remember: '0',
-		understand: '1',
-	},
-	project: {
-		analyze: '1',
-		apply: '0',
+		analyze: '2',
+		apply: '2',
 		create: '1',
 		evaluate: '1',
+		remember: '1',
+		understand: '2',
+	},
+	project: {
+		analyze: '2',
+		apply: '1',
+		create: '2',
+		evaluate: '2',
 		remember: '0',
 		understand: '1',
 	},
 };
 
-export const createDefaultBloomCounts = (examType: ExamType): Record<BloomLevel, string> => ({
-	...defaultBloomCountsByExamType[examType],
+export const createDefaultBloomWeights = (examType: ExamType): Record<BloomLevel, string> => ({
+	...defaultBloomWeightsByExamType[examType],
 });
 
-export const parseBloomCounts = (bloomCounts: Record<BloomLevel, string>) => {
-	const parsedCounts: ExamQuestionBloomCountRequest[] = bloomLevelOptions
+export const getDisplayWeightValue = (value: string, maxValue = MAX_BLOOM_LEVEL_WEIGHT) => {
+	const parsedValue = Number(value);
+
+	if (!Number.isInteger(parsedValue) || parsedValue < 0) {
+		return 0;
+	}
+
+	return Math.min(parsedValue, maxValue);
+};
+
+export const parseBloomWeights = (bloomWeights: Record<BloomLevel, string>) => {
+	const parsedWeights: ExamQuestionBloomWeightRequest[] = bloomLevelOptions
 		.map((option) => ({
 			bloom_level: option.value,
-			count: getDisplayCountValue(bloomCounts[option.value]),
+			weight: getDisplayWeightValue(bloomWeights[option.value]),
 		}))
-		.filter((item) => item.count > 0);
+		.filter((item) => item.weight > 0);
 
 	return {
-		parsedCounts,
-		totalCount: parsedCounts.reduce((sum, item) => sum + item.count, 0),
+		parsedWeights,
+		totalWeight: parsedWeights.reduce((sum, item) => sum + item.weight, 0),
 	};
+};
+
+export const createBloomAllocationPreview = (bloomWeights: Record<BloomLevel, string>, questionCount: number) => {
+	const { parsedWeights, totalWeight } = parseBloomWeights(bloomWeights);
+
+	if (totalWeight <= 0 || questionCount <= 0) {
+		return new Map<BloomLevel, number>();
+	}
+
+	const exactAllocations = parsedWeights.map((item) => {
+		const exactCount = (item.weight / totalWeight) * questionCount;
+		return {
+			bloomLevel: item.bloom_level,
+			baseCount: Math.floor(exactCount),
+			remainder: exactCount - Math.floor(exactCount),
+		};
+	});
+	const allocatedBaseCount = exactAllocations.reduce((sum, item) => sum + item.baseCount, 0);
+	const extraAllocationOrder = [...exactAllocations].sort((a, b) => b.remainder - a.remainder);
+	const preview = new Map<BloomLevel, number>();
+
+	exactAllocations.forEach((item) => preview.set(item.bloomLevel, item.baseCount));
+	for (let index = 0; index < questionCount - allocatedBaseCount; index += 1) {
+		const target = extraAllocationOrder[index % extraAllocationOrder.length];
+		preview.set(target.bloomLevel, (preview.get(target.bloomLevel) ?? 0) + 1);
+	}
+
+	return preview;
 };
 
 export const bloomPyramidPreviewLevels = [...bloomLevelOptions].reverse();
@@ -193,16 +228,6 @@ export const bloomPyramidToneClassNames: Record<BloomLevel, string> = {
 	apply: 'bg-success-soft text-success-text',
 	understand: 'bg-surface-muted text-neutral-gray-700',
 	remember: 'bg-surface-muted text-neutral-gray-700',
-};
-
-export const getDisplayCountValue = (value: string, maxValue = MAX_BLOOM_LEVEL_QUESTION_COUNT) => {
-	const parsedValue = Number(value);
-
-	if (!Number.isInteger(parsedValue) || parsedValue < 0) {
-		return 0;
-	}
-
-	return Math.min(parsedValue, maxValue);
 };
 
 export const toggleStringValue = (values: string[], target: string) => {

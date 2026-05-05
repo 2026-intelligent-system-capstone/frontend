@@ -10,6 +10,7 @@ import {
 	type Exam,
 	type ExamQuestion,
 	formatExamDateTime,
+	getDifficultyLabel,
 	getExamGenerationStatusColor,
 	getExamGenerationStatusDescription,
 	getExamGenerationStatusLabel,
@@ -18,10 +19,8 @@ import {
 	getExamTypeLabel,
 	useClassroomExam,
 } from '@/entities/exam';
-import { useDeleteExamQuestion } from '@/features/delete-exam-question';
 import { GenerateExamQuestionsForm } from '@/features/generate-exam-questions';
 import { UpsertExamQuestionForm } from '@/features/upsert-exam-question';
-import { ApiClientError } from '@/shared/api/types';
 import { PageHeader, PageShell, StateBlock, SurfaceCard } from '@/shared/ui';
 import { SparklesIcon } from '@/shared/ui/icons/exam';
 import { Button, Chip, Modal, Skeleton } from '@heroui/react';
@@ -39,10 +38,9 @@ interface ExamManagementScreenProps {
 	isMaterialsError: boolean;
 }
 
-type ActivePanel = 'create' | 'edit' | null;
+type ActivePanel = 'edit' | null;
 
 const GENERATION_FORM_ID = 'exam-question-generation-modal-form';
-const CREATE_FORM_ID = 'exam-question-create-modal-form';
 
 export function ExamManagementScreen({
 	classroomId,
@@ -58,12 +56,9 @@ export function ExamManagementScreen({
 	const classroomQuery = useClassroomDetail(classroomId, initialClassroom ?? undefined);
 	const examQuery = useClassroomExam(classroomId, examId, initialExam ?? undefined);
 	const materialsQuery = useClassroomMaterials(classroomId, initialMaterials);
-	const deleteQuestionMutation = useDeleteExamQuestion(classroomId, examId);
 	const [activePanel, setActivePanel] = useState<ActivePanel>(null);
 	const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
 	const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
-	const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
-	const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
 
 	const classroom = classroomQuery.data;
 	const exam = examQuery.data;
@@ -85,43 +80,24 @@ export function ExamManagementScreen({
 				editingQuestion.difficulty,
 				JSON.stringify(editingQuestion.source_material_ids),
 			].join(':')
-		: 'create';
-
-	const handleOpenCreatePanel = () => {
-		setDeleteErrorMessage(null);
-		setEditingQuestionId(null);
-		setIsGenerateModalOpen(false);
-		setActivePanel('create');
-	};
+		: 'edit';
 
 	const handleOpenEditPanel = (question: ExamQuestion) => {
-		setDeleteErrorMessage(null);
 		setEditingQuestionId(question.id);
 		setIsGenerateModalOpen(false);
 		setActivePanel('edit');
 	};
 
 	const handleClosePanel = () => {
-		setDeleteErrorMessage(null);
 		setEditingQuestionId(null);
 		setIsGenerateModalOpen(false);
 		setActivePanel(null);
 	};
 
 	const handleToggleGeneratePanel = () => {
-		setDeleteErrorMessage(null);
 		setEditingQuestionId(null);
 		setActivePanel(null);
 		setIsGenerateModalOpen((prev) => !prev);
-	};
-
-	const handleToggleCreatePanel = () => {
-		if (activePanel === 'create') {
-			handleClosePanel();
-			return;
-		}
-
-		handleOpenCreatePanel();
 	};
 
 	const handleGenerateModalOpenChange = (nextOpen: boolean) => {
@@ -131,28 +107,6 @@ export function ExamManagementScreen({
 		}
 
 		setIsGenerateModalOpen(true);
-	};
-
-	const handleCreateModalOpenChange = (nextOpen: boolean) => {
-		if (!nextOpen) {
-			handleClosePanel();
-		}
-	};
-
-	const handleDeleteQuestion = async (questionId: string) => {
-		setDeleteErrorMessage(null);
-		setDeletingQuestionId(questionId);
-		try {
-			await deleteQuestionMutation.mutateAsync(questionId);
-		} catch (error) {
-			if (error instanceof ApiClientError) {
-				setDeleteErrorMessage(error.message);
-			} else {
-				setDeleteErrorMessage('문항 삭제 중 오류가 발생했습니다.');
-			}
-		} finally {
-			setDeletingQuestionId(null);
-		}
 	};
 
 	if ((classroomQuery.isLoading && !initialClassroom) || (examQuery.isLoading && !initialExam)) {
@@ -214,7 +168,7 @@ export function ExamManagementScreen({
 			</div>
 
 			<PageHeader
-				description={`${getExamTypeLabel(exam.exam_type)} · ${getExamStatusLabel(exam.status)} · 문항 ${exam.questions.length}개`}
+				description={`${getExamTypeLabel(exam.exam_type)} · ${getExamStatusLabel(exam.status)} · 목표 ${exam.question_count}개 · 현재 ${exam.questions.length}개`}
 				eyebrow="Exam Operations Document"
 				title={exam.title}
 			/>
@@ -247,6 +201,10 @@ export function ExamManagementScreen({
 								<dt>진행 시간</dt>
 								<dd className="text-neutral-text font-medium">{exam.duration_minutes}분</dd>
 							</div>
+							<div className="flex justify-between gap-3">
+								<dt>난이도</dt>
+								<dd className="text-neutral-text font-medium">{getDifficultyLabel(exam.difficulty)}</dd>
+							</div>
 							<div>
 								<dt className="sr-only">응시 제한</dt>
 								<dd>{getExamMaxAttemptsLabel(exam.max_attempts)}</dd>
@@ -261,7 +219,11 @@ export function ExamManagementScreen({
 						<p className="text-neutral-text text-sm font-semibold">문항 현황</p>
 						<dl className="text-neutral-gray-500 mt-3 space-y-2 text-sm">
 							<div className="flex justify-between gap-3">
-								<dt>총 문항</dt>
+								<dt>목표 문항</dt>
+								<dd className="text-neutral-text font-medium">{exam.question_count}개</dd>
+							</div>
+							<div className="flex justify-between gap-3">
+								<dt>현재 문항</dt>
 								<dd className="text-neutral-text font-medium">{exam.questions.length}개</dd>
 							</div>
 							<div className="flex justify-between gap-3">
@@ -294,7 +256,7 @@ export function ExamManagementScreen({
 					<div>
 						<h2 className="text-neutral-text text-lg font-semibold">문항 관리</h2>
 						<p className="text-neutral-gray-500 mt-1 text-sm">
-							AI 생성은 자료 기반 초안 작성, 수동 추가는 개별 문항 보강에 사용합니다.
+							AI 생성은 자료 기반 초안 작성에 사용하고, 생성된 문항은 목록에서 수정할 수 있습니다.
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-2">
@@ -306,13 +268,6 @@ export function ExamManagementScreen({
 						>
 							<SparklesIcon className="size-4" />
 							AI 문항 생성
-						</Button>
-						<Button
-							className="rounded-full"
-							variant={activePanel === 'create' ? 'primary' : 'secondary'}
-							onPress={handleToggleCreatePanel}
-						>
-							문항 추가
 						</Button>
 					</div>
 				</div>
@@ -351,12 +306,14 @@ export function ExamManagementScreen({
 									<Modal.Body className="min-h-0 flex-1 overflow-y-auto p-6">
 										<GenerateExamQuestionsForm
 											classroomId={classroomId}
+											difficulty={exam.difficulty}
 											examId={examId}
 											examType={exam.exam_type}
 											formId={GENERATION_FORM_ID}
 											hideActions
 											hideHeader
 											materials={materials}
+											questionCount={exam.question_count}
 											onCancel={close}
 											onSuccess={close}
 										/>
@@ -367,48 +324,6 @@ export function ExamManagementScreen({
 										</Button>
 										<Button form={GENERATION_FORM_ID} type="submit" variant="primary">
 											생성
-										</Button>
-									</Modal.Footer>
-								</>
-							)}
-						</Modal.Dialog>
-					</Modal.Container>
-				</Modal.Backdrop>
-			</Modal>
-
-			<Modal>
-				<Modal.Backdrop isOpen={activePanel === 'create'} onOpenChange={handleCreateModalOpenChange}>
-					<Modal.Container scroll="inside">
-						<Modal.Dialog className="sm:max-w-3xl">
-							{({ close }) => (
-								<>
-									<Modal.CloseTrigger />
-									<Modal.Header>
-										<Modal.Heading>문항 추가</Modal.Heading>
-										<p className="text-neutral-gray-500 mt-1 text-sm">
-											문항 내용과 연결 자료를 현재 시험 문맥에서 바로 추가합니다.
-										</p>
-									</Modal.Header>
-									<Modal.Body className="p-6">
-										<UpsertExamQuestionForm
-											key="create"
-											classroomId={classroomId}
-											examId={examId}
-											formId={CREATE_FORM_ID}
-											hideActions
-											hideHeader
-											materials={materials}
-											title="문항 추가"
-											onCancel={close}
-											onSuccess={close}
-										/>
-									</Modal.Body>
-									<Modal.Footer className="border-border-subtle justify-end gap-3 border-t px-6 py-4">
-										<Button type="button" variant="secondary" onPress={close}>
-											닫기
-										</Button>
-										<Button form={CREATE_FORM_ID} type="submit" variant="primary">
-											저장
 										</Button>
 									</Modal.Footer>
 								</>
@@ -449,9 +364,10 @@ export function ExamManagementScreen({
 			<SurfaceCard className="space-y-5">
 				<div>
 					<h2 className="text-neutral-text text-lg font-semibold">문항 목록</h2>
-					<p className="text-neutral-gray-500 mt-1 text-sm">총 {exam.questions.length}개</p>
+					<p className="text-neutral-gray-500 mt-1 text-sm">
+						목표 {exam.question_count}개 중 현재 {exam.questions.length}개
+					</p>
 				</div>
-				{deleteErrorMessage ? <p className="text-danger-text text-sm">{deleteErrorMessage}</p> : null}
 				{isMaterialsError || materialsQuery.isError ? (
 					<p
 						className="border-warning-text/20 bg-warning-soft text-warning-text rounded-2xl border px-4 py-3
@@ -460,13 +376,7 @@ export function ExamManagementScreen({
 						참고 자료 정보를 불러오지 못해 연결 자료 표시는 일부 제한될 수 있습니다.
 					</p>
 				) : null}
-				<ExamManagementQuestionsTable
-					deletingQuestionId={deletingQuestionId}
-					exam={exam}
-					isDeletePending={deleteQuestionMutation.isPending}
-					onDeleteQuestion={(questionId) => void handleDeleteQuestion(questionId)}
-					onEditQuestion={handleOpenEditPanel}
-				/>
+				<ExamManagementQuestionsTable exam={exam} onEditQuestion={handleOpenEditPanel} />
 			</SurfaceCard>
 		</PageShell>
 	);

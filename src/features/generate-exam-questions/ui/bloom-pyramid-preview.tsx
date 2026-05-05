@@ -3,28 +3,28 @@ import {
 	bloomPyramidPreviewLevels,
 	bloomPyramidToneClassNames,
 	bloomPyramidWidthClassNames,
-	getDisplayCountValue,
+	getDisplayWeightValue,
 } from '@/features/generate-exam-questions/lib/bloom';
 
 interface GenerateExamQuestionsBloomPyramidPreviewProps {
-	bloomCounts: Record<BloomLevel, string>;
+	bloomWeights: Record<BloomLevel, string>;
 }
 
 export function GenerateExamQuestionsBloomPyramidPreview({
-	bloomCounts,
+	bloomWeights,
 }: GenerateExamQuestionsBloomPyramidPreviewProps) {
 	return (
 		<div className="rounded-large border-border-subtle bg-surface border p-4">
 			<div className="mb-3">
 				<p className="text-neutral-text text-sm font-medium">Bloom 피라미드</p>
 				<p className="text-neutral-gray-500 mt-1 text-xs">
-					단계 구조를 기준으로 현재 문항 수를 함께 보여줍니다.
+					단계 구조를 기준으로 현재 가중치를 함께 보여줍니다.
 				</p>
 			</div>
 			<div aria-hidden="true" className="flex min-h-80 flex-col justify-center gap-2">
 				{bloomPyramidPreviewLevels.map((option) => {
-					const countValue = getDisplayCountValue(bloomCounts[option.value]);
-					const isInactive = countValue === 0;
+					const weightValue = getDisplayWeightValue(bloomWeights[option.value]);
+					const isInactive = weightValue === 0;
 
 					return (
 						<div
@@ -37,7 +37,7 @@ export function GenerateExamQuestionsBloomPyramidPreview({
 							].join(' ')}
 						>
 							<span>{option.label}</span>
-							<span>{countValue}개</span>
+							<span>가중치 {weightValue}</span>
 						</div>
 					);
 				})}

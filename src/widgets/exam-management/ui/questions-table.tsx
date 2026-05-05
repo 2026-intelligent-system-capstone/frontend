@@ -12,24 +12,15 @@ import {
 	getQuestionTypeColor,
 	getQuestionTypeLabel,
 } from '@/entities/exam';
-import { PencilIcon, TrashIcon } from '@/shared/ui/icons/exam';
+import { PencilIcon } from '@/shared/ui/icons/exam';
 import { Button, Chip, EmptyState, Table, Tooltip } from '@heroui/react';
 
 interface ExamManagementQuestionsTableProps {
 	exam: Exam;
-	deletingQuestionId: string | null;
-	isDeletePending: boolean;
-	onDeleteQuestion: (questionId: string) => void;
 	onEditQuestion: (question: ExamQuestion) => void;
 }
 
-export function ExamManagementQuestionsTable({
-	exam,
-	deletingQuestionId,
-	isDeletePending,
-	onDeleteQuestion,
-	onEditQuestion,
-}: ExamManagementQuestionsTableProps) {
+export function ExamManagementQuestionsTable({ exam, onEditQuestion }: ExamManagementQuestionsTableProps) {
 	return (
 		<Table>
 			<Table.ScrollContainer>
@@ -45,7 +36,7 @@ export function ExamManagementQuestionsTable({
 						<Table.Column className="w-96">문항/정답</Table.Column>
 						<Table.Column className="w-56">평가 의도</Table.Column>
 						<Table.Column className="w-32">상태</Table.Column>
-						<Table.Column className="w-32">작업</Table.Column>
+						<Table.Column className="w-24">작업</Table.Column>
 					</Table.Header>
 					<Table.Body
 						renderEmptyState={() => (
@@ -172,7 +163,7 @@ export function ExamManagementQuestionsTable({
 									</div>
 								</Table.Cell>
 								<Table.Cell>
-									<div className="flex w-32 items-center gap-1 overflow-hidden">
+									<div className="flex w-24 items-center gap-1 overflow-hidden">
 										<Tooltip delay={0}>
 											<Tooltip.Trigger>
 												<Button
@@ -188,24 +179,6 @@ export function ExamManagementQuestionsTable({
 											<Tooltip.Content showArrow>
 												<Tooltip.Arrow />
 												<p>수정</p>
-											</Tooltip.Content>
-										</Tooltip>
-										<Tooltip delay={0}>
-											<Tooltip.Trigger>
-												<Button
-													aria-label={`${question.question_number}번 문항 삭제`}
-													isIconOnly
-													isPending={isDeletePending && deletingQuestionId === question.id}
-													size="sm"
-													variant="danger-soft"
-													onPress={() => onDeleteQuestion(question.id)}
-												>
-													<TrashIcon className="size-4" />
-												</Button>
-											</Tooltip.Trigger>
-											<Tooltip.Content showArrow>
-												<Tooltip.Arrow />
-												<p>삭제</p>
 											</Tooltip.Content>
 										</Tooltip>
 									</div>

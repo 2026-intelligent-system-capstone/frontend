@@ -13,7 +13,7 @@ import type {
 import { ApiClientError } from '@/shared/api/types';
 import { Button, ErrorMessage } from '@heroui/react';
 
-import { createDefaultBloomCounts, createEmptyGenerationForm, parseBloomCounts } from '../lib/bloom';
+import { createDefaultBloomWeights, createEmptyGenerationForm, parseBloomWeights } from '../lib/bloom';
 import { useGenerateExamQuestions } from '../model/use-generate-questions';
 import { GenerateExamQuestionsMaterials } from './materials';
 import { GenerateExamQuestionsSettings } from './settings';
@@ -22,6 +22,8 @@ interface GenerateExamQuestionsFormProps {
 	classroomId: string;
 	examId: string;
 	examType: ExamType;
+	questionCount: number;
+	difficulty: ExamDifficulty;
 	materials: ClassroomMaterial[];
 	formId?: string;
 	hideActions?: boolean;
@@ -31,13 +33,20 @@ interface GenerateExamQuestionsFormProps {
 }
 
 export function GenerateExamQuestionsForm(props: GenerateExamQuestionsFormProps) {
-	return <GenerateExamQuestionsFormBody key={`${props.classroomId}:${props.examId}:${props.examType}`} {...props} />;
+	return (
+		<GenerateExamQuestionsFormBody
+			key={`${props.classroomId}:${props.examId}:${props.examType}:${props.questionCount}:${props.difficulty}`}
+			{...props}
+		/>
+	);
 }
 
 function GenerateExamQuestionsFormBody({
 	classroomId,
 	examId,
 	examType,
+	questionCount,
+	difficulty,
 	materials,
 	formId,
 	hideActions = false,
@@ -47,12 +56,11 @@ function GenerateExamQuestionsFormBody({
 }: GenerateExamQuestionsFormProps) {
 	const emptyGenerationForm = useMemo(() => createEmptyGenerationForm(), []);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const [difficulty, setDifficulty] = useState<ExamDifficulty>(emptyGenerationForm.difficulty);
 	const [scopeText, setScopeText] = useState(emptyGenerationForm.scopeText);
 	const [maxFollowUps, setMaxFollowUps] = useState(emptyGenerationForm.maxFollowUps);
 	const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>(emptyGenerationForm.selectedMaterialIds);
-	const [bloomCounts, setBloomCounts] = useState<Record<BloomLevel, string>>(() =>
-		createDefaultBloomCounts(examType),
+	const [bloomWeights, setBloomWeights] = useState<Record<BloomLevel, string>>(() =>
+		createDefaultBloomWeights(examType),
 	);
 	const [questionTypeStrategy, setQuestionTypeStrategy] = useState<ExamQuestionTypeStrategy>(
 		emptyGenerationForm.questionTypeStrategy,
@@ -65,11 +73,10 @@ function GenerateExamQuestionsFormBody({
 
 	const resetForm = () => {
 		setErrorMessage(null);
-		setDifficulty(emptyGenerationForm.difficulty);
 		setScopeText(emptyGenerationForm.scopeText);
 		setMaxFollowUps(emptyGenerationForm.maxFollowUps);
 		setSelectedMaterialIds(emptyGenerationForm.selectedMaterialIds);
-		setBloomCounts(createDefaultBloomCounts(examType));
+		setBloomWeights(createDefaultBloomWeights(examType));
 		setQuestionTypeStrategy(emptyGenerationForm.questionTypeStrategy);
 	};
 
@@ -86,7 +93,7 @@ function GenerateExamQuestionsFormBody({
 		event.preventDefault();
 		setErrorMessage(null);
 
-		const { parsedCounts, totalCount } = parseBloomCounts(bloomCounts);
+		const { parsedWeights, totalWeight } = parseBloomWeights(bloomWeights);
 		const parsedMaxFollowUps = Number(maxFollowUps);
 
 		if (!scopeText.trim()) {
@@ -99,13 +106,8 @@ function GenerateExamQuestionsFormBody({
 			return;
 		}
 
-		if (parsedCounts.length === 0) {
-			setErrorMessage('Bloom 단계별 문항 수를 하나 이상 입력해주세요.');
-			return;
-		}
-
-		if (totalCount <= 0) {
-			setErrorMessage('총 문항 수는 1개 이상이어야 합니다.');
+		if (totalWeight <= 0) {
+			setErrorMessage('Bloom 단계별 가중치를 하나 이상 입력해주세요.');
 			return;
 		}
 
@@ -115,13 +117,11 @@ function GenerateExamQuestionsFormBody({
 			}
 
 			await generateMutation.mutateAsync({
-				bloom_counts: parsedCounts,
-				difficulty,
+				bloom_weights: parsedWeights,
 				max_follow_ups: parsedMaxFollowUps,
 				question_type_strategy: questionTypeStrategy,
 				scope_text: scopeText.trim(),
 				source_material_ids: selectedMaterialIds,
-				total_question_count: totalCount,
 			} satisfies GenerateExamQuestionsRequest);
 			resetForm();
 			onSuccess?.();
@@ -147,14 +147,14 @@ function GenerateExamQuestionsFormBody({
 			)}
 
 			<GenerateExamQuestionsSettings
-				bloomCounts={bloomCounts}
+				bloomWeights={bloomWeights}
 				difficulty={difficulty}
 				maxFollowUps={maxFollowUps}
-				onBloomCountChange={(level, value) => setBloomCounts((prev) => ({ ...prev, [level]: value }))}
-				onDifficultyChange={setDifficulty}
+				onBloomWeightChange={(level, value) => setBloomWeights((prev) => ({ ...prev, [level]: value }))}
 				onMaxFollowUpsChange={setMaxFollowUps}
 				onQuestionTypeStrategyChange={setQuestionTypeStrategy}
 				onScopeTextChange={setScopeText}
+				questionCount={questionCount}
 				questionTypeStrategy={questionTypeStrategy}
 				scopeText={scopeText}
 			/>

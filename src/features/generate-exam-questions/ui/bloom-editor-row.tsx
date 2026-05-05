@@ -1,24 +1,24 @@
 import type { BloomLevel } from '@/entities/exam';
 import {
 	type BloomLevelOption,
-	MAX_BLOOM_LEVEL_QUESTION_COUNT,
-	getDisplayCountValue,
+	MAX_BLOOM_LEVEL_WEIGHT,
+	getDisplayWeightValue,
 } from '@/features/generate-exam-questions/lib/bloom';
 import { SparklesIcon } from '@/shared/ui/icons/exam';
 import { Button, Label, NumberField, Tooltip } from '@heroui/react';
 
 interface GenerateExamQuestionsBloomEditorRowProps {
-	bloomCounts: Record<BloomLevel, string>;
-	onBloomCountChange: (level: BloomLevel, value: string) => void;
+	bloomWeights: Record<BloomLevel, string>;
+	onBloomWeightChange: (level: BloomLevel, value: string) => void;
 	option: BloomLevelOption;
 }
 
 export function GenerateExamQuestionsBloomEditorRow({
-	bloomCounts,
-	onBloomCountChange,
+	bloomWeights,
+	onBloomWeightChange,
 	option,
 }: GenerateExamQuestionsBloomEditorRowProps) {
-	const countValue = getDisplayCountValue(bloomCounts[option.value]);
+	const weightValue = getDisplayWeightValue(bloomWeights[option.value]);
 
 	return (
 		<div className="rounded-large border-border-subtle bg-surface border p-3">
@@ -50,15 +50,15 @@ export function GenerateExamQuestionsBloomEditorRow({
 					<p className="text-neutral-gray-500 text-xs">{option.description}</p>
 				</div>
 				<NumberField
-					aria-label={`${option.label} 문항 수`}
+					aria-label={`${option.label} 가중치`}
 					className="w-full lg:w-36"
-					maxValue={MAX_BLOOM_LEVEL_QUESTION_COUNT}
+					maxValue={MAX_BLOOM_LEVEL_WEIGHT}
 					minValue={0}
 					step={1}
-					value={countValue}
-					onChange={(value) => onBloomCountChange(option.value, String(value ?? 0))}
+					value={weightValue}
+					onChange={(value) => onBloomWeightChange(option.value, String(value ?? 0))}
 				>
-					<Label className="sr-only">{option.label} 문항 수</Label>
+					<Label className="sr-only">{option.label} 가중치</Label>
 					<NumberField.Group>
 						<NumberField.DecrementButton />
 						<NumberField.Input className="w-full min-w-0" />
