@@ -8,7 +8,7 @@ import type {
 } from '@/entities/exam';
 
 export interface ExamQuestionGenerationFormValues {
-	scopeText: string;
+	additionalScopeText: string;
 	selectedMaterialIds: string[];
 	questionTypeStrategy: ExamQuestionTypeStrategy;
 }
@@ -104,7 +104,7 @@ export const questionTypeStrategyOptions: QuestionTypeStrategyOption[] = [
 export const MAX_BLOOM_LEVEL_WEIGHT = 10;
 
 export const createEmptyGenerationForm = (): ExamQuestionGenerationFormValues => ({
-	scopeText: '',
+	additionalScopeText: '',
 	selectedMaterialIds: [],
 	questionTypeStrategy: 'balanced',
 });
@@ -156,7 +156,7 @@ export const createDefaultBloomWeights = (examType: ExamType): Record<BloomLevel
 	...defaultBloomWeightsByExamType[examType],
 });
 
-export const getDisplayWeightValue = (value: string, maxValue = MAX_BLOOM_LEVEL_WEIGHT) => {
+export const getDisplayWeightValue = (value: string, maxValue = MAX_BLOOM_LEVEL_WEIGHT): number => {
 	const parsedValue = Number(value);
 
 	if (!Number.isInteger(parsedValue) || parsedValue < 0) {
@@ -166,7 +166,9 @@ export const getDisplayWeightValue = (value: string, maxValue = MAX_BLOOM_LEVEL_
 	return Math.min(parsedValue, maxValue);
 };
 
-export const parseBloomWeights = (bloomWeights: Record<BloomLevel, string>) => {
+export const parseBloomWeights = (
+	bloomWeights: Record<BloomLevel, string>,
+): { parsedWeights: ExamQuestionBloomWeightRequest[]; totalWeight: number } => {
 	const parsedWeights: ExamQuestionBloomWeightRequest[] = bloomLevelOptions
 		.map((option) => ({
 			bloom_level: option.value,
@@ -180,7 +182,10 @@ export const parseBloomWeights = (bloomWeights: Record<BloomLevel, string>) => {
 	};
 };
 
-export const createBloomAllocationPreview = (bloomWeights: Record<BloomLevel, string>, questionCount: number) => {
+export const createBloomAllocationPreview = (
+	bloomWeights: Record<BloomLevel, string>,
+	questionCount: number,
+): Map<BloomLevel, number> => {
 	const { parsedWeights, totalWeight } = parseBloomWeights(bloomWeights);
 
 	if (totalWeight <= 0 || questionCount <= 0) {
@@ -228,7 +233,7 @@ export const bloomPyramidToneClassNames: Record<BloomLevel, string> = {
 	remember: 'bg-surface-muted text-neutral-gray-700',
 };
 
-export const toggleStringValue = (values: string[], target: string) => {
+export const toggleStringValue = (values: string[], target: string): string[] => {
 	return values.includes(target) ? values.filter((value) => value !== target) : [...values, target];
 };
 

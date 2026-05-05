@@ -1,5 +1,4 @@
-import type { BloomLevel, ExamDifficulty, ExamQuestionTypeStrategy } from '@/entities/exam';
-import { getDifficultyLabel } from '@/entities/exam';
+import type { BloomLevel, ExamQuestionTypeStrategy } from '@/entities/exam';
 import { Description, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
 
 import { parseBloomWeights, questionTypeStrategyOptions } from '../lib/bloom';
@@ -8,23 +7,21 @@ import { GenerateExamQuestionsBloomPyramidPreview } from './bloom-pyramid-previe
 import { GenerateExamQuestionsBloomSummary } from './bloom-summary';
 
 interface GenerateExamQuestionsSettingsProps {
-	difficulty: ExamDifficulty;
-	scopeText: string;
+	additionalScopeText: string;
 	bloomWeights: Record<BloomLevel, string>;
 	questionCount: number;
 	questionTypeStrategy: ExamQuestionTypeStrategy;
-	onScopeTextChange: (value: string) => void;
+	onAdditionalScopeTextChange: (value: string) => void;
 	onBloomWeightChange: (level: BloomLevel, value: string) => void;
 	onQuestionTypeStrategyChange: (value: ExamQuestionTypeStrategy) => void;
 }
 
 export function GenerateExamQuestionsSettings({
-	difficulty,
-	scopeText,
+	additionalScopeText,
 	bloomWeights,
 	questionCount,
 	questionTypeStrategy,
-	onScopeTextChange,
+	onAdditionalScopeTextChange,
 	onBloomWeightChange,
 	onQuestionTypeStrategyChange,
 }: GenerateExamQuestionsSettingsProps) {
@@ -32,14 +29,15 @@ export function GenerateExamQuestionsSettings({
 
 	return (
 		<>
-			<TextField isRequired className="w-full" name="scope_text">
-				<Label>시험 범위</Label>
+			<TextField className="w-full" name="additional_scope_text">
+				<Label>추가 포함 내용</Label>
 				<TextArea
 					className="min-h-28"
-					placeholder="예: 1~3주차 지도학습 개념과 회귀·분류 비교"
-					value={scopeText}
-					onChange={(event) => onScopeTextChange(event.target.value)}
+					placeholder="예: 회귀와 분류 비교를 강조하고, 실제 데이터셋 적용 사례를 포함해주세요."
+					value={additionalScopeText}
+					onChange={(event) => onAdditionalScopeTextChange(event.target.value)}
 				/>
+				<Description>선택한 개념 외에 반드시 포함할 범위, 강조점, 제외 조건을 작성하세요.</Description>
 			</TextField>
 
 			<div className="rounded-large border-border-subtle bg-surface-muted space-y-4 border p-4">

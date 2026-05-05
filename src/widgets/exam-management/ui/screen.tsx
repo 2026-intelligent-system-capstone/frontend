@@ -300,7 +300,8 @@ export function ExamManagementScreen({
 									<Modal.Header>
 										<Modal.Heading>AI 문항 생성</Modal.Heading>
 										<p className="text-neutral-gray-500 mt-1 text-sm">
-											적재 완료된 강의 자료와 추출 범위를 기반으로 문항을 생성합니다.
+											자료를 선택하면 포함 개념이 자동으로 선택됩니다. 제외할 개념은 개별적으로
+											해제하세요.
 										</p>
 									</Modal.Header>
 									<Modal.Body className="min-h-0 flex-1 overflow-y-auto p-6">
