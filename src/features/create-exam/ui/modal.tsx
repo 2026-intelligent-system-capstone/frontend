@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useState } from 'react';
 
-import type { ExamType } from '@/entities/exam';
+import type { ExamDifficulty, ExamType } from '@/entities/exam';
 import { ApiClientError } from '@/shared/api/types';
 import { Button, ErrorMessage, Input, Label, ListBox, Modal, Select, TextArea, TextField } from '@heroui/react';
 
@@ -10,8 +10,11 @@ import {
 	DEFAULT_MAX_ATTEMPTS,
 	type DateRangeValue,
 	MAX_EXAM_ATTEMPTS,
+	MAX_EXAM_QUESTION_COUNT,
+	MIN_EXAM_QUESTION_COUNT,
 	buildDefaultScheduleRange,
 	defaultExamCriteria,
+	examDifficultyOptions,
 	examTypeOptions,
 	toUtcIsoString,
 } from '../lib/form';
@@ -27,15 +30,21 @@ const isExamType = (value: string): value is ExamType => {
 	return examTypeOptions.some((option) => option.value === value);
 };
 
+const isExamDifficulty = (value: string): value is ExamDifficulty => {
+	return examDifficultyOptions.some((option) => option.value === value);
+};
+
 export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 	const titleId = useId();
 	const descriptionId = useId();
 	const durationId = useId();
+	const questionCountId = useId();
 	const maxAttemptsId = useId();
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [examType, setExamType] = useState<ExamType>('weekly');
+	const [difficulty, setDifficulty] = useState<ExamDifficulty>('medium');
 
 	const { mutateAsync: createExam, isPending } = useCreateExam(classroomId);
 
@@ -47,6 +56,7 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 		if (!nextOpen) {
 			setErrorMessage(null);
 			setExamType('weekly');
+			setDifficulty('medium');
 			setScheduleRange(defaultScheduleRange);
 		}
 	};
@@ -60,10 +70,22 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 		const title = String(formData.get('title') ?? '').trim();
 		const descriptionValue = String(formData.get('description') ?? '').trim();
 		const durationMinutes = Number(formData.get('duration_minutes'));
+		const questionCount = Number(formData.get('question_count'));
 		const maxAttempts = Number(formData.get('max_attempts'));
 
 		if (!scheduleRange) {
 			setErrorMessage('시험 일정을 선택해주세요.');
+			return;
+		}
+
+		if (
+			!Number.isInteger(questionCount) ||
+			questionCount < MIN_EXAM_QUESTION_COUNT ||
+			questionCount > MAX_EXAM_QUESTION_COUNT
+		) {
+			setErrorMessage(
+				`총 문항 수는 ${MIN_EXAM_QUESTION_COUNT}개 이상 ${MAX_EXAM_QUESTION_COUNT}개 이하여야 합니다.`,
+			);
 			return;
 		}
 
@@ -79,6 +101,8 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 				exam_type: examType,
 				duration_minutes: durationMinutes,
 				week,
+				question_count: questionCount,
+				difficulty,
 				starts_at: toUtcIsoString(scheduleRange.start),
 				ends_at: toUtcIsoString(scheduleRange.end),
 				max_attempts: maxAttempts,
@@ -87,6 +111,7 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 
 			form.reset();
 			setExamType('weekly');
+			setDifficulty('medium');
 			setScheduleRange(defaultScheduleRange);
 			close();
 		} catch (error) {
@@ -155,6 +180,39 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 												</Select.Popover>
 											</Select>
 
+											<Select
+												isRequired
+												className="w-full"
+												value={difficulty}
+												onChange={(value) => {
+													if (typeof value === 'string' && isExamDifficulty(value)) {
+														setDifficulty(value);
+													}
+												}}
+											>
+												<Label>시험 난이도</Label>
+												<Select.Trigger>
+													<Select.Value />
+													<Select.Indicator />
+												</Select.Trigger>
+												<Select.Popover>
+													<ListBox>
+														{examDifficultyOptions.map((option) => (
+															<ListBox.Item
+																key={option.value}
+																id={option.value}
+																textValue={option.label}
+															>
+																{option.label}
+																<ListBox.ItemIndicator />
+															</ListBox.Item>
+														))}
+													</ListBox>
+												</Select.Popover>
+											</Select>
+										</div>
+
+										<div className="grid gap-4 md:grid-cols-3">
 											<TextField
 												isRequired
 												className="w-full"
@@ -164,23 +222,39 @@ export function CreateExamModal({ classroomId, week }: CreateExamModalProps) {
 												<Label htmlFor={durationId}>시험 시간(분)</Label>
 												<Input id={durationId} min={1} max={600} step={1} type="number" />
 											</TextField>
-										</div>
 
-										<TextField
-											isRequired
-											className="w-full"
-											defaultValue={String(DEFAULT_MAX_ATTEMPTS)}
-											name="max_attempts"
-										>
-											<Label htmlFor={maxAttemptsId}>총 진행 가능 횟수</Label>
-											<Input
-												id={maxAttemptsId}
-												min={1}
-												max={MAX_EXAM_ATTEMPTS}
-												step={1}
-												type="number"
-											/>
-										</TextField>
+											<TextField
+												isRequired
+												className="w-full"
+												defaultValue="5"
+												name="question_count"
+											>
+												<Label htmlFor={questionCountId}>총 문항 수</Label>
+												<Input
+													id={questionCountId}
+													min={MIN_EXAM_QUESTION_COUNT}
+													max={MAX_EXAM_QUESTION_COUNT}
+													step={1}
+													type="number"
+												/>
+											</TextField>
+
+											<TextField
+												isRequired
+												className="w-full"
+												defaultValue={String(DEFAULT_MAX_ATTEMPTS)}
+												name="max_attempts"
+											>
+												<Label htmlFor={maxAttemptsId}>총 진행 가능 횟수</Label>
+												<Input
+													id={maxAttemptsId}
+													min={1}
+													max={MAX_EXAM_ATTEMPTS}
+													step={1}
+													type="number"
+												/>
+											</TextField>
+										</div>
 
 										<p className="text-sm text-slate-500">
 											1회면 재응시 불가, 2회면 1회 재응시 가능합니다.

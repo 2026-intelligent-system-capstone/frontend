@@ -1,4 +1,4 @@
-import type { CreateExamRequest, ExamType } from '@/entities/exam';
+import type { CreateExamRequest, ExamDifficulty, ExamType } from '@/entities/exam';
 import { SEOUL_TIME_ZONE, dayjs } from '@/shared/lib/dayjs';
 import { type DateValue, parseZonedDateTime } from '@internationalized/date';
 
@@ -8,6 +8,12 @@ export const examTypeOptions: Array<{ label: string; value: ExamType }> = [
 	{ label: '기말평가', value: 'final' },
 	{ label: '모의평가', value: 'mock' },
 	{ label: '프로젝트 평가', value: 'project' },
+];
+
+export const examDifficultyOptions: Array<{ label: string; value: ExamDifficulty }> = [
+	{ label: '쉬움', value: 'easy' },
+	{ label: '보통', value: 'medium' },
+	{ label: '어려움', value: 'hard' },
 ];
 
 export type DateRangeValue = {
@@ -37,6 +43,8 @@ export const toUtcIsoString = (value: DateValue) => {
 
 export const DEFAULT_MAX_ATTEMPTS = 1;
 export const MAX_EXAM_ATTEMPTS = 10;
+export const MIN_EXAM_QUESTION_COUNT = 1;
+export const MAX_EXAM_QUESTION_COUNT = 30;
 
 export const defaultExamCriteria: CreateExamRequest['criteria'] = [
 	{

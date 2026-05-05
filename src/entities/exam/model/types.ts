@@ -73,6 +73,8 @@ export interface StudentExamSessionSheet {
 	starts_at: string;
 	ends_at: string;
 	max_attempts: number;
+	question_count: number;
+	difficulty: ExamDifficulty;
 	questions: StudentExamSessionQuestion[];
 }
 
@@ -93,6 +95,8 @@ export interface Exam {
 	starts_at: string;
 	ends_at: string;
 	max_attempts: number;
+	question_count: number;
+	difficulty: ExamDifficulty;
 	criteria: ExamCriterion[];
 	questions: ExamQuestion[];
 }
@@ -127,12 +131,14 @@ export interface CreateExamRequest {
 	starts_at: string;
 	ends_at: string;
 	max_attempts: number;
+	question_count: number;
+	difficulty: ExamDifficulty;
 	criteria: CreateExamCriterionRequest[];
 }
 
-export interface ExamQuestionBloomCountRequest {
+export interface ExamQuestionBloomWeightRequest {
 	bloom_level: BloomLevel;
-	count: number;
+	weight: number;
 }
 
 export interface ExamQuestionTypeCountRequest {
@@ -143,11 +149,9 @@ export interface ExamQuestionTypeCountRequest {
 export interface GenerateExamQuestionsRequest {
 	scope_text: string;
 	max_follow_ups: number;
-	difficulty: ExamDifficulty;
 	source_material_ids: string[];
-	bloom_counts: ExamQuestionBloomCountRequest[];
+	bloom_weights: ExamQuestionBloomWeightRequest[];
 	question_type_counts?: ExamQuestionTypeCountRequest[];
-	total_question_count?: number;
 	question_type_strategy?: ExamQuestionTypeStrategy;
 }
 
@@ -158,20 +162,6 @@ export interface GenerateExamQuestionsSubmitResponse {
 	job_status: AsyncJobStatus;
 	generation_requested_at: string | null;
 	generation_error: string | null;
-}
-
-export interface CreateExamQuestionRequest {
-	question_number: number;
-	max_score: number;
-	question_type: Exclude<ExamQuestionType, 'none'>;
-	bloom_level: BloomLevel;
-	difficulty: ExamDifficulty;
-	question_text: string;
-	intent_text: string;
-	rubric_text?: string | null;
-	answer_options: string[];
-	correct_answer_text: string | null;
-	source_material_ids: string[];
 }
 
 export interface UpdateExamQuestionRequest {

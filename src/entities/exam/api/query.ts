@@ -14,7 +14,6 @@ import {
 } from '../model/query-keys';
 import type {
 	CompleteExamSessionRequest,
-	CreateExamQuestionRequest,
 	CreateExamRequest,
 	Exam,
 	ExamQuestion,
@@ -58,23 +57,6 @@ export const examsApi = {
 	},
 	createExam: async (classroomId: string, payload: CreateExamRequest): Promise<Exam> => {
 		const response = await apiClient.post<ApiResponse<Exam>>(`/api/classrooms/${classroomId}/exams`, payload);
-		return response.data;
-	},
-	createQuestion: async (
-		classroomId: string,
-		examId: string,
-		payload: CreateExamQuestionRequest,
-	): Promise<ExamQuestion> => {
-		const response = await apiClient.post<ApiResponse<ExamQuestion>>(
-			`/api/classrooms/${classroomId}/exams/${examId}/questions`,
-			payload,
-		);
-		return response.data;
-	},
-	deleteQuestion: async (classroomId: string, examId: string, questionId: string): Promise<ExamQuestion> => {
-		const response = await apiClient.delete<ApiResponse<ExamQuestion>>(
-			`/api/classrooms/${classroomId}/exams/${examId}/questions/${questionId}`,
-		);
 		return response.data;
 	},
 	finalizeResult: async (
