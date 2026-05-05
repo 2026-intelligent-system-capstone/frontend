@@ -18,6 +18,8 @@ import { useGenerateExamQuestions } from '../model/use-generate-questions';
 import { GenerateExamQuestionsMaterials } from './materials';
 import { GenerateExamQuestionsSettings } from './settings';
 
+const FIXED_MAX_FOLLOW_UPS = 2;
+
 interface GenerateExamQuestionsFormProps {
 	classroomId: string;
 	examId: string;
@@ -57,7 +59,6 @@ function GenerateExamQuestionsFormBody({
 	const emptyGenerationForm = useMemo(() => createEmptyGenerationForm(), []);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [scopeText, setScopeText] = useState(emptyGenerationForm.scopeText);
-	const [maxFollowUps, setMaxFollowUps] = useState(emptyGenerationForm.maxFollowUps);
 	const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>(emptyGenerationForm.selectedMaterialIds);
 	const [bloomWeights, setBloomWeights] = useState<Record<BloomLevel, string>>(() =>
 		createDefaultBloomWeights(examType),
@@ -74,7 +75,6 @@ function GenerateExamQuestionsFormBody({
 	const resetForm = () => {
 		setErrorMessage(null);
 		setScopeText(emptyGenerationForm.scopeText);
-		setMaxFollowUps(emptyGenerationForm.maxFollowUps);
 		setSelectedMaterialIds(emptyGenerationForm.selectedMaterialIds);
 		setBloomWeights(createDefaultBloomWeights(examType));
 		setQuestionTypeStrategy(emptyGenerationForm.questionTypeStrategy);
@@ -94,15 +94,9 @@ function GenerateExamQuestionsFormBody({
 		setErrorMessage(null);
 
 		const { parsedWeights, totalWeight } = parseBloomWeights(bloomWeights);
-		const parsedMaxFollowUps = Number(maxFollowUps);
 
 		if (!scopeText.trim()) {
 			setErrorMessage('시험 범위를 입력해주세요.');
-			return;
-		}
-
-		if (!Number.isInteger(parsedMaxFollowUps) || parsedMaxFollowUps < 0 || parsedMaxFollowUps > 20) {
-			setErrorMessage('최대 꼬리질문 수는 0 이상 20 이하의 정수여야 합니다.');
 			return;
 		}
 
@@ -118,7 +112,7 @@ function GenerateExamQuestionsFormBody({
 
 			await generateMutation.mutateAsync({
 				bloom_weights: parsedWeights,
-				max_follow_ups: parsedMaxFollowUps,
+				max_follow_ups: FIXED_MAX_FOLLOW_UPS,
 				question_type_strategy: questionTypeStrategy,
 				scope_text: scopeText.trim(),
 				source_material_ids: selectedMaterialIds,
@@ -149,9 +143,7 @@ function GenerateExamQuestionsFormBody({
 			<GenerateExamQuestionsSettings
 				bloomWeights={bloomWeights}
 				difficulty={difficulty}
-				maxFollowUps={maxFollowUps}
 				onBloomWeightChange={(level, value) => setBloomWeights((prev) => ({ ...prev, [level]: value }))}
-				onMaxFollowUpsChange={setMaxFollowUps}
 				onQuestionTypeStrategyChange={setQuestionTypeStrategy}
 				onScopeTextChange={setScopeText}
 				questionCount={questionCount}

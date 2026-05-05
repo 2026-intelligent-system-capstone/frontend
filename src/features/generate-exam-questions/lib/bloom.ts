@@ -8,7 +8,6 @@ import type {
 } from '@/entities/exam';
 
 export interface ExamQuestionGenerationFormValues {
-	maxFollowUps: string;
 	scopeText: string;
 	selectedMaterialIds: string[];
 	questionTypeStrategy: ExamQuestionTypeStrategy;
@@ -105,7 +104,6 @@ export const questionTypeStrategyOptions: QuestionTypeStrategyOption[] = [
 export const MAX_BLOOM_LEVEL_WEIGHT = 10;
 
 export const createEmptyGenerationForm = (): ExamQuestionGenerationFormValues => ({
-	maxFollowUps: '2',
 	scopeText: '',
 	selectedMaterialIds: [],
 	questionTypeStrategy: 'balanced',

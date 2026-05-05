@@ -1,6 +1,6 @@
 import type { BloomLevel, ExamDifficulty, ExamQuestionTypeStrategy } from '@/entities/exam';
 import { getDifficultyLabel } from '@/entities/exam';
-import { Description, Input, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
+import { Description, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
 
 import { parseBloomWeights, questionTypeStrategyOptions } from '../lib/bloom';
 import { GenerateExamQuestionsBloomEditorList } from './bloom-editor-list';
@@ -9,12 +9,10 @@ import { GenerateExamQuestionsBloomSummary } from './bloom-summary';
 
 interface GenerateExamQuestionsSettingsProps {
 	difficulty: ExamDifficulty;
-	maxFollowUps: string;
 	scopeText: string;
 	bloomWeights: Record<BloomLevel, string>;
 	questionCount: number;
 	questionTypeStrategy: ExamQuestionTypeStrategy;
-	onMaxFollowUpsChange: (value: string) => void;
 	onScopeTextChange: (value: string) => void;
 	onBloomWeightChange: (level: BloomLevel, value: string) => void;
 	onQuestionTypeStrategyChange: (value: ExamQuestionTypeStrategy) => void;
@@ -22,12 +20,10 @@ interface GenerateExamQuestionsSettingsProps {
 
 export function GenerateExamQuestionsSettings({
 	difficulty,
-	maxFollowUps,
 	scopeText,
 	bloomWeights,
 	questionCount,
 	questionTypeStrategy,
-	onMaxFollowUpsChange,
 	onScopeTextChange,
 	onBloomWeightChange,
 	onQuestionTypeStrategyChange,
@@ -36,26 +32,6 @@ export function GenerateExamQuestionsSettings({
 
 	return (
 		<>
-			<div className="grid gap-4 md:grid-cols-2">
-				<div className="border-border-subtle bg-surface-muted rounded-2xl border px-4 py-3">
-					<p className="text-neutral-text text-sm font-medium">시험 생성 난이도</p>
-					<p className="text-neutral-gray-500 mt-1 text-sm">
-						이 시험은 생성 시 설정한 {getDifficultyLabel(difficulty)} 난이도로 고정됩니다.
-					</p>
-				</div>
-				<TextField isRequired className="w-full" name="max_follow_ups">
-					<Label>최대 꼬리질문 수</Label>
-					<Input
-						min={0}
-						max={20}
-						step={1}
-						type="number"
-						value={maxFollowUps}
-						onChange={(event) => onMaxFollowUpsChange(event.target.value)}
-					/>
-				</TextField>
-			</div>
-
 			<TextField isRequired className="w-full" name="scope_text">
 				<Label>시험 범위</Label>
 				<TextArea
@@ -69,7 +45,7 @@ export function GenerateExamQuestionsSettings({
 			<div className="rounded-large border-border-subtle bg-surface-muted space-y-4 border p-4">
 				<GenerateExamQuestionsBloomSummary questionCount={questionCount} totalWeight={totalWeight} />
 
-				<div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] md:items-start">
+				<div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(370px,370px)] md:items-start">
 					<GenerateExamQuestionsBloomPyramidPreview bloomWeights={bloomWeights} />
 					<GenerateExamQuestionsBloomEditorList
 						bloomWeights={bloomWeights}
