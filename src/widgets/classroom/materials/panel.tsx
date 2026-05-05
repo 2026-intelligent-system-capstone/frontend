@@ -63,9 +63,6 @@ export function ClassroomMaterialsPanel({
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h2 className="text-neutral-text text-lg font-semibold">강의 자료</h2>
-					<p className="text-neutral-gray-500 mt-1 text-sm">
-						파일 또는 HTTP/HTTPS 링크 자료를 등록하고 분석 상태를 관리합니다.
-					</p>
 				</div>
 				{showActions && canManageMaterials && actionWeek ? (
 					<MaterialUploadModal classroomId={classroomId} week={actionWeek} />

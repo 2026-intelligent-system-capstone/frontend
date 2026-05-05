@@ -37,7 +37,7 @@ export function GenerateExamQuestionsBloomPyramidPreview({
 							].join(' ')}
 						>
 							<span>{option.label}</span>
-							<span>가중치 {weightValue}</span>
+							<span>{weightValue}</span>
 						</div>
 					);
 				})}
