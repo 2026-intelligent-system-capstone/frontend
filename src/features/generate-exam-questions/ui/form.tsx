@@ -20,7 +20,7 @@ import {
 	toggleStringValue,
 } from '../lib/bloom';
 import { useGenerateExamQuestions } from '../model/use-generate-questions';
-import { GenerateExamQuestionsMaterials } from './materials';
+import { GenerateExamQuestionsScopeSection } from './materials';
 import { GenerateExamQuestionsSettings } from './settings';
 
 const FIXED_MAX_FOLLOW_UPS = 2;
@@ -215,23 +215,23 @@ function GenerateExamQuestionsFormBody({
 				</div>
 			)}
 
-			<GenerateExamQuestionsSettings
+			<GenerateExamQuestionsScopeSection
 				additionalScopeText={additionalScopeText}
-				bloomWeights={bloomWeights}
-				onAdditionalScopeTextChange={setAdditionalScopeText}
-				onBloomWeightChange={(level, value) => setBloomWeights((prev) => ({ ...prev, [level]: value }))}
-				onQuestionTypeStrategyChange={setQuestionTypeStrategy}
-				questionCount={questionCount}
-				questionTypeStrategy={questionTypeStrategy}
-			/>
-
-			<GenerateExamQuestionsMaterials
 				hasCompletedMaterials={completedMaterials.length > 0}
 				materials={materials}
+				onAdditionalScopeTextChange={setAdditionalScopeText}
 				onConceptToggle={handleConceptToggle}
 				onMaterialToggle={handleMaterialToggle}
 				selectedConceptKeys={selectedConceptKeys}
 				selectedMaterialIds={selectedMaterialIds}
+			/>
+
+			<GenerateExamQuestionsSettings
+				bloomWeights={bloomWeights}
+				onBloomWeightChange={(level, value) => setBloomWeights((prev) => ({ ...prev, [level]: value }))}
+				onQuestionTypeStrategyChange={setQuestionTypeStrategy}
+				questionCount={questionCount}
+				questionTypeStrategy={questionTypeStrategy}
 			/>
 
 			{errorMessage ? <ErrorMessage>{errorMessage}</ErrorMessage> : null}
