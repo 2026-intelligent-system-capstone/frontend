@@ -63,6 +63,8 @@ export function ExamManagementScreen({
 	const classroom = classroomQuery.data;
 	const exam = examQuery.data;
 	const materials = materialsQuery.data ?? [];
+	const generationMaterials =
+		exam?.exam_type === 'weekly' ? materials.filter((material) => material.week === exam.week) : materials;
 	const isExamGenerationInProgress = exam?.generation_status === 'queued' || exam?.generation_status === 'running';
 	const editingQuestion = exam?.questions.find((question) => question.id === editingQuestionId);
 	const editingQuestionFormKey = editingQuestion
@@ -313,7 +315,7 @@ export function ExamManagementScreen({
 											formId={GENERATION_FORM_ID}
 											hideActions
 											hideHeader
-											materials={materials}
+											materials={generationMaterials}
 											questionCount={exam.question_count}
 											onCancel={close}
 											onSuccess={close}
