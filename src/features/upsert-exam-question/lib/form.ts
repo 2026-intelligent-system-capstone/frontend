@@ -64,7 +64,13 @@ const joinLines = (values?: string[] | null): string => (values ?? []).filter(Bo
 
 const getOptionLabel = (index: number): string => String(index + 1);
 
-const getNextOptionLabel = (existingOptions: ExamQuestionAnswerOption[]): string => String(existingOptions.length + 1);
+const getNextOptionLabel = (existingOptions: ExamQuestionAnswerOption[]): string => {
+	const numericIds = existingOptions.map((option) => Number(option.id)).filter(Number.isFinite);
+	const numericLabels = existingOptions.map((option) => Number(option.label)).filter(Number.isFinite);
+	const maxNumericValue = Math.max(0, ...numericIds, ...numericLabels);
+
+	return String(maxNumericValue + 1);
+};
 
 const createFallbackAnswerOptions = (question: ExamQuestion): ExamQuestionAnswerOption[] => {
 	const correctAnswerText = question.correct_answer_text?.trim();
@@ -83,8 +89,10 @@ const createFallbackAnswerOptions = (question: ExamQuestion): ExamQuestionAnswer
 };
 
 const getQuestionAnswerOptions = (question: ExamQuestion): ExamQuestionAnswerOption[] => {
-	if (question.answer_options_data.length > 0) {
-		return question.answer_options_data;
+	const structuredOptions = question.answer_options_data ?? [];
+
+	if (structuredOptions.length > 0) {
+		return structuredOptions;
 	}
 
 	return createFallbackAnswerOptions(question);
@@ -117,8 +125,10 @@ const createFallbackRubricCriteria = (question: ExamQuestion): ExamQuestionRubri
 };
 
 const getQuestionRubricCriteria = (question: ExamQuestion): ExamQuestionRubricCriterion[] => {
-	if (question.rubric_data.criteria.length > 0) {
-		return question.rubric_data.criteria;
+	const criteria = question.rubric_data?.criteria ?? [];
+
+	if (criteria.length > 0) {
+		return criteria;
 	}
 
 	return createFallbackRubricCriteria(question);
@@ -194,7 +204,7 @@ export const createQuestionFormValues = (question?: ExamQuestion): ExamQuestionF
 		questionType: question.question_type,
 		requiredKeywordsText: joinLines(answerKey?.required_keywords),
 		rubricCriteriaText: formatRubricCriteriaText(rubricCriteria),
-		rubricEvidencePolicyText: question.rubric_data.evidence_policy ?? '',
+		rubricEvidencePolicyText: question.rubric_data?.evidence_policy ?? '',
 		rubricText: question.rubric_text,
 		sourceMaterialIds: [...question.source_material_ids],
 	};

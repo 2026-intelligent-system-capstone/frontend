@@ -215,13 +215,28 @@ function normalizeAnswerOption(option: ExamQuestionAnswerOption, index: number):
 	return {
 		id: option.id.trim() || fallbackLabel,
 		label: option.label.trim() || fallbackLabel,
-		text: option.text,
+		text: option.text.trim(),
 	};
 }
 
+function hasValidStructuredOptions(options: StudentExamSessionAnswerOption[]): boolean {
+	const optionIds = new Set<string>();
+
+	return options.every((option) => {
+		if (!option.id || !option.text || optionIds.has(option.id)) {
+			return false;
+		}
+
+		optionIds.add(option.id);
+		return true;
+	});
+}
+
 function getStudentExamSessionAnswerOptions(question: StudentExamSessionQuestion): StudentExamSessionAnswerOption[] {
-	if (question.answer_options_data && question.answer_options_data.length > 0) {
-		return question.answer_options_data.map(normalizeAnswerOption);
+	const structuredOptions = (question.answer_options_data ?? []).map(normalizeAnswerOption);
+
+	if (structuredOptions.length > 0 && hasValidStructuredOptions(structuredOptions)) {
+		return structuredOptions;
 	}
 
 	return question.answer_options.map((text, index) => {
@@ -868,9 +883,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								isAnswered={answeredIds.has(currentQuestion.id)}
 								isDisabled={!isSessionReady}
 								isSubmitting={isAnswerSubmitting}
-								options={currentQuestionAnswerOptions.map(
-									(option) => `${option.label}. ${option.text}`,
-								)}
+								options={currentQuestionAnswerOptions.map((option) => option.text)}
 								selected={multipleChoiceSelected}
 								onChange={(selected) =>
 									setMultipleChoiceDrafts((prev) => ({

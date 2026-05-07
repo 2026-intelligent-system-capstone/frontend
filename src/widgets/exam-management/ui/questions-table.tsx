@@ -22,8 +22,10 @@ interface ExamManagementQuestionsTableProps {
 }
 
 const getDisplayOptions = (question: ExamQuestion): ExamQuestionAnswerOption[] => {
-	if (question.answer_options_data.length > 0) {
-		return question.answer_options_data;
+	const structuredOptions = question.answer_options_data ?? [];
+
+	if (structuredOptions.length > 0) {
+		return structuredOptions;
 	}
 
 	return question.answer_options.map((option, index) => {
@@ -60,7 +62,7 @@ const getStructuredAnswerSummary = (question: ExamQuestion): string | null => {
 	}
 
 	if (question.question_type === 'oral') {
-		const criteriaCount = question.rubric_data.criteria.length;
+		const criteriaCount = question.rubric_data?.criteria?.length ?? 0;
 		const followUpCount = question.answer_key_data?.follow_up_questions?.length ?? 0;
 		const expectedPointCount = question.answer_key_data?.expected_points?.length ?? 0;
 		const summary = [

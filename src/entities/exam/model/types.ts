@@ -72,9 +72,9 @@ export interface ExamQuestion {
 	intent_text: string;
 	rubric_text: string;
 	answer_options: string[];
-	answer_options_data: ExamQuestionAnswerOption[];
-	answer_key_data: ExamQuestionAnswerKey | null;
-	rubric_data: ExamQuestionRubric;
+	answer_options_data?: ExamQuestionAnswerOption[] | null;
+	answer_key_data?: ExamQuestionAnswerKey | null;
+	rubric_data?: ExamQuestionRubric | null;
 	correct_answer_text: string | null;
 	source_material_ids: string[];
 	status: ExamQuestionStatus;
@@ -90,7 +90,7 @@ export interface StudentExamSessionQuestion {
 	difficulty: ExamDifficulty;
 	question_text: string;
 	answer_options: string[];
-	answer_options_data?: ExamQuestionAnswerOption[];
+	answer_options_data?: ExamQuestionAnswerOption[] | null;
 	status: ExamQuestionStatus;
 }
 
@@ -207,9 +207,9 @@ export interface UpdateExamQuestionRequest {
 	intent_text?: string;
 	rubric_text?: string | null;
 	answer_options?: string[];
-	answer_options_data?: ExamQuestionAnswerOption[];
+	answer_options_data?: ExamQuestionAnswerOption[] | null;
 	answer_key_data?: ExamQuestionAnswerKey | null;
-	rubric_data?: ExamQuestionRubric;
+	rubric_data?: ExamQuestionRubric | null;
 	correct_answer_text?: string | null;
 	source_material_ids?: string[];
 }
