@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 import type {
+	ExamQuestionAnswerOption,
 	ExamSession,
 	ExamTurn,
 	ExamTurnEventType,
@@ -51,6 +52,12 @@ interface OralTurn {
 
 interface StudentExamSessionPageProps {
 	examId: string;
+}
+
+interface StudentExamSessionAnswerOption {
+	id: string;
+	label: string;
+	text: string;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -199,21 +206,62 @@ function findLatestAssistantTurn(turns: OralTurn[]): OralTurn | null {
 	return null;
 }
 
+function getFallbackOptionLabel(index: number): string {
+	return String(index + 1);
+}
+
+function normalizeAnswerOption(option: ExamQuestionAnswerOption, index: number): StudentExamSessionAnswerOption {
+	const fallbackLabel = getFallbackOptionLabel(index);
+	return {
+		id: option.id.trim() || fallbackLabel,
+		label: option.label.trim() || fallbackLabel,
+		text: option.text,
+	};
+}
+
+function getStudentExamSessionAnswerOptions(question: StudentExamSessionQuestion): StudentExamSessionAnswerOption[] {
+	if (question.answer_options_data && question.answer_options_data.length > 0) {
+		return question.answer_options_data.map(normalizeAnswerOption);
+	}
+
+	return question.answer_options.map((text, index) => {
+		const fallbackLabel = getFallbackOptionLabel(index);
+		return {
+			id: fallbackLabel,
+			label: fallbackLabel,
+			text,
+		};
+	});
+}
+
+function getSelectedOptionIndexes(options: StudentExamSessionAnswerOption[], selectedOptionIds: string[]): number[] {
+	return selectedOptionIds
+		.map((optionId) => options.findIndex((option) => option.id === optionId))
+		.filter((index) => index >= 0);
+}
+
+function getSelectedOptionIds(options: StudentExamSessionAnswerOption[], selectedIndexes: number[]): string[] {
+	return selectedIndexes
+		.map((index) => options[index]?.id)
+		.filter((optionId): optionId is string => Boolean(optionId));
+}
+
 function buildMultipleChoiceAnswer(
 	question: StudentExamSessionQuestion,
-	selected: number[],
+	selectedOptionIds: string[],
 ): { content: string; metadata: Record<string, string> } {
-	const sortedSelected = [...selected].sort((a, b) => a - b);
-	const selectedLabels = sortedSelected.map((index) => question.answer_options[index] ?? '');
-	const content = selectedLabels
-		.map((label, index) => `${String.fromCharCode(65 + sortedSelected[index])}. ${label}`)
-		.join('\n');
+	const options = getStudentExamSessionAnswerOptions(question);
+	const selectedOptions = selectedOptionIds
+		.map((optionId) => options.find((option) => option.id === optionId))
+		.filter((option): option is StudentExamSessionAnswerOption => Boolean(option));
+	const content = selectedOptions.map((option) => `${option.label}. ${option.text}`).join('\n');
+	const firstOption = selectedOptions[0];
 
 	return {
 		content,
 		metadata: {
-			selected_option_index: String(sortedSelected[0]),
-			selected_option_label: selectedLabels[0] ?? '',
+			selected_option_id: firstOption?.id ?? '',
+			selected_option_label: firstOption?.label ?? '',
 		},
 	};
 }
@@ -231,8 +279,8 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const [showEndConfirm, setShowEndConfirm] = useState(false);
 	const [showConversationTree, setShowConversationTree] = useState(false);
 	const [answeredIds, setAnsweredIds] = useState<Set<string>>(new Set());
-	const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState<Record<string, number[]>>({});
-	const [multipleChoiceDrafts, setMultipleChoiceDrafts] = useState<Record<string, number[]>>({});
+	const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState<Record<string, string[]>>({});
+	const [multipleChoiceDrafts, setMultipleChoiceDrafts] = useState<Record<string, string[]>>({});
 	const [subjectiveAnswers, setSubjectiveAnswers] = useState<Record<string, string>>({});
 	const [subjectiveDrafts, setSubjectiveDrafts] = useState<Record<string, string>>({});
 	const [isFinished, setIsFinished] = useState(false);
@@ -289,9 +337,14 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const unansweredCount = Math.max(0, questions.length - answeredIds.size);
 	const isSessionReady = Boolean(session && !sessionError);
 	const cameraStatusMessage = getCameraStatusMessage(cameraStatus);
-	const multipleChoiceSelected = currentQuestionId
+	const currentQuestionAnswerOptions = currentQuestion ? getStudentExamSessionAnswerOptions(currentQuestion) : [];
+	const multipleChoiceSelectedOptionIds = currentQuestionId
 		? (multipleChoiceDrafts[currentQuestionId] ?? multipleChoiceAnswers[currentQuestionId] ?? [])
 		: [];
+	const multipleChoiceSelected = getSelectedOptionIndexes(
+		currentQuestionAnswerOptions,
+		multipleChoiceSelectedOptionIds,
+	);
 	const subjectiveInput = currentQuestionId
 		? (subjectiveDrafts[currentQuestionId] ?? subjectiveAnswers[currentQuestionId] ?? '')
 		: '';
@@ -433,14 +486,15 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 
 	const handleMultipleChoiceSubmit = async (selected: number[]) => {
 		if (!currentQuestion || currentQuestion.question_type !== 'multiple_choice' || isAnswerSubmitting) return;
-		const { content, metadata } = buildMultipleChoiceAnswer(currentQuestion, selected);
+		const selectedOptionIds = getSelectedOptionIds(currentQuestionAnswerOptions, selected);
+		const { content, metadata } = buildMultipleChoiceAnswer(currentQuestion, selectedOptionIds);
 
 		setTurnError(null);
 		setIsAnswerSubmitting(true);
 		try {
 			await recordAnswerTurn(currentQuestion, buildTurnPayload(currentQuestion, content, metadata));
-			setMultipleChoiceAnswers((prev) => ({ ...prev, [currentQuestion.id]: selected }));
-			setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }));
+			setMultipleChoiceAnswers((prev) => ({ ...prev, [currentQuestion.id]: selectedOptionIds }));
+			setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selectedOptionIds }));
 			setAnsweredIds((prev) => new Set([...prev, currentQuestion.id]));
 			goToNextQuestion(currentQuestion.id);
 		} catch (error: unknown) {
@@ -814,10 +868,18 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								isAnswered={answeredIds.has(currentQuestion.id)}
 								isDisabled={!isSessionReady}
 								isSubmitting={isAnswerSubmitting}
-								options={currentQuestion.answer_options}
+								options={currentQuestionAnswerOptions.map(
+									(option) => `${option.label}. ${option.text}`,
+								)}
 								selected={multipleChoiceSelected}
 								onChange={(selected) =>
-									setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }))
+									setMultipleChoiceDrafts((prev) => ({
+										...prev,
+										[currentQuestion.id]: getSelectedOptionIds(
+											currentQuestionAnswerOptions,
+											selected,
+										),
+									}))
 								}
 								onSubmit={(selected) => void handleMultipleChoiceSubmit(selected)}
 							/>
