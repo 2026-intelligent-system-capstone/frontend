@@ -53,7 +53,7 @@ export function MultipleChoiceInput({
 							)}
 						>
 							<input
-								aria-label={`${String.fromCharCode(65 + index)}번 선택지: ${option}`}
+								aria-label={`${String(index + 1)}번 선택지: ${option}`}
 								checked={isSelected}
 								className="peer sr-only"
 								disabled={isInteractionDisabled}
@@ -71,7 +71,7 @@ export function MultipleChoiceInput({
 										: 'border-border-subtle bg-surface text-neutral-gray-500',
 								)}
 							>
-								{isSelected ? '✓' : String.fromCharCode(65 + index)}
+								{isSelected ? '✓' : String(index + 1)}
 							</span>
 							<span className="flex-1 leading-relaxed">{option}</span>
 						</label>
