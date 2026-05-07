@@ -49,8 +49,10 @@ export function ClassroomWeekSections({
 			<div className="space-y-6">
 				{weekSections.map((section) => (
 					<section
+						id={`week-${section.week}`}
 						key={section.week}
-						className="border-border-subtle bg-surface-muted rounded-3xl border p-5 sm:p-6"
+						className="border-border-subtle bg-surface-muted scroll-mt-6 rounded-3xl border p-5
+							sm:scroll-mt-8 sm:p-6"
 					>
 						<div className="mb-6 flex flex-wrap items-start justify-between gap-4">
 							<div>

@@ -80,7 +80,7 @@ export function ClassroomStudentsPanel({
 	};
 
 	return (
-		<div className="space-y-4">
+		<div id="students-management" className="scroll-mt-6 space-y-4 sm:scroll-mt-8">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h2 className="text-neutral-text text-lg font-semibold">학생 관리</h2>

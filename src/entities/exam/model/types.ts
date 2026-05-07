@@ -31,6 +31,35 @@ export interface ExamCriterion {
 	poor_definition: string | null;
 }
 
+export interface ExamQuestionAnswerOption {
+	id: string;
+	label: string;
+	text: string;
+	is_correct?: boolean;
+	explanation?: string | null;
+}
+
+export interface ExamQuestionAnswerKey {
+	type: ExamQuestionType;
+	correct_option_ids?: string[];
+	model_answer?: string | null;
+	acceptable_answers?: string[];
+	required_keywords?: string[];
+	expected_points?: string[];
+	follow_up_questions?: string[];
+}
+
+export interface ExamQuestionRubricCriterion {
+	name: string;
+	description: string;
+	points: number;
+}
+
+export interface ExamQuestionRubric {
+	criteria: ExamQuestionRubricCriterion[];
+	evidence_policy?: string | null;
+}
+
 export interface ExamQuestion {
 	id: string;
 	exam_id: string;
@@ -43,6 +72,9 @@ export interface ExamQuestion {
 	intent_text: string;
 	rubric_text: string;
 	answer_options: string[];
+	answer_options_data: ExamQuestionAnswerOption[];
+	answer_key_data: ExamQuestionAnswerKey | null;
+	rubric_data: ExamQuestionRubric;
 	correct_answer_text: string | null;
 	source_material_ids: string[];
 	status: ExamQuestionStatus;
@@ -58,6 +90,7 @@ export interface StudentExamSessionQuestion {
 	difficulty: ExamDifficulty;
 	question_text: string;
 	answer_options: string[];
+	answer_options_data?: ExamQuestionAnswerOption[];
 	status: ExamQuestionStatus;
 }
 
@@ -174,6 +207,9 @@ export interface UpdateExamQuestionRequest {
 	intent_text?: string;
 	rubric_text?: string | null;
 	answer_options?: string[];
+	answer_options_data?: ExamQuestionAnswerOption[];
+	answer_key_data?: ExamQuestionAnswerKey | null;
+	rubric_data?: ExamQuestionRubric;
 	correct_answer_text?: string | null;
 	source_material_ids?: string[];
 }
