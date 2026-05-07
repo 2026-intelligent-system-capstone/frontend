@@ -65,8 +65,8 @@ export function MultipleChoiceInput({
 							<span
 								aria-hidden="true"
 								className={cn(
-									`flex h-6 min-w-6 shrink-0 items-center justify-center rounded-lg border px-1
-									text-xs font-bold`,
+									`flex h-6 min-w-6 shrink-0 items-center justify-center rounded-lg border px-1 text-xs
+									font-bold`,
 									isSelected
 										? 'border-brand-border bg-brand-soft text-brand-deep'
 										: 'border-border-subtle bg-surface text-neutral-gray-500',

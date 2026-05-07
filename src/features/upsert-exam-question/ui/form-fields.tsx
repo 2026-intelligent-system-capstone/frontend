@@ -3,47 +3,45 @@
 import {
 	type ExamQuestionFormValues,
 	bloomLevelOptions,
-	createAnswerOption,
+	createDefaultMultipleChoiceOptions,
 	difficultyOptions,
 	questionTypeOptions,
 } from '@/features/upsert-exam-question/lib/form';
 import { Button, Input, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
 
 interface UpsertExamQuestionFormFieldsProps {
-	acceptableAnswersId: string;
 	answerOptionsId: string;
-	correctOptionId: string;
-	expectedPointsId: string;
-	followUpQuestionsId: string;
+	modelAnswerId: string;
 	maxScoreId: string;
 	questionNumberId: string;
 	questionTextId: string;
 	intentTextId: string;
-	modelAnswerId: string;
-	requiredKeywordsId: string;
-	rubricCriteriaId: string;
-	rubricEvidencePolicyId: string;
 	rubricTextId: string;
+	acceptableAnswersId: string;
+	requiredKeywordsId: string;
+	expectedPointsId: string;
+	followUpQuestionsId: string;
+	rubricCriteriaId: string;
+	evidencePolicyId: string;
 	form: ExamQuestionFormValues;
 	onChange: (updater: (prev: ExamQuestionFormValues) => ExamQuestionFormValues) => void;
 	onQuestionTypeChange: (questionType: ExamQuestionFormValues['questionType']) => void;
 }
 
 export function UpsertExamQuestionFormFields({
-	acceptableAnswersId,
 	answerOptionsId,
-	correctOptionId,
-	expectedPointsId,
-	followUpQuestionsId,
+	modelAnswerId,
 	maxScoreId,
 	questionNumberId,
 	questionTextId,
 	intentTextId,
-	modelAnswerId,
-	requiredKeywordsId,
-	rubricCriteriaId,
-	rubricEvidencePolicyId,
 	rubricTextId,
+	acceptableAnswersId,
+	requiredKeywordsId,
+	expectedPointsId,
+	followUpQuestionsId,
+	rubricCriteriaId,
+	evidencePolicyId,
 	form,
 	onChange,
 	onQuestionTypeChange,
@@ -52,8 +50,58 @@ export function UpsertExamQuestionFormFields({
 		form.questionType === 'none'
 			? [{ label: '미지정', value: 'none' as const }, ...questionTypeOptions]
 			: questionTypeOptions;
-	const isStructuredRubricQuestion = form.questionType === 'subjective' || form.questionType === 'oral';
-	const answerOptionItems = form.answerOptions.filter((option) => option.text.trim());
+	const isSubjectiveQuestion = form.questionType === 'subjective';
+	const isOralQuestion = form.questionType === 'oral';
+
+	const renumberOptions = (options: ExamQuestionFormValues['answerOptions']) =>
+		options.map((option, index) => {
+			const label = String(index + 1);
+			return {
+				...option,
+				id: label,
+				label,
+			};
+		});
+
+	const updateOptionText = (optionId: string, text: string) => {
+		onChange((prev) => ({
+			...prev,
+			answerOptions: prev.answerOptions.map((option) => (option.id === optionId ? { ...option, text } : option)),
+		}));
+	};
+
+	const addOption = () => {
+		onChange((prev) => {
+			const nextLabel = String(prev.answerOptions.length + 1);
+			return {
+				...prev,
+				answerOptions: [...prev.answerOptions, { id: nextLabel, label: nextLabel, text: '' }],
+			};
+		});
+	};
+
+	const removeOption = (optionId: string) => {
+		onChange((prev) => {
+			const nextOptions = renumberOptions(prev.answerOptions.filter((option) => option.id !== optionId));
+			const fallbackOptions = nextOptions.length > 0 ? nextOptions : createDefaultMultipleChoiceOptions();
+			const removedCorrectOptionIndex = prev.answerOptions.findIndex((option) => option.id === optionId);
+			const previousCorrectOptionIndex = prev.answerOptions.findIndex(
+				(option) => option.id === prev.correctOptionId,
+			);
+			const nextCorrectOptionIndex =
+				previousCorrectOptionIndex < 0 || previousCorrectOptionIndex === removedCorrectOptionIndex
+					? 0
+					: previousCorrectOptionIndex > removedCorrectOptionIndex
+						? previousCorrectOptionIndex - 1
+						: previousCorrectOptionIndex;
+
+			return {
+				...prev,
+				answerOptions: fallbackOptions,
+				correctOptionId: fallbackOptions[nextCorrectOptionIndex]?.id ?? fallbackOptions[0]?.id ?? '1',
+			};
+		});
+	};
 
 	return (
 		<>
@@ -199,117 +247,55 @@ export function UpsertExamQuestionFormFields({
 			</TextField>
 
 			{form.questionType === 'multiple_choice' ? (
-				<>
-					<div className="space-y-3">
+				<div className="border-border-subtle bg-surface-muted space-y-3 rounded-2xl border p-4">
+					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<Label htmlFor={answerOptionsId}>객관식 보기</Label>
 							<p className="text-neutral-gray-500 mt-1 text-xs">
-								보기별 id와 label은 저장된 구조화 데이터 그대로 유지됩니다.
+								정답은 번호 기반 option id로 저장됩니다.
 							</p>
 						</div>
-						<div className="space-y-2" id={answerOptionsId}>
-							{form.answerOptions.map((option) => (
-								<div key={option.id} className="flex items-start gap-2">
-									<span
-										className="bg-brand-soft text-brand-deep mt-2 flex h-7 w-7 shrink-0 items-center
-											justify-center rounded-full text-xs font-semibold"
-									>
-										{option.label}
-									</span>
-									<TextField className="flex-1" name={`answer_option_${option.id}`}>
-										<Label className="sr-only">{option.label} 보기</Label>
-										<Input
-											value={option.text}
-											onChange={(event) =>
-												onChange((prev) => ({
-													...prev,
-													answerOptions: prev.answerOptions.map((item) =>
-														item.id === option.id
-															? { ...item, text: event.target.value }
-															: item,
-													),
-												}))
-											}
-										/>
-									</TextField>
-									<Button
-										type="button"
-										variant="tertiary"
-										onPress={() =>
-											onChange((prev) => {
-												const answerOptions = prev.answerOptions.filter(
-													(item) => item.id !== option.id,
-												);
-												const correctOptionId =
-													prev.correctOptionId === option.id ? '' : prev.correctOptionId;
-
-												return {
-													...prev,
-													answerOptions,
-													correctOptionId,
-												};
-											})
-										}
-									>
-										삭제
-									</Button>
-								</div>
-							))}
-						</div>
-						<Button
-							type="button"
-							variant="secondary"
-							onPress={() =>
-								onChange((prev) => ({
-									...prev,
-									answerOptions: [...prev.answerOptions, createAnswerOption(prev.answerOptions)],
-								}))
-							}
-						>
+						<Button size="sm" type="button" variant="secondary" onPress={addOption}>
 							보기 추가
 						</Button>
 					</div>
-					<Select
-						className="w-full"
-						name="correct_option_id"
-						value={form.correctOptionId}
-						onChange={(value) =>
-							onChange((prev) => ({ ...prev, correctOptionId: value ? String(value) : '' }))
-						}
-					>
-						<Label htmlFor={correctOptionId}>정답 보기</Label>
-						<Select.Trigger id={correctOptionId}>
-							<Select.Value />
-							<Select.Indicator />
-						</Select.Trigger>
-						<Select.Popover>
-							<ListBox>
-								{answerOptionItems.map((option) => (
-									<ListBox.Item
-										key={option.id}
-										id={option.id}
-										textValue={`${option.label}. ${option.text}`}
-									>
-										{option.label}. {option.text}
-										<ListBox.ItemIndicator />
-									</ListBox.Item>
-								))}
-							</ListBox>
-						</Select.Popover>
-					</Select>
-				</>
+					<div id={answerOptionsId} className="space-y-2">
+						{form.answerOptions.map((option) => (
+							<div key={option.id} className="grid gap-2 md:grid-cols-[auto_1fr_auto] md:items-center">
+								<label className="text-neutral-gray-700 flex items-center gap-2 text-sm font-medium">
+									<input
+										checked={form.correctOptionId === option.id}
+										name="correct_option_id"
+										type="radio"
+										onChange={() => onChange((prev) => ({ ...prev, correctOptionId: option.id }))}
+									/>
+									<span>{option.label}</span>
+								</label>
+								<Input
+									aria-label={`${option.label}번 보기`}
+									placeholder={`${option.label}번 보기 텍스트`}
+									value={option.text}
+									onChange={(event) => updateOptionText(option.id, event.target.value)}
+								/>
+								<Button size="sm" type="button" variant="ghost" onPress={() => removeOption(option.id)}>
+									삭제
+								</Button>
+							</div>
+						))}
+					</div>
+				</div>
 			) : null}
 
-			{form.questionType === 'subjective' ? (
+			{isSubjectiveQuestion ? (
 				<>
 					<TextField isRequired className="w-full" name="model_answer">
 						<Label htmlFor={modelAnswerId}>모범 답안</Label>
 						<TextArea
 							id={modelAnswerId}
 							className="min-h-24"
-							placeholder="채점 기준이 되는 모범 답안을 입력하세요."
-							value={form.modelAnswerText}
-							onChange={(event) => onChange((prev) => ({ ...prev, modelAnswerText: event.target.value }))}
+							placeholder="단답 또는 model answer 중심으로 입력하세요."
+							value={form.modelAnswer}
+							onChange={(event) => onChange((prev) => ({ ...prev, modelAnswer: event.target.value }))}
 						/>
 					</TextField>
 					<TextField className="w-full" name="acceptable_answers">
@@ -328,8 +314,8 @@ export function UpsertExamQuestionFormFields({
 						<Label htmlFor={requiredKeywordsId}>필수 키워드</Label>
 						<TextArea
 							id={requiredKeywordsId}
-							className="min-h-24"
-							placeholder="한 줄에 필수 키워드 하나씩 입력하세요."
+							className="min-h-20"
+							placeholder="한 줄에 키워드 하나씩 입력하세요."
 							value={form.requiredKeywordsText}
 							onChange={(event) =>
 								onChange((prev) => ({ ...prev, requiredKeywordsText: event.target.value }))
@@ -339,14 +325,14 @@ export function UpsertExamQuestionFormFields({
 				</>
 			) : null}
 
-			{form.questionType === 'oral' ? (
+			{isOralQuestion ? (
 				<>
 					<TextField className="w-full" name="expected_points">
-						<Label htmlFor={expectedPointsId}>기대 응답 포인트</Label>
+						<Label htmlFor={expectedPointsId}>기대 답변 포인트</Label>
 						<TextArea
 							id={expectedPointsId}
-							className="min-h-24"
-							placeholder="한 줄에 구술 답변에서 확인할 포인트 하나씩 입력하세요."
+							className="min-h-28"
+							placeholder="한 줄에 기대 포인트 하나씩 입력하세요."
 							value={form.expectedPointsText}
 							onChange={(event) =>
 								onChange((prev) => ({ ...prev, expectedPointsText: event.target.value }))
@@ -354,57 +340,53 @@ export function UpsertExamQuestionFormFields({
 						/>
 					</TextField>
 					<TextField className="w-full" name="follow_up_questions">
-						<Label htmlFor={followUpQuestionsId}>후속 질문</Label>
+						<Label htmlFor={followUpQuestionsId}>꼬리질문 후보</Label>
 						<TextArea
 							id={followUpQuestionsId}
 							className="min-h-24"
-							placeholder="한 줄에 후속 질문 하나씩 입력하세요."
+							placeholder="한 줄에 꼬리질문 하나씩 입력하세요."
 							value={form.followUpQuestionsText}
 							onChange={(event) =>
 								onChange((prev) => ({ ...prev, followUpQuestionsText: event.target.value }))
 							}
 						/>
 					</TextField>
-				</>
-			) : null}
-
-			{isStructuredRubricQuestion ? (
-				<>
-					<TextField className="w-full" name="rubric_criteria">
-						<Label htmlFor={rubricCriteriaId}>루브릭 기준</Label>
+					<TextField className="w-full" name="evidence_policy">
+						<Label htmlFor={evidencePolicyId}>증거/채점 정책</Label>
 						<TextArea
-							id={rubricCriteriaId}
-							className="min-h-32"
-							placeholder={'한 줄에 기준을 입력하세요.\n개념 이해 | 핵심 개념을 정확히 설명한다 | 5'}
-							value={form.rubricCriteriaText}
-							onChange={(event) =>
-								onChange((prev) => ({ ...prev, rubricCriteriaText: event.target.value }))
-							}
-						/>
-					</TextField>
-					<TextField className="w-full" name="rubric_evidence_policy">
-						<Label htmlFor={rubricEvidencePolicyId}>증거 기록 정책</Label>
-						<TextArea
-							id={rubricEvidencePolicyId}
+							id={evidencePolicyId}
 							className="min-h-20"
-							placeholder="채점 시 참고할 답변 증거 기록 방식을 입력하세요."
-							value={form.rubricEvidencePolicyText}
-							onChange={(event) =>
-								onChange((prev) => ({ ...prev, rubricEvidencePolicyText: event.target.value }))
-							}
+							placeholder="예: 발화에서 개념 언급과 적용 근거를 함께 확인합니다."
+							value={form.evidencePolicy}
+							onChange={(event) => onChange((prev) => ({ ...prev, evidencePolicy: event.target.value }))}
 						/>
 					</TextField>
 					<TextField className="w-full" name="rubric_text">
-						<Label htmlFor={rubricTextId}>레거시 루브릭 메모</Label>
+						<Label htmlFor={rubricTextId}>Legacy 루브릭 메모</Label>
 						<TextArea
 							id={rubricTextId}
 							className="min-h-24"
-							placeholder="기존 루브릭 메모가 있으면 보존용으로 입력하세요."
+							placeholder="기존 루브릭 텍스트가 있으면 참고용으로 유지합니다."
 							value={form.rubricText}
 							onChange={(event) => onChange((prev) => ({ ...prev, rubricText: event.target.value }))}
 						/>
 					</TextField>
 				</>
+			) : null}
+
+			{isSubjectiveQuestion || isOralQuestion ? (
+				<TextField className="w-full" name="rubric_criteria">
+					<Label htmlFor={rubricCriteriaId}>루브릭 기준</Label>
+					<TextArea
+						id={rubricCriteriaId}
+						className="min-h-28"
+						placeholder={
+							'한 줄에 name | points | description 형식으로 입력하세요.\n정확성 | 2 | 핵심 개념을 정확히 포함'
+						}
+						value={form.rubricCriteriaText}
+						onChange={(event) => onChange((prev) => ({ ...prev, rubricCriteriaText: event.target.value }))}
+					/>
+				</TextField>
 			) : null}
 		</>
 	);

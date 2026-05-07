@@ -49,8 +49,8 @@ export function ClassroomWeekSections({
 			<div className="space-y-6">
 				{weekSections.map((section) => (
 					<section
-						id={`week-${section.week}`}
 						key={section.week}
+						id={`week-${section.week}`}
 						className="border-border-subtle bg-surface-muted scroll-mt-6 rounded-3xl border p-5
 							sm:scroll-mt-8 sm:p-6"
 					>

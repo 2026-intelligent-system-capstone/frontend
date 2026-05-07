@@ -15,17 +15,17 @@ export interface ExamQuestionFormValues {
 	bloomLevel: BloomLevel;
 	correctOptionId: string;
 	difficulty: ExamDifficulty;
+	evidencePolicy: string;
 	expectedPointsText: string;
 	followUpQuestionsText: string;
 	intentText: string;
 	maxScore: string;
-	modelAnswerText: string;
+	modelAnswer: string;
 	questionNumber: string;
 	questionText: string;
 	questionType: ExamQuestionType;
 	requiredKeywordsText: string;
 	rubricCriteriaText: string;
-	rubricEvidencePolicyText: string;
 	rubricText: string;
 	sourceMaterialIds: string[];
 }
@@ -54,66 +54,81 @@ export const questionTypeOptions: Array<{
 	{ label: '구술형', value: 'oral' },
 ];
 
-export const splitLines = (value: string): string[] =>
-	value
+const DEFAULT_MULTIPLE_CHOICE_OPTIONS: ExamQuestionAnswerOption[] = [
+	{ id: '1', label: '1', text: '' },
+	{ id: '2', label: '2', text: '' },
+	{ id: '3', label: '3', text: '' },
+];
+
+const joinLines = (values: string[] | undefined): string => values?.join('\n') ?? '';
+
+export const toLegacyAnswerOptions = (answerOptionsData: ExamQuestionAnswerOption[]): string[] =>
+	answerOptionsData.map((option) => option.text);
+
+export const toLegacyCorrectAnswerText = (
+	form: ExamQuestionFormValues,
+	answerOptionsData: ExamQuestionAnswerOption[],
+): string | null => {
+	if (form.questionType === 'multiple_choice') {
+		return answerOptionsData.find((option) => option.is_correct)?.text ?? null;
+	}
+
+	if (form.questionType === 'subjective') {
+		return form.modelAnswer.trim() || null;
+	}
+
+	return null;
+};
+
+const splitLines = (text: string): string[] =>
+	text
 		.split('\n')
 		.map((line) => line.trim())
 		.filter(Boolean);
 
-const joinLines = (values?: string[] | null): string => (values ?? []).filter(Boolean).join('\n');
-
-const getOptionLabel = (index: number): string => String(index + 1);
-
-const getNextOptionLabel = (existingOptions: ExamQuestionAnswerOption[]): string => {
-	const numericIds = existingOptions.map((option) => Number(option.id)).filter(Number.isFinite);
-	const numericLabels = existingOptions.map((option) => Number(option.label)).filter(Number.isFinite);
-	const maxNumericValue = Math.max(0, ...numericIds, ...numericLabels);
-
-	return String(maxNumericValue + 1);
+const createNumberedOption = (
+	text: string,
+	index: number,
+	correctAnswerText: string | null,
+): ExamQuestionAnswerOption => {
+	const label = String(index + 1);
+	return {
+		id: label,
+		label,
+		text,
+		is_correct: Boolean(correctAnswerText && text === correctAnswerText),
+	};
 };
 
-const createFallbackAnswerOptions = (question: ExamQuestion): ExamQuestionAnswerOption[] => {
-	const correctAnswerText = question.correct_answer_text?.trim();
+export const createDefaultMultipleChoiceOptions = (): ExamQuestionAnswerOption[] =>
+	DEFAULT_MULTIPLE_CHOICE_OPTIONS.map((option) => ({ ...option }));
 
-	return question.answer_options.map((option, index) => {
-		const label = getOptionLabel(index);
-		const text = option.trim();
-
-		return {
-			id: label,
-			label,
-			text,
-			is_correct: Boolean(correctAnswerText && text === correctAnswerText),
-		};
-	});
-};
-
-const getQuestionAnswerOptions = (question: ExamQuestion): ExamQuestionAnswerOption[] => {
-	const structuredOptions = question.answer_options_data ?? [];
-
-	if (structuredOptions.length > 0) {
-		return structuredOptions;
+export const toStructuredAnswerOptions = (question: ExamQuestion): ExamQuestionAnswerOption[] => {
+	if (question.answer_options_data?.length) {
+		return question.answer_options_data.map((option, index) => {
+			const fallbackLabel = String(index + 1);
+			return {
+				id: option.id || fallbackLabel,
+				label: option.label || fallbackLabel,
+				text: option.text,
+				is_correct: option.is_correct,
+				explanation: option.explanation ?? null,
+			};
+		});
 	}
 
-	return createFallbackAnswerOptions(question);
+	return question.answer_options.map((option, index) =>
+		createNumberedOption(option, index, question.correct_answer_text),
+	);
 };
 
-const getCorrectOptionId = (question: ExamQuestion, options: ExamQuestionAnswerOption[]): string => {
-	const structuredCorrectId = question.answer_key_data?.correct_option_ids?.[0];
-
-	if (structuredCorrectId) {
-		return structuredCorrectId;
-	}
-
-	return options.find((option) => option.is_correct)?.id ?? '';
-};
+const formatRubricCriteria = (criteria: ExamQuestionRubricCriterion[] | undefined): string =>
+	criteria?.map((criterion) => `${criterion.name} | ${criterion.points} | ${criterion.description}`).join('\n') ?? '';
 
 const createFallbackRubricCriteria = (question: ExamQuestion): ExamQuestionRubricCriterion[] => {
 	const rubricText = question.rubric_text.trim();
 
-	if (!rubricText) {
-		return [];
-	}
+	if (!rubricText) return [];
 
 	return [
 		{
@@ -124,56 +139,43 @@ const createFallbackRubricCriteria = (question: ExamQuestion): ExamQuestionRubri
 	];
 };
 
-const getQuestionRubricCriteria = (question: ExamQuestion): ExamQuestionRubricCriterion[] => {
-	const criteria = question.rubric_data?.criteria ?? [];
+const parseRubricCriteriaLine = (line: string): ExamQuestionRubricCriterion | null => {
+	const [namePart, pointsPart, ...descriptionParts] = line.split('|').map((part) => part.trim());
+	if (!namePart) return null;
 
-	if (criteria.length > 0) {
-		return criteria;
-	}
-
-	return createFallbackRubricCriteria(question);
-};
-
-export const createAnswerOption = (
-	existingOptions: ExamQuestionAnswerOption[],
-	text = '',
-): ExamQuestionAnswerOption => {
-	const label = getNextOptionLabel(existingOptions);
-
+	const parsedPoints = Number(pointsPart);
 	return {
-		id: label,
-		label,
-		text,
-		is_correct: false,
-		explanation: null,
+		name: namePart,
+		points: Number.isFinite(parsedPoints) && parsedPoints > 0 ? parsedPoints : 1,
+		description: descriptionParts.join(' | ') || namePart,
 	};
 };
 
-export const formatRubricCriteriaText = (criteria: ExamQuestionRubricCriterion[]): string =>
-	criteria
-		.map((criterion) => {
-			const normalizedPoints = Number.isFinite(criterion.points) ? criterion.points : 0;
-			return `${criterion.name} | ${criterion.description} | ${normalizedPoints}`;
-		})
-		.join('\n');
+export const parseRubricCriteria = (text: string): ExamQuestionRubricCriterion[] =>
+	splitLines(text).flatMap((line) => {
+		const criterion = parseRubricCriteriaLine(line);
+		return criterion ? [criterion] : [];
+	});
+
+export const parseListText = splitLines;
 
 export const createEmptyQuestionForm = (): ExamQuestionFormValues => ({
 	acceptableAnswersText: '',
-	answerOptions: [],
+	answerOptions: createDefaultMultipleChoiceOptions(),
 	bloomLevel: 'understand',
-	correctOptionId: '',
+	correctOptionId: '1',
 	difficulty: 'medium',
+	evidencePolicy: '',
 	expectedPointsText: '',
 	followUpQuestionsText: '',
 	intentText: '',
 	maxScore: '1',
-	modelAnswerText: '',
+	modelAnswer: '',
 	questionNumber: '1',
 	questionText: '',
 	questionType: 'none',
 	requiredKeywordsText: '',
 	rubricCriteriaText: '',
-	rubricEvidencePolicyText: '',
 	rubricText: '',
 	sourceMaterialIds: [],
 });
@@ -183,92 +185,102 @@ export const createQuestionFormValues = (question?: ExamQuestion): ExamQuestionF
 		return createEmptyQuestionForm();
 	}
 
-	const answerOptions = getQuestionAnswerOptions(question);
+	const answerOptions = toStructuredAnswerOptions(question);
 	const answerKey = question.answer_key_data;
-	const rubricCriteria = getQuestionRubricCriteria(question);
-	const modelAnswerText = answerKey?.model_answer ?? question.correct_answer_text ?? '';
+	const rubric = question.rubric_data;
+	const rubricCriteria = rubric?.criteria?.length ? rubric.criteria : createFallbackRubricCriteria(question);
+	const correctOptionId =
+		answerKey?.correct_option_ids?.[0] ?? answerOptions.find((option) => option.is_correct)?.id ?? '';
 
 	return {
 		acceptableAnswersText: joinLines(answerKey?.acceptable_answers),
-		answerOptions,
+		answerOptions: answerOptions.length > 0 ? answerOptions : createDefaultMultipleChoiceOptions(),
 		bloomLevel: question.bloom_level,
-		correctOptionId: getCorrectOptionId(question, answerOptions),
+		correctOptionId,
 		difficulty: question.difficulty,
+		evidencePolicy: rubric?.evidence_policy ?? '',
 		expectedPointsText: joinLines(answerKey?.expected_points),
 		followUpQuestionsText: joinLines(answerKey?.follow_up_questions),
 		intentText: question.intent_text,
 		maxScore: String(question.max_score),
-		modelAnswerText,
+		modelAnswer: answerKey?.model_answer ?? question.correct_answer_text ?? '',
 		questionNumber: String(question.question_number),
 		questionText: question.question_text,
 		questionType: question.question_type,
 		requiredKeywordsText: joinLines(answerKey?.required_keywords),
-		rubricCriteriaText: formatRubricCriteriaText(rubricCriteria),
-		rubricEvidencePolicyText: question.rubric_data?.evidence_policy ?? '',
+		rubricCriteriaText: formatRubricCriteria(rubricCriteria),
 		rubricText: question.rubric_text,
 		sourceMaterialIds: [...question.source_material_ids],
 	};
 };
 
-export const createAnswerOptionsData = (
-	answerOptions: ExamQuestionAnswerOption[],
-	correctOptionId: string,
-): ExamQuestionAnswerOption[] =>
-	answerOptions.map((option) => ({
-		...option,
-		text: option.text.trim(),
-		is_correct: option.id === correctOptionId,
-		explanation: option.explanation ?? null,
-	}));
-
-export const createRubricCriteriaData = (criteriaText: string, maxScore: number): ExamQuestionRubricCriterion[] => {
-	const lines = splitLines(criteriaText);
-	const defaultPoints = lines.length > 0 ? Number((maxScore / lines.length).toFixed(2)) : 0;
-
-	return lines.map((line, index) => {
-		const [rawName, rawDescription, rawPoints] = line.split('|').map((part) => part.trim());
-		const parsedPoints = rawPoints ? Number(rawPoints) : Number.NaN;
-		const description = rawDescription || rawName;
-
-		return {
-			name: rawDescription ? rawName || `기준 ${index + 1}` : `기준 ${index + 1}`,
-			description,
-			points: Number.isFinite(parsedPoints) && parsedPoints > 0 ? parsedPoints : defaultPoints,
-		};
-	});
-};
-
-export const createAnswerKeyData = (form: ExamQuestionFormValues): ExamQuestionAnswerKey | null => {
-	if (form.questionType === 'none') {
-		return null;
-	}
-
+export const buildAnswerKeyData = (
+	form: ExamQuestionFormValues,
+	answerOptionsData: ExamQuestionAnswerOption[] = normalizeAnswerOptionsData(form),
+): ExamQuestionAnswerKey => {
 	if (form.questionType === 'multiple_choice') {
-		const hasCorrectOption = form.answerOptions.some((option) => option.id === form.correctOptionId);
-
 		return {
-			type: form.questionType,
-			correct_option_ids: hasCorrectOption ? [form.correctOptionId] : [],
+			type: 'multiple_choice',
+			correct_option_ids: answerOptionsData.filter((option) => option.is_correct).map((option) => option.id),
+			model_answer: null,
+			acceptable_answers: [],
+			required_keywords: [],
+			expected_points: [],
+			follow_up_questions: [],
 		};
 	}
 
 	if (form.questionType === 'subjective') {
 		return {
-			type: form.questionType,
-			model_answer: form.modelAnswerText.trim() || null,
-			acceptable_answers: splitLines(form.acceptableAnswersText),
-			required_keywords: splitLines(form.requiredKeywordsText),
+			type: 'subjective',
+			correct_option_ids: [],
+			model_answer: form.modelAnswer.trim() || null,
+			acceptable_answers: parseListText(form.acceptableAnswersText),
+			required_keywords: parseListText(form.requiredKeywordsText),
+			expected_points: [],
+			follow_up_questions: [],
 		};
 	}
 
-	return {
-		type: form.questionType,
-		expected_points: splitLines(form.expectedPointsText),
-		follow_up_questions: splitLines(form.followUpQuestionsText),
-	};
+	if (form.questionType === 'oral') {
+		return {
+			type: 'oral',
+			correct_option_ids: [],
+			model_answer: null,
+			acceptable_answers: [],
+			required_keywords: [],
+			expected_points: parseListText(form.expectedPointsText),
+			follow_up_questions: parseListText(form.followUpQuestionsText),
+		};
+	}
+
+	return { type: 'none' };
 };
 
-export const createRubricData = (form: ExamQuestionFormValues, maxScore: number): ExamQuestionRubric => ({
-	criteria: createRubricCriteriaData(form.rubricCriteriaText, maxScore),
-	evidence_policy: form.rubricEvidencePolicyText.trim() || null,
+export const buildRubricData = (form: ExamQuestionFormValues): ExamQuestionRubric => ({
+	criteria: form.questionType === 'multiple_choice' ? [] : parseRubricCriteria(form.rubricCriteriaText),
+	evidence_policy: form.questionType === 'oral' ? form.evidencePolicy.trim() || null : null,
 });
+
+export const normalizeAnswerOptionsData = (form: ExamQuestionFormValues): ExamQuestionAnswerOption[] => {
+	if (form.questionType !== 'multiple_choice') return [];
+
+	const normalizedOptions = form.answerOptions
+		.map((option) => ({
+			originalId: option.id,
+			text: option.text.trim(),
+			explanation: option.explanation?.trim() || null,
+		}))
+		.filter((option) => option.text);
+
+	return normalizedOptions.map((option, index) => {
+		const label = String(index + 1);
+		return {
+			id: label,
+			label,
+			text: option.text,
+			is_correct: option.originalId === form.correctOptionId,
+			explanation: option.explanation,
+		};
+	});
+};

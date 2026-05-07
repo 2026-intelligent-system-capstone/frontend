@@ -8,11 +8,15 @@ import { ApiClientError } from '@/shared/api/types';
 import { Button, ErrorMessage } from '@heroui/react';
 
 import {
-	createAnswerKeyData,
-	createAnswerOptionsData,
+	buildAnswerKeyData,
+	buildRubricData,
+	createDefaultMultipleChoiceOptions,
 	createQuestionFormValues,
-	createRubricData,
-	splitLines,
+	normalizeAnswerOptionsData,
+	parseListText,
+	parseRubricCriteria,
+	toLegacyAnswerOptions,
+	toLegacyCorrectAnswerText,
 } from '../lib/form';
 import { useUpdateExamQuestion } from '../model/use-upsert-question';
 import { UpsertExamQuestionFormFields } from './form-fields';
@@ -47,15 +51,14 @@ export function UpsertExamQuestionForm({
 	const questionTextId = useId();
 	const intentTextId = useId();
 	const rubricTextId = useId();
-	const rubricCriteriaId = useId();
-	const rubricEvidencePolicyId = useId();
 	const answerOptionsId = useId();
-	const correctOptionId = useId();
 	const modelAnswerId = useId();
 	const acceptableAnswersId = useId();
 	const requiredKeywordsId = useId();
 	const expectedPointsId = useId();
 	const followUpQuestionsId = useId();
+	const rubricCriteriaId = useId();
+	const evidencePolicyId = useId();
 	const maxScoreId = useId();
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const initialForm = useMemo(() => createQuestionFormValues(question), [question]);
@@ -64,6 +67,10 @@ export function UpsertExamQuestionForm({
 
 	const updateQuestionMutation = useUpdateExamQuestion(classroomId, examId);
 	const isPending = updateQuestionMutation.isPending;
+
+	const normalizedAnswerOptionsData = normalizeAnswerOptionsData(form);
+	const normalizedModelAnswer = form.modelAnswer.trim();
+	const normalizedRubricText = form.rubricText.trim();
 
 	const handleCancel = () => {
 		setErrorMessage(null);
@@ -77,17 +84,6 @@ export function UpsertExamQuestionForm({
 
 		const parsedQuestionNumber = Number(form.questionNumber);
 		const parsedMaxScore = Number(form.maxScore);
-		const normalizedQuestionText = form.questionText.trim();
-		const normalizedIntentText = form.intentText.trim();
-		const answerOptionsData =
-			form.questionType === 'multiple_choice'
-				? createAnswerOptionsData(form.answerOptions, form.correctOptionId).filter((option) => option.text)
-				: [];
-		const rubricData = createRubricData(form, parsedMaxScore);
-		const answerKeyData = createAnswerKeyData({
-			...form,
-			answerOptions: answerOptionsData,
-		});
 
 		if (!Number.isInteger(parsedQuestionNumber) || parsedQuestionNumber <= 0) {
 			setErrorMessage('문항 번호는 1 이상의 정수여야 합니다.');
@@ -99,62 +95,46 @@ export function UpsertExamQuestionForm({
 			return;
 		}
 
-		if (!normalizedQuestionText) {
-			setErrorMessage('문항을 입력해주세요.');
-			return;
-		}
-
-		if (!normalizedIntentText) {
-			setErrorMessage('평가 의도/범위를 입력해주세요.');
-			return;
-		}
-
 		if (form.questionType === 'multiple_choice') {
-			if (answerOptionsData.length < 2) {
-				setErrorMessage('객관식은 보기를 2개 이상 입력해주세요.');
+			if (normalizedAnswerOptionsData.length < 2) {
+				setErrorMessage('객관식은 학생에게 보여줄 보기를 2개 이상 입력해주세요.');
 				return;
 			}
 
-			if (!form.correctOptionId || !answerOptionsData.some((option) => option.id === form.correctOptionId)) {
-				setErrorMessage('객관식은 정답 option id를 정확히 1개 선택해주세요.');
+			const correctOptions = normalizedAnswerOptionsData.filter((option) => option.is_correct);
+			if (correctOptions.length !== 1) {
+				setErrorMessage('객관식은 정답 보기를 정확히 하나 선택해주세요.');
 				return;
 			}
 		}
 
-		if (form.questionType === 'subjective' && !form.modelAnswerText.trim()) {
+		if (form.questionType === 'subjective' && !normalizedModelAnswer) {
 			setErrorMessage('주관식은 모범 답안을 입력해주세요.');
 			return;
 		}
 
-		if (
-			form.questionType === 'oral' &&
-			splitLines(form.expectedPointsText).length === 0 &&
-			rubricData.criteria.length === 0
-		) {
-			setErrorMessage('구술형은 기대 응답 포인트 또는 루브릭 기준을 입력해주세요.');
-			return;
+		if (form.questionType === 'oral') {
+			const expectedPoints = parseListText(form.expectedPointsText);
+			const rubricCriteria = parseRubricCriteria(form.rubricCriteriaText);
+			if (expectedPoints.length === 0 && rubricCriteria.length === 0) {
+				setErrorMessage('구술형은 기대 답변 포인트 또는 루브릭 기준 중 하나를 입력해주세요.');
+				return;
+			}
 		}
-
-		const legacyCorrectAnswerText =
-			form.questionType === 'multiple_choice'
-				? answerOptionsData.find((option) => option.id === form.correctOptionId)?.text || null
-				: form.questionType === 'subjective'
-					? form.modelAnswerText.trim()
-					: null;
 
 		const payload = {
 			question_number: parsedQuestionNumber,
 			max_score: parsedMaxScore,
 			bloom_level: form.bloomLevel,
 			difficulty: form.difficulty,
-			question_text: normalizedQuestionText,
-			intent_text: normalizedIntentText,
-			rubric_text: form.rubricText.trim() || null,
-			answer_options: answerOptionsData.map((option) => option.text),
-			answer_options_data: answerOptionsData,
-			answer_key_data: answerKeyData,
-			rubric_data: rubricData,
-			correct_answer_text: legacyCorrectAnswerText,
+			question_text: form.questionText.trim(),
+			intent_text: form.intentText.trim(),
+			rubric_text: normalizedRubricText || null,
+			answer_options: toLegacyAnswerOptions(normalizedAnswerOptionsData),
+			answer_options_data: normalizedAnswerOptionsData,
+			answer_key_data: buildAnswerKeyData(form, normalizedAnswerOptionsData),
+			rubric_data: buildRubricData(form),
+			correct_answer_text: toLegacyCorrectAnswerText(form, normalizedAnswerOptionsData),
 			source_material_ids: form.sourceMaterialIds,
 			...(form.questionType !== initialQuestionType && form.questionType !== 'none'
 				? { question_type: form.questionType }
@@ -192,7 +172,7 @@ export function UpsertExamQuestionForm({
 			<UpsertExamQuestionFormFields
 				acceptableAnswersId={acceptableAnswersId}
 				answerOptionsId={answerOptionsId}
-				correctOptionId={correctOptionId}
+				evidencePolicyId={evidencePolicyId}
 				expectedPointsId={expectedPointsId}
 				followUpQuestionsId={followUpQuestionsId}
 				form={form}
@@ -203,15 +183,23 @@ export function UpsertExamQuestionForm({
 				onQuestionTypeChange={(questionType) => {
 					setForm((prev) => {
 						if (questionType === 'multiple_choice') {
+							const answerOptions =
+								prev.answerOptions.length > 0
+									? prev.answerOptions
+									: createDefaultMultipleChoiceOptions();
 							return {
 								...prev,
 								questionType,
-								modelAnswerText: '',
+								answerOptions,
+								correctOptionId: prev.correctOptionId,
+								modelAnswer: '',
 								acceptableAnswersText: '',
 								requiredKeywordsText: '',
 								expectedPointsText: '',
 								followUpQuestionsText: '',
 								rubricCriteriaText: '',
+								evidencePolicy: '',
+								rubricText: '',
 							};
 						}
 
@@ -221,7 +209,7 @@ export function UpsertExamQuestionForm({
 								questionType,
 								answerOptions: [],
 								correctOptionId: '',
-								modelAnswerText: '',
+								modelAnswer: '',
 								acceptableAnswersText: '',
 								requiredKeywordsText: '',
 							};
@@ -234,6 +222,8 @@ export function UpsertExamQuestionForm({
 							correctOptionId: '',
 							expectedPointsText: '',
 							followUpQuestionsText: '',
+							evidencePolicy: '',
+							rubricText: '',
 						};
 					});
 				}}
@@ -241,7 +231,6 @@ export function UpsertExamQuestionForm({
 				questionTextId={questionTextId}
 				requiredKeywordsId={requiredKeywordsId}
 				rubricCriteriaId={rubricCriteriaId}
-				rubricEvidencePolicyId={rubricEvidencePolicyId}
 				rubricTextId={rubricTextId}
 			/>
 

@@ -229,7 +229,7 @@ function hasValidStructuredOptions(options: StudentExamQuestionAnswerOption[]): 
 	});
 }
 
-function getStudentExamQuestionAnswerOptions(question: StudentExamSessionQuestion): StudentExamQuestionAnswerOption[] {
+function getQuestionAnswerOptions(question: StudentExamSessionQuestion): StudentExamQuestionAnswerOption[] {
 	const structuredOptions = (question.answer_options_data ?? []).map(normalizeAnswerOption);
 
 	if (structuredOptions.length > 0 && hasValidStructuredOptions(structuredOptions)) {
@@ -248,10 +248,10 @@ function getStudentExamQuestionAnswerOptions(question: StudentExamSessionQuestio
 
 function buildMultipleChoiceAnswer(
 	question: StudentExamSessionQuestion,
-	selectedOptionIds: string[],
+	selected: string[],
 ): { content: string; metadata: Record<string, string> } {
-	const options = getStudentExamQuestionAnswerOptions(question);
-	const selectedOptions = selectedOptionIds
+	const options = getQuestionAnswerOptions(question);
+	const selectedOptions = selected
 		.map((optionId) => options.find((option) => option.id === optionId))
 		.filter((option): option is StudentExamQuestionAnswerOption => Boolean(option));
 	const content = selectedOptions.map((option) => `${option.label}. ${option.text}`).join('\n');
@@ -260,6 +260,7 @@ function buildMultipleChoiceAnswer(
 	return {
 		content,
 		metadata: {
+			question_id: question.id,
 			selected_option_id: firstOption?.id ?? '',
 			selected_option_label: firstOption?.label ?? '',
 		},
@@ -337,8 +338,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const unansweredCount = Math.max(0, questions.length - answeredIds.size);
 	const isSessionReady = Boolean(session && !sessionError);
 	const cameraStatusMessage = getCameraStatusMessage(cameraStatus);
-	const currentQuestionAnswerOptions = currentQuestion ? getStudentExamQuestionAnswerOptions(currentQuestion) : [];
-	const multipleChoiceSelectedOptionIds = currentQuestionId
+	const multipleChoiceSelected = currentQuestionId
 		? (multipleChoiceDrafts[currentQuestionId] ?? multipleChoiceAnswers[currentQuestionId] ?? [])
 		: [];
 	const subjectiveInput = currentQuestionId
@@ -355,6 +355,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 			}
 		);
 	}, [currentQuestion, oralTurns]);
+	const currentAnswerOptions = currentQuestion ? getQuestionAnswerOptions(currentQuestion) : [];
 	const statusMessage = getSessionStatusMessage({
 		hasError: Boolean(sessionError || turnError || finishError),
 		isAnswerSubmitting,
@@ -480,16 +481,16 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		goToNextQuestion(questionId);
 	};
 
-	const handleMultipleChoiceSubmit = async (selectedOptionIds: string[]) => {
+	const handleMultipleChoiceSubmit = async (selected: string[]) => {
 		if (!currentQuestion || currentQuestion.question_type !== 'multiple_choice' || isAnswerSubmitting) return;
-		const { content, metadata } = buildMultipleChoiceAnswer(currentQuestion, selectedOptionIds);
+		const { content, metadata } = buildMultipleChoiceAnswer(currentQuestion, selected);
 
 		setTurnError(null);
 		setIsAnswerSubmitting(true);
 		try {
 			await recordAnswerTurn(currentQuestion, buildTurnPayload(currentQuestion, content, metadata));
-			setMultipleChoiceAnswers((prev) => ({ ...prev, [currentQuestion.id]: selectedOptionIds }));
-			setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selectedOptionIds }));
+			setMultipleChoiceAnswers((prev) => ({ ...prev, [currentQuestion.id]: selected }));
+			setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }));
 			setAnsweredIds((prev) => new Set([...prev, currentQuestion.id]));
 			goToNextQuestion(currentQuestion.id);
 		} catch (error: unknown) {
@@ -863,13 +864,10 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								isAnswered={answeredIds.has(currentQuestion.id)}
 								isDisabled={!isSessionReady}
 								isSubmitting={isAnswerSubmitting}
-								options={currentQuestionAnswerOptions}
-								selected={multipleChoiceSelectedOptionIds}
-								onChange={(selectedOptionIds) =>
-									setMultipleChoiceDrafts((prev) => ({
-										...prev,
-										[currentQuestion.id]: selectedOptionIds,
-									}))
+								options={currentAnswerOptions}
+								selected={multipleChoiceSelected}
+								onChange={(selected) =>
+									setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }))
 								}
 								onSubmit={(selected) => void handleMultipleChoiceSubmit(selected)}
 							/>
