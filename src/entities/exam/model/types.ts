@@ -39,6 +39,12 @@ export interface ExamQuestionAnswerOption {
 	explanation?: string | null;
 }
 
+export interface StudentExamQuestionAnswerOption {
+	id: string;
+	label: string;
+	text: string;
+}
+
 export interface ExamQuestionAnswerKey {
 	type: ExamQuestionType;
 	correct_option_ids?: string[];
@@ -90,7 +96,7 @@ export interface StudentExamSessionQuestion {
 	difficulty: ExamDifficulty;
 	question_text: string;
 	answer_options: string[];
-	answer_options_data?: ExamQuestionAnswerOption[] | null;
+	answer_options_data?: StudentExamQuestionAnswerOption[] | null;
 	status: ExamQuestionStatus;
 }
 

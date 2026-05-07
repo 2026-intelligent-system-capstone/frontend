@@ -76,6 +76,7 @@ export type {
 	RecordExamTurnRequest,
 	StudentExam,
 	StudentExamPayload,
+	StudentExamQuestionAnswerOption,
 	StudentExamResult,
 	StudentExamResultStatus,
 	StudentExamSessionQuestion,

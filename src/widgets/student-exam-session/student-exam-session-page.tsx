@@ -7,11 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 import type {
-	ExamQuestionAnswerOption,
 	ExamSession,
 	ExamTurn,
 	ExamTurnEventType,
 	RecordExamTurnRequest,
+	StudentExamQuestionAnswerOption,
 	StudentExamSessionQuestion,
 } from '@/entities/exam';
 import {
@@ -52,12 +52,6 @@ interface OralTurn {
 
 interface StudentExamSessionPageProps {
 	examId: string;
-}
-
-interface StudentExamSessionAnswerOption {
-	id: string;
-	label: string;
-	text: string;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -210,7 +204,10 @@ function getFallbackOptionLabel(index: number): string {
 	return String(index + 1);
 }
 
-function normalizeAnswerOption(option: ExamQuestionAnswerOption, index: number): StudentExamSessionAnswerOption {
+function normalizeAnswerOption(
+	option: StudentExamQuestionAnswerOption,
+	index: number,
+): StudentExamQuestionAnswerOption {
 	const fallbackLabel = getFallbackOptionLabel(index);
 	return {
 		id: option.id.trim() || fallbackLabel,
@@ -219,7 +216,7 @@ function normalizeAnswerOption(option: ExamQuestionAnswerOption, index: number):
 	};
 }
 
-function hasValidStructuredOptions(options: StudentExamSessionAnswerOption[]): boolean {
+function hasValidStructuredOptions(options: StudentExamQuestionAnswerOption[]): boolean {
 	const optionIds = new Set<string>();
 
 	return options.every((option) => {
@@ -232,7 +229,7 @@ function hasValidStructuredOptions(options: StudentExamSessionAnswerOption[]): b
 	});
 }
 
-function getStudentExamSessionAnswerOptions(question: StudentExamSessionQuestion): StudentExamSessionAnswerOption[] {
+function getStudentExamQuestionAnswerOptions(question: StudentExamSessionQuestion): StudentExamQuestionAnswerOption[] {
 	const structuredOptions = (question.answer_options_data ?? []).map(normalizeAnswerOption);
 
 	if (structuredOptions.length > 0 && hasValidStructuredOptions(structuredOptions)) {
@@ -249,26 +246,14 @@ function getStudentExamSessionAnswerOptions(question: StudentExamSessionQuestion
 	});
 }
 
-function getSelectedOptionIndexes(options: StudentExamSessionAnswerOption[], selectedOptionIds: string[]): number[] {
-	return selectedOptionIds
-		.map((optionId) => options.findIndex((option) => option.id === optionId))
-		.filter((index) => index >= 0);
-}
-
-function getSelectedOptionIds(options: StudentExamSessionAnswerOption[], selectedIndexes: number[]): string[] {
-	return selectedIndexes
-		.map((index) => options[index]?.id)
-		.filter((optionId): optionId is string => Boolean(optionId));
-}
-
 function buildMultipleChoiceAnswer(
 	question: StudentExamSessionQuestion,
 	selectedOptionIds: string[],
 ): { content: string; metadata: Record<string, string> } {
-	const options = getStudentExamSessionAnswerOptions(question);
+	const options = getStudentExamQuestionAnswerOptions(question);
 	const selectedOptions = selectedOptionIds
 		.map((optionId) => options.find((option) => option.id === optionId))
-		.filter((option): option is StudentExamSessionAnswerOption => Boolean(option));
+		.filter((option): option is StudentExamQuestionAnswerOption => Boolean(option));
 	const content = selectedOptions.map((option) => `${option.label}. ${option.text}`).join('\n');
 	const firstOption = selectedOptions[0];
 
@@ -352,14 +337,10 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const unansweredCount = Math.max(0, questions.length - answeredIds.size);
 	const isSessionReady = Boolean(session && !sessionError);
 	const cameraStatusMessage = getCameraStatusMessage(cameraStatus);
-	const currentQuestionAnswerOptions = currentQuestion ? getStudentExamSessionAnswerOptions(currentQuestion) : [];
+	const currentQuestionAnswerOptions = currentQuestion ? getStudentExamQuestionAnswerOptions(currentQuestion) : [];
 	const multipleChoiceSelectedOptionIds = currentQuestionId
 		? (multipleChoiceDrafts[currentQuestionId] ?? multipleChoiceAnswers[currentQuestionId] ?? [])
 		: [];
-	const multipleChoiceSelected = getSelectedOptionIndexes(
-		currentQuestionAnswerOptions,
-		multipleChoiceSelectedOptionIds,
-	);
 	const subjectiveInput = currentQuestionId
 		? (subjectiveDrafts[currentQuestionId] ?? subjectiveAnswers[currentQuestionId] ?? '')
 		: '';
@@ -499,9 +480,8 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		goToNextQuestion(questionId);
 	};
 
-	const handleMultipleChoiceSubmit = async (selected: number[]) => {
+	const handleMultipleChoiceSubmit = async (selectedOptionIds: string[]) => {
 		if (!currentQuestion || currentQuestion.question_type !== 'multiple_choice' || isAnswerSubmitting) return;
-		const selectedOptionIds = getSelectedOptionIds(currentQuestionAnswerOptions, selected);
 		const { content, metadata } = buildMultipleChoiceAnswer(currentQuestion, selectedOptionIds);
 
 		setTurnError(null);
@@ -883,15 +863,12 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								isAnswered={answeredIds.has(currentQuestion.id)}
 								isDisabled={!isSessionReady}
 								isSubmitting={isAnswerSubmitting}
-								options={currentQuestionAnswerOptions.map((option) => option.text)}
-								selected={multipleChoiceSelected}
-								onChange={(selected) =>
+								options={currentQuestionAnswerOptions}
+								selected={multipleChoiceSelectedOptionIds}
+								onChange={(selectedOptionIds) =>
 									setMultipleChoiceDrafts((prev) => ({
 										...prev,
-										[currentQuestion.id]: getSelectedOptionIds(
-											currentQuestionAnswerOptions,
-											selected,
-										),
+										[currentQuestion.id]: selectedOptionIds,
 									}))
 								}
 								onSubmit={(selected) => void handleMultipleChoiceSubmit(selected)}
