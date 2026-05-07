@@ -4,10 +4,11 @@ import { type Classroom, useClassroomDetail } from '@/entities/classroom';
 import { type ClassroomMaterial, useClassroomMaterials } from '@/entities/classroom-material';
 import { type Exam, useClassroomExams } from '@/entities/exam';
 import { type User, useUsers } from '@/entities/user';
-import { PageHeader, PageShell, StateBlock, SurfaceCard } from '@/shared/ui';
+import { LinkButton, PageHeader, PageShell, StateBlock, SurfaceCard } from '@/shared/ui';
 import { Skeleton } from '@heroui/react';
 
 import { ClassroomOverviewCard } from './detail/overview-card';
+import { ClassroomProgressOverviewCard } from './detail/progress-overview-card';
 import { ClassroomWeekSections } from './detail/week-sections';
 import { ClassroomStudentsPanel } from './students/panel';
 
@@ -90,6 +91,14 @@ export function ClassroomDetailPage({
 	return (
 		<PageShell>
 			<PageHeader
+				actions={
+					<div className="flex flex-wrap items-center gap-3">
+						<span className="text-neutral-gray-500 text-sm font-medium">학생 {students.length}명</span>
+						<LinkButton href="#students-management" variant="secondary">
+							학생 관리
+						</LinkButton>
+					</div>
+				}
 				description={`${classroom.grade}학년 · ${classroom.semester} · ${classroom.section}반`}
 				eyebrow="Classroom Operations"
 				title={classroom.name}
@@ -101,6 +110,8 @@ export function ClassroomDetailPage({
 				examsCount={exams.length}
 				materialsCount={materials.length}
 			/>
+
+			<ClassroomProgressOverviewCard courseWeeks={COURSE_WEEKS} exams={exams} materials={materials} />
 
 			<ClassroomWeekSections
 				canManageClassroom={canManageClassroom}
