@@ -402,6 +402,9 @@ $RECYCLE.BIN/
 /.opencode/**/*
 /.tmp/**/*
 
+# Ignore local Claude worktrees
+/.claude/worktrees/
+
 # Keep tracked Project Intelligence context files
 !/.opencode/context/
 !/.opencode/context/project-intelligence/
