@@ -12,6 +12,7 @@ import {
 	buildRubricData,
 	createDefaultMultipleChoiceOptions,
 	createQuestionFormValues,
+	hasInvalidRubricCriteriaText,
 	normalizeAnswerOptionsData,
 	parseListText,
 	parseRubricCriteria,
@@ -95,6 +96,16 @@ export function UpsertExamQuestionForm({
 			return;
 		}
 
+		if (!form.questionText.trim()) {
+			setErrorMessage('문항을 입력해주세요.');
+			return;
+		}
+
+		if (!form.intentText.trim()) {
+			setErrorMessage('평가 의도/범위를 입력해주세요.');
+			return;
+		}
+
 		if (form.questionType === 'multiple_choice') {
 			if (normalizedAnswerOptionsData.length < 2) {
 				setErrorMessage('객관식은 학생에게 보여줄 보기를 2개 이상 입력해주세요.');
@@ -110,6 +121,11 @@ export function UpsertExamQuestionForm({
 
 		if (form.questionType === 'subjective' && !normalizedModelAnswer) {
 			setErrorMessage('주관식은 모범 답안을 입력해주세요.');
+			return;
+		}
+
+		if (form.questionType !== 'multiple_choice' && hasInvalidRubricCriteriaText(form.rubricCriteriaText)) {
+			setErrorMessage('루브릭 기준은 name | points | description 형식으로 입력해주세요.');
 			return;
 		}
 

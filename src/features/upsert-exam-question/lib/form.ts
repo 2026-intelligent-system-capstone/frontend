@@ -141,15 +141,20 @@ const createFallbackRubricCriteria = (question: ExamQuestion): ExamQuestionRubri
 
 const parseRubricCriteriaLine = (line: string): ExamQuestionRubricCriterion | null => {
 	const [namePart, pointsPart, ...descriptionParts] = line.split('|').map((part) => part.trim());
-	if (!namePart) return null;
-
 	const parsedPoints = Number(pointsPart);
+	const description = descriptionParts.join(' | ');
+
+	if (!namePart || !description || !Number.isFinite(parsedPoints) || parsedPoints <= 0) return null;
+
 	return {
 		name: namePart,
-		points: Number.isFinite(parsedPoints) && parsedPoints > 0 ? parsedPoints : 1,
-		description: descriptionParts.join(' | ') || namePart,
+		points: parsedPoints,
+		description,
 	};
 };
+
+export const hasInvalidRubricCriteriaText = (text: string): boolean =>
+	splitLines(text).some((line) => parseRubricCriteriaLine(line) === null);
 
 export const parseRubricCriteria = (text: string): ExamQuestionRubricCriterion[] =>
 	splitLines(text).flatMap((line) => {
