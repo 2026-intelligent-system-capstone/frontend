@@ -190,7 +190,10 @@ export const createQuestionFormValues = (question?: ExamQuestion): ExamQuestionF
 	const rubric = question.rubric_data;
 	const rubricCriteria = rubric?.criteria?.length ? rubric.criteria : createFallbackRubricCriteria(question);
 	const correctOptionId =
-		answerKey?.correct_option_ids?.[0] ?? answerOptions.find((option) => option.is_correct)?.id ?? '';
+		answerKey?.correct_option_ids?.[0] ??
+		answerOptions.find((option) => option.is_correct)?.id ??
+		answerOptions[0]?.id ??
+		'1';
 
 	return {
 		acceptableAnswersText: joinLines(answerKey?.acceptable_answers),

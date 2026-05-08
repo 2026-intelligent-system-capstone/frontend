@@ -191,7 +191,7 @@ export function UpsertExamQuestionForm({
 								...prev,
 								questionType,
 								answerOptions,
-								correctOptionId: prev.correctOptionId,
+								correctOptionId: prev.correctOptionId || answerOptions[0]?.id || '1',
 								modelAnswer: '',
 								acceptableAnswersText: '',
 								requiredKeywordsText: '',

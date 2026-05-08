@@ -82,6 +82,9 @@ export interface ExamQuestion {
 	answer_key_data?: ExamQuestionAnswerKey | null;
 	rubric_data?: ExamQuestionRubric | null;
 	correct_answer_text: string | null;
+	answer_options_data?: ExamQuestionAnswerOption[] | null;
+	answer_key_data?: ExamQuestionAnswerKey | null;
+	rubric_data?: ExamQuestionRubric | null;
 	source_material_ids: string[];
 	status: ExamQuestionStatus;
 }
@@ -217,6 +220,9 @@ export interface UpdateExamQuestionRequest {
 	answer_key_data?: ExamQuestionAnswerKey | null;
 	rubric_data?: ExamQuestionRubric | null;
 	correct_answer_text?: string | null;
+	answer_options_data?: ExamQuestionAnswerOption[];
+	answer_key_data?: ExamQuestionAnswerKey;
+	rubric_data?: ExamQuestionRubric;
 	source_material_ids?: string[];
 }
 

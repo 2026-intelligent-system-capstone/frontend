@@ -128,7 +128,10 @@ interface LegendItemProps {
 
 function LegendItem({ dotClassName, label }: LegendItemProps) {
 	return (
-		<span className="bg-surface-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5">
+		<span
+			className="border-border-subtle bg-surface-muted inline-flex items-center gap-2 rounded-full border px-3
+				py-1.5"
+		>
 			<span className={cn('size-2 rounded-full', dotClassName)} />
 			{label}
 		</span>
