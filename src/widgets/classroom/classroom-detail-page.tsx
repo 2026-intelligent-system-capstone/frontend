@@ -94,7 +94,7 @@ export function ClassroomDetailPage({
 				actions={
 					<div className="flex flex-wrap items-center gap-3">
 						<span className="text-neutral-gray-500 text-sm font-medium">학생 {students.length}명</span>
-						<LinkButton href="#students-management" variant="secondary">
+						<LinkButton href={`/professor/classrooms/${classroom.id}/students`} variant="secondary">
 							학생 관리
 						</LinkButton>
 					</div>

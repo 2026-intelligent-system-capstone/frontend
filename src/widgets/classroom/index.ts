@@ -10,5 +10,6 @@ export { MaterialsTable } from './materials/table';
 export { MaterialDetailModal } from './materials/material-detail-modal';
 export { MaterialUploadModal } from './materials/upload-modal';
 export { ClassroomStudentsPanel } from './students/panel';
+export { ClassroomStudentsManagementPage } from './students/management-page';
 export { StudentsTable } from './students/table';
 export { StudentInviteModal } from './students/invite-modal';
