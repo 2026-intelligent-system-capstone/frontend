@@ -3,26 +3,22 @@
 import { type Classroom, useClassroomDetail } from '@/entities/classroom';
 import { type ClassroomMaterial, useClassroomMaterials } from '@/entities/classroom-material';
 import { type Exam, useClassroomExams } from '@/entities/exam';
-import { type User, useUsers } from '@/entities/user';
 import { LinkButton, PageHeader, PageShell, StateBlock, SurfaceCard } from '@/shared/ui';
 import { Skeleton } from '@heroui/react';
 
 import { ClassroomOverviewCard } from './detail/overview-card';
 import { ClassroomProgressOverviewCard } from './detail/progress-overview-card';
 import { ClassroomWeekSections } from './detail/week-sections';
-import { ClassroomStudentsPanel } from './students/panel';
 
 interface ClassroomDetailPageProps {
 	classroomId: string;
 	initialClassroom: Classroom | null;
 	initialMaterials: ClassroomMaterial[];
 	initialExams: Exam[];
-	initialUsers: User[];
 	canManageClassroom: boolean;
 	isClassroomError: boolean;
 	isMaterialsError: boolean;
 	isExamsError: boolean;
-	isUsersError: boolean;
 }
 
 const COURSE_WEEKS = 16;
@@ -32,19 +28,15 @@ export function ClassroomDetailPage({
 	initialClassroom,
 	initialMaterials,
 	initialExams,
-	initialUsers,
 	canManageClassroom,
 	isClassroomError,
 	isMaterialsError,
 	isExamsError,
-	isUsersError,
 }: ClassroomDetailPageProps) {
 	const classroomQuery = useClassroomDetail(classroomId, initialClassroom ?? undefined);
 	const materialsQuery = useClassroomMaterials(classroomId, initialMaterials);
 	const examsQuery = useClassroomExams(classroomId, initialExams);
-	const usersQuery = useUsers(initialUsers);
 	const classroom = classroomQuery.data;
-	const users = usersQuery.data ?? [];
 	const materials = materialsQuery.data ?? [];
 	const exams = examsQuery.data ?? [];
 
@@ -86,14 +78,14 @@ export function ClassroomDetailPage({
 		);
 	}
 
-	const students = users.filter((user) => classroom.student_ids.includes(user.id));
-
 	return (
 		<PageShell>
 			<PageHeader
 				actions={
 					<div className="flex flex-wrap items-center gap-3">
-						<span className="text-neutral-gray-500 text-sm font-medium">학생 {students.length}명</span>
+						<span className="text-neutral-gray-500 text-sm font-medium">
+							학생 {classroom.student_ids.length}명
+						</span>
 						<LinkButton href={`/professor/classrooms/${classroom.id}/students`} variant="secondary">
 							학생 관리
 						</LinkButton>
@@ -124,17 +116,6 @@ export function ClassroomDetailPage({
 				isMaterialsLoading={materialsQuery.isLoading}
 				materials={materials}
 			/>
-
-			<SurfaceCard>
-				<ClassroomStudentsPanel
-					canManageStudents={canManageClassroom}
-					classroomId={classroomId}
-					isError={isUsersError || usersQuery.isError}
-					isLoading={usersQuery.isLoading}
-					students={students}
-					users={users}
-				/>
-			</SurfaceCard>
 		</PageShell>
 	);
 }
