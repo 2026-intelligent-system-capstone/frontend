@@ -217,9 +217,6 @@ export interface UpdateExamQuestionRequest {
 	answer_key_data?: ExamQuestionAnswerKey | null;
 	rubric_data?: ExamQuestionRubric | null;
 	correct_answer_text?: string | null;
-	answer_options_data?: ExamQuestionAnswerOption[];
-	answer_key_data?: ExamQuestionAnswerKey;
-	rubric_data?: ExamQuestionRubric;
 	source_material_ids?: string[];
 }
 
