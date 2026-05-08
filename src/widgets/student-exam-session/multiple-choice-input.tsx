@@ -1,15 +1,16 @@
+import type { StudentExamQuestionAnswerOption } from '@/entities/exam';
 import { cn } from '@/shared/ui';
 import { Button } from '@heroui/react';
 
 interface MultipleChoiceInputProps {
-	options: string[];
-	selected: number[];
+	options: StudentExamQuestionAnswerOption[];
+	selected: string[];
 	isAnswered: boolean;
 	isDisabled?: boolean;
 	disabledReason?: string;
 	isSubmitting?: boolean;
-	onChange: (indices: number[]) => void;
-	onSubmit: (indices: number[]) => void;
+	onChange: (optionIds: string[]) => void;
+	onSubmit: (optionIds: string[]) => void;
 }
 
 export function MultipleChoiceInput({
@@ -23,9 +24,9 @@ export function MultipleChoiceInput({
 	onSubmit,
 }: MultipleChoiceInputProps) {
 	const isInteractionDisabled = isAnswered || isSubmitting || isDisabled;
-	const choose = (index: number) => {
+	const choose = (optionId: string) => {
 		if (isInteractionDisabled) return;
-		onChange([index]);
+		onChange([optionId]);
 	};
 
 	return (
@@ -35,11 +36,11 @@ export function MultipleChoiceInput({
 		>
 			<fieldset className="contents" aria-describedby="multiple-choice-help">
 				<legend className="sr-only">객관식 답안 선택</legend>
-				{options.map((option, index) => {
-					const isSelected = selected.includes(index);
+				{options.map((option) => {
+					const isSelected = selected.includes(option.id);
 					return (
 						<label
-							key={index}
+							key={option.id}
 							className={cn(
 								`has-[:focus-visible]:ring-brand-border flex items-center gap-3 rounded-2xl border px-4
 								py-3 text-left text-sm transition-[border-color,background-color,color,box-shadow]
@@ -53,27 +54,27 @@ export function MultipleChoiceInput({
 							)}
 						>
 							<input
-								aria-label={`${String.fromCharCode(65 + index)}번 선택지: ${option}`}
+								aria-label={`${option.label}번 선택지: ${option.text}`}
 								checked={isSelected}
 								className="peer sr-only"
 								disabled={isInteractionDisabled}
 								name="multiple-choice-answer"
 								type="radio"
-								onChange={() => choose(index)}
+								onChange={() => choose(option.id)}
 							/>
 							<span
 								aria-hidden="true"
 								className={cn(
-									`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-xs
+									`flex h-6 min-w-6 shrink-0 items-center justify-center rounded-lg border px-1 text-xs
 									font-bold`,
 									isSelected
 										? 'border-brand-border bg-brand-soft text-brand-deep'
 										: 'border-border-subtle bg-surface text-neutral-gray-500',
 								)}
 							>
-								{isSelected ? '✓' : String.fromCharCode(65 + index)}
+								{isSelected ? '✓' : option.label}
 							</span>
-							<span className="flex-1 leading-relaxed">{option}</span>
+							<span className="flex-1 leading-relaxed">{option.text}</span>
 						</label>
 					);
 				})}

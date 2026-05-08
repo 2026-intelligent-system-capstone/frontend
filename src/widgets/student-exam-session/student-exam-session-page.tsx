@@ -11,6 +11,7 @@ import type {
 	ExamTurn,
 	ExamTurnEventType,
 	RecordExamTurnRequest,
+	StudentExamQuestionAnswerOption,
 	StudentExamSessionQuestion,
 } from '@/entities/exam';
 import {
@@ -199,21 +200,35 @@ function findLatestAssistantTurn(turns: OralTurn[]): OralTurn | null {
 	return null;
 }
 
+function getQuestionAnswerOptions(question: StudentExamSessionQuestion): StudentExamQuestionAnswerOption[] {
+	if (question.answer_options_data?.length) {
+		return question.answer_options_data;
+	}
+
+	return question.answer_options.map((text, index) => ({
+		id: String(index + 1),
+		label: String(index + 1),
+		text,
+	}));
+}
+
 function buildMultipleChoiceAnswer(
 	question: StudentExamSessionQuestion,
-	selected: number[],
+	selected: string[],
 ): { content: string; metadata: Record<string, string> } {
-	const sortedSelected = [...selected].sort((a, b) => a - b);
-	const selectedLabels = sortedSelected.map((index) => question.answer_options[index] ?? '');
-	const content = selectedLabels
-		.map((label, index) => `${String.fromCharCode(65 + sortedSelected[index])}. ${label}`)
-		.join('\n');
+	const options = getQuestionAnswerOptions(question);
+	const selectedOptions = selected
+		.map((optionId) => options.find((option) => option.id === optionId))
+		.filter((option): option is StudentExamQuestionAnswerOption => Boolean(option));
+	const content = selectedOptions.map((option) => `${option.label}. ${option.text}`).join('\n');
+	const firstOption = selectedOptions[0];
 
 	return {
 		content,
 		metadata: {
-			selected_option_index: String(sortedSelected[0]),
-			selected_option_label: selectedLabels[0] ?? '',
+			question_id: question.id,
+			selected_option_id: firstOption?.id ?? '',
+			selected_option_label: firstOption?.label ?? '',
 		},
 	};
 }
@@ -231,8 +246,8 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 	const [showEndConfirm, setShowEndConfirm] = useState(false);
 	const [showConversationTree, setShowConversationTree] = useState(false);
 	const [answeredIds, setAnsweredIds] = useState<Set<string>>(new Set());
-	const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState<Record<string, number[]>>({});
-	const [multipleChoiceDrafts, setMultipleChoiceDrafts] = useState<Record<string, number[]>>({});
+	const [multipleChoiceAnswers, setMultipleChoiceAnswers] = useState<Record<string, string[]>>({});
+	const [multipleChoiceDrafts, setMultipleChoiceDrafts] = useState<Record<string, string[]>>({});
 	const [subjectiveAnswers, setSubjectiveAnswers] = useState<Record<string, string>>({});
 	const [subjectiveDrafts, setSubjectiveDrafts] = useState<Record<string, string>>({});
 	const [isFinished, setIsFinished] = useState(false);
@@ -306,6 +321,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 			}
 		);
 	}, [currentQuestion, oralTurns]);
+	const currentAnswerOptions = currentQuestion ? getQuestionAnswerOptions(currentQuestion) : [];
 	const statusMessage = getSessionStatusMessage({
 		hasError: Boolean(sessionError || turnError || finishError),
 		isAnswerSubmitting,
@@ -431,7 +447,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 		goToNextQuestion(questionId);
 	};
 
-	const handleMultipleChoiceSubmit = async (selected: number[]) => {
+	const handleMultipleChoiceSubmit = async (selected: string[]) => {
 		if (!currentQuestion || currentQuestion.question_type !== 'multiple_choice' || isAnswerSubmitting) return;
 		const { content, metadata } = buildMultipleChoiceAnswer(currentQuestion, selected);
 
@@ -814,7 +830,7 @@ export function StudentExamSessionPage({ examId }: StudentExamSessionPageProps) 
 								isAnswered={answeredIds.has(currentQuestion.id)}
 								isDisabled={!isSessionReady}
 								isSubmitting={isAnswerSubmitting}
-								options={currentQuestion.answer_options}
+								options={currentAnswerOptions}
 								selected={multipleChoiceSelected}
 								onChange={(selected) =>
 									setMultipleChoiceDrafts((prev) => ({ ...prev, [currentQuestion.id]: selected }))

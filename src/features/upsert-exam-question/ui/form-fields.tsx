@@ -3,19 +3,26 @@
 import {
 	type ExamQuestionFormValues,
 	bloomLevelOptions,
+	createDefaultMultipleChoiceOptions,
 	difficultyOptions,
 	questionTypeOptions,
 } from '@/features/upsert-exam-question/lib/form';
-import { Input, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
+import { Button, Input, Label, ListBox, Select, TextArea, TextField } from '@heroui/react';
 
 interface UpsertExamQuestionFormFieldsProps {
 	answerOptionsId: string;
-	correctAnswerTextId: string;
+	modelAnswerId: string;
 	maxScoreId: string;
 	questionNumberId: string;
 	questionTextId: string;
 	intentTextId: string;
 	rubricTextId: string;
+	acceptableAnswersId: string;
+	requiredKeywordsId: string;
+	expectedPointsId: string;
+	followUpQuestionsId: string;
+	rubricCriteriaId: string;
+	evidencePolicyId: string;
 	form: ExamQuestionFormValues;
 	onChange: (updater: (prev: ExamQuestionFormValues) => ExamQuestionFormValues) => void;
 	onQuestionTypeChange: (questionType: ExamQuestionFormValues['questionType']) => void;
@@ -23,12 +30,18 @@ interface UpsertExamQuestionFormFieldsProps {
 
 export function UpsertExamQuestionFormFields({
 	answerOptionsId,
-	correctAnswerTextId,
+	modelAnswerId,
 	maxScoreId,
 	questionNumberId,
 	questionTextId,
 	intentTextId,
 	rubricTextId,
+	acceptableAnswersId,
+	requiredKeywordsId,
+	expectedPointsId,
+	followUpQuestionsId,
+	rubricCriteriaId,
+	evidencePolicyId,
 	form,
 	onChange,
 	onQuestionTypeChange,
@@ -37,7 +50,58 @@ export function UpsertExamQuestionFormFields({
 		form.questionType === 'none'
 			? [{ label: '미지정', value: 'none' as const }, ...questionTypeOptions]
 			: questionTypeOptions;
+	const isSubjectiveQuestion = form.questionType === 'subjective';
 	const isOralQuestion = form.questionType === 'oral';
+
+	const renumberOptions = (options: ExamQuestionFormValues['answerOptions']) =>
+		options.map((option, index) => {
+			const label = String(index + 1);
+			return {
+				...option,
+				id: label,
+				label,
+			};
+		});
+
+	const updateOptionText = (optionId: string, text: string) => {
+		onChange((prev) => ({
+			...prev,
+			answerOptions: prev.answerOptions.map((option) => (option.id === optionId ? { ...option, text } : option)),
+		}));
+	};
+
+	const addOption = () => {
+		onChange((prev) => {
+			const nextLabel = String(prev.answerOptions.length + 1);
+			return {
+				...prev,
+				answerOptions: [...prev.answerOptions, { id: nextLabel, label: nextLabel, text: '' }],
+			};
+		});
+	};
+
+	const removeOption = (optionId: string) => {
+		onChange((prev) => {
+			const nextOptions = renumberOptions(prev.answerOptions.filter((option) => option.id !== optionId));
+			const fallbackOptions = nextOptions.length > 0 ? nextOptions : createDefaultMultipleChoiceOptions();
+			const removedCorrectOptionIndex = prev.answerOptions.findIndex((option) => option.id === optionId);
+			const previousCorrectOptionIndex = prev.answerOptions.findIndex(
+				(option) => option.id === prev.correctOptionId,
+			);
+			const nextCorrectOptionIndex =
+				previousCorrectOptionIndex < 0 || previousCorrectOptionIndex === removedCorrectOptionIndex
+					? 0
+					: previousCorrectOptionIndex > removedCorrectOptionIndex
+						? previousCorrectOptionIndex - 1
+						: previousCorrectOptionIndex;
+
+			return {
+				...prev,
+				answerOptions: fallbackOptions,
+				correctOptionId: fallbackOptions[nextCorrectOptionIndex]?.id ?? fallbackOptions[0]?.id ?? '1',
+			};
+		});
+	};
 
 	return (
 		<>
@@ -182,55 +246,145 @@ export function UpsertExamQuestionFormFields({
 				/>
 			</TextField>
 
-			{isOralQuestion ? (
-				<TextField isRequired className="w-full" name="rubric_text">
-					<Label htmlFor={rubricTextId}>루브릭</Label>
-					<TextArea
-						id={rubricTextId}
-						className="min-h-32"
-						placeholder="구술형 평가 기준을 입력하세요."
-						value={form.rubricText}
-						onChange={(event) => onChange((prev) => ({ ...prev, rubricText: event.target.value }))}
-					/>
-				</TextField>
-			) : null}
-
 			{form.questionType === 'multiple_choice' ? (
-				<TextField isRequired className="w-full" name="answer_options">
-					<Label htmlFor={answerOptionsId}>객관식 보기</Label>
-					<TextArea
-						id={answerOptionsId}
-						className="min-h-32"
-						placeholder={'한 줄에 보기 하나씩 입력하세요.\n1. 회귀\n2. 분류'}
-						value={form.answerOptionsText}
-						onChange={(event) =>
-							onChange((prev) => ({
-								...prev,
-								answerOptionsText: event.target.value,
-							}))
-						}
-					/>
-				</TextField>
+				<div className="border-border-subtle bg-surface-muted space-y-3 rounded-2xl border p-4">
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<div>
+							<Label htmlFor={answerOptionsId}>객관식 보기</Label>
+							<p className="text-neutral-gray-500 mt-1 text-xs">
+								정답은 번호 기반 option id로 저장됩니다.
+							</p>
+						</div>
+						<Button size="sm" type="button" variant="secondary" onPress={addOption}>
+							보기 추가
+						</Button>
+					</div>
+					<div id={answerOptionsId} className="space-y-2">
+						{form.answerOptions.map((option) => (
+							<div key={option.id} className="grid gap-2 md:grid-cols-[auto_1fr_auto] md:items-center">
+								<label className="text-neutral-gray-700 flex items-center gap-2 text-sm font-medium">
+									<input
+										checked={form.correctOptionId === option.id}
+										name="correct_option_id"
+										type="radio"
+										onChange={() => onChange((prev) => ({ ...prev, correctOptionId: option.id }))}
+									/>
+									<span>{option.label}</span>
+								</label>
+								<Input
+									aria-label={`${option.label}번 보기`}
+									placeholder={`${option.label}번 보기 텍스트`}
+									value={option.text}
+									onChange={(event) => updateOptionText(option.id, event.target.value)}
+								/>
+								<Button size="sm" type="button" variant="ghost" onPress={() => removeOption(option.id)}>
+									삭제
+								</Button>
+							</div>
+						))}
+					</div>
+				</div>
 			) : null}
 
-			{form.questionType === 'multiple_choice' || form.questionType === 'subjective' ? (
-				<TextField isRequired className="w-full" name="correct_answer_text">
-					<Label htmlFor={correctAnswerTextId}>정확한 정답</Label>
+			{isSubjectiveQuestion ? (
+				<>
+					<TextField isRequired className="w-full" name="model_answer">
+						<Label htmlFor={modelAnswerId}>모범 답안</Label>
+						<TextArea
+							id={modelAnswerId}
+							className="min-h-24"
+							placeholder="단답 또는 model answer 중심으로 입력하세요."
+							value={form.modelAnswer}
+							onChange={(event) => onChange((prev) => ({ ...prev, modelAnswer: event.target.value }))}
+						/>
+					</TextField>
+					<TextField className="w-full" name="acceptable_answers">
+						<Label htmlFor={acceptableAnswersId}>허용 답안</Label>
+						<TextArea
+							id={acceptableAnswersId}
+							className="min-h-24"
+							placeholder="한 줄에 허용 답안 하나씩 입력하세요."
+							value={form.acceptableAnswersText}
+							onChange={(event) =>
+								onChange((prev) => ({ ...prev, acceptableAnswersText: event.target.value }))
+							}
+						/>
+					</TextField>
+					<TextField className="w-full" name="required_keywords">
+						<Label htmlFor={requiredKeywordsId}>필수 키워드</Label>
+						<TextArea
+							id={requiredKeywordsId}
+							className="min-h-20"
+							placeholder="한 줄에 키워드 하나씩 입력하세요."
+							value={form.requiredKeywordsText}
+							onChange={(event) =>
+								onChange((prev) => ({ ...prev, requiredKeywordsText: event.target.value }))
+							}
+						/>
+					</TextField>
+				</>
+			) : null}
+
+			{isOralQuestion ? (
+				<>
+					<TextField className="w-full" name="expected_points">
+						<Label htmlFor={expectedPointsId}>기대 답변 포인트</Label>
+						<TextArea
+							id={expectedPointsId}
+							className="min-h-28"
+							placeholder="한 줄에 기대 포인트 하나씩 입력하세요."
+							value={form.expectedPointsText}
+							onChange={(event) =>
+								onChange((prev) => ({ ...prev, expectedPointsText: event.target.value }))
+							}
+						/>
+					</TextField>
+					<TextField className="w-full" name="follow_up_questions">
+						<Label htmlFor={followUpQuestionsId}>꼬리질문 후보</Label>
+						<TextArea
+							id={followUpQuestionsId}
+							className="min-h-24"
+							placeholder="한 줄에 꼬리질문 하나씩 입력하세요."
+							value={form.followUpQuestionsText}
+							onChange={(event) =>
+								onChange((prev) => ({ ...prev, followUpQuestionsText: event.target.value }))
+							}
+						/>
+					</TextField>
+					<TextField className="w-full" name="evidence_policy">
+						<Label htmlFor={evidencePolicyId}>증거/채점 정책</Label>
+						<TextArea
+							id={evidencePolicyId}
+							className="min-h-20"
+							placeholder="예: 발화에서 개념 언급과 적용 근거를 함께 확인합니다."
+							value={form.evidencePolicy}
+							onChange={(event) => onChange((prev) => ({ ...prev, evidencePolicy: event.target.value }))}
+						/>
+					</TextField>
+					<TextField className="w-full" name="rubric_text">
+						<Label htmlFor={rubricTextId}>Legacy 루브릭 메모</Label>
+						<TextArea
+							id={rubricTextId}
+							className="min-h-24"
+							placeholder="기존 루브릭 텍스트가 있으면 참고용으로 유지합니다."
+							value={form.rubricText}
+							onChange={(event) => onChange((prev) => ({ ...prev, rubricText: event.target.value }))}
+						/>
+					</TextField>
+				</>
+			) : null}
+
+			{isSubjectiveQuestion || isOralQuestion ? (
+				<TextField className="w-full" name="rubric_criteria">
+					<Label htmlFor={rubricCriteriaId}>루브릭 기준</Label>
 					<TextArea
-						id={correctAnswerTextId}
-						className="min-h-24"
+						id={rubricCriteriaId}
+						className="min-h-28"
 						placeholder={
-							form.questionType === 'multiple_choice'
-								? '학생에게 보여지는 보기와 일치하는 정답 텍스트를 입력하세요.'
-								: '숫자, 단답 등 정확한 정답 하나를 입력하세요.'
+							'한 줄에 name | points | description 형식으로 입력하세요.\n정확성 | 2 | 핵심 개념을 정확히 포함'
 						}
-						value={form.correctAnswerText}
-						onChange={(event) =>
-							onChange((prev) => ({
-								...prev,
-								correctAnswerText: event.target.value,
-							}))
-						}
+						value={form.rubricCriteriaText}
+						onChange={(event) => onChange((prev) => ({ ...prev, rubricCriteriaText: event.target.value }))}
 					/>
 				</TextField>
 			) : null}

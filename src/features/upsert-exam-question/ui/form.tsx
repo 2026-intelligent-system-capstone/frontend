@@ -7,7 +7,15 @@ import type { ExamQuestion, UpdateExamQuestionRequest } from '@/entities/exam';
 import { ApiClientError } from '@/shared/api/types';
 import { Button, ErrorMessage } from '@heroui/react';
 
-import { createQuestionFormValues } from '../lib/form';
+import {
+	buildAnswerKeyData,
+	buildRubricData,
+	createDefaultMultipleChoiceOptions,
+	createQuestionFormValues,
+	normalizeAnswerOptionsData,
+	parseListText,
+	parseRubricCriteria,
+} from '../lib/form';
 import { useUpdateExamQuestion } from '../model/use-upsert-question';
 import { UpsertExamQuestionFormFields } from './form-fields';
 import { UpsertExamQuestionMaterialSelector } from './material-selector';
@@ -42,7 +50,13 @@ export function UpsertExamQuestionForm({
 	const intentTextId = useId();
 	const rubricTextId = useId();
 	const answerOptionsId = useId();
-	const correctAnswerTextId = useId();
+	const modelAnswerId = useId();
+	const acceptableAnswersId = useId();
+	const requiredKeywordsId = useId();
+	const expectedPointsId = useId();
+	const followUpQuestionsId = useId();
+	const rubricCriteriaId = useId();
+	const evidencePolicyId = useId();
 	const maxScoreId = useId();
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const initialForm = useMemo(() => createQuestionFormValues(question), [question]);
@@ -52,11 +66,8 @@ export function UpsertExamQuestionForm({
 	const updateQuestionMutation = useUpdateExamQuestion(classroomId, examId);
 	const isPending = updateQuestionMutation.isPending;
 
-	const normalizedAnswerOptions = form.answerOptionsText
-		.split('\n')
-		.map((option) => option.trim())
-		.filter(Boolean);
-	const normalizedCorrectAnswerText = form.correctAnswerText.trim();
+	const normalizedAnswerOptionsData = normalizeAnswerOptionsData(form);
+	const normalizedModelAnswer = form.modelAnswer.trim();
 
 	const handleCancel = () => {
 		setErrorMessage(null);
@@ -70,7 +81,6 @@ export function UpsertExamQuestionForm({
 
 		const parsedQuestionNumber = Number(form.questionNumber);
 		const parsedMaxScore = Number(form.maxScore);
-		const normalizedRubricText = form.rubricText.trim();
 
 		if (!Number.isInteger(parsedQuestionNumber) || parsedQuestionNumber <= 0) {
 			setErrorMessage('문항 번호는 1 이상의 정수여야 합니다.');
@@ -82,31 +92,31 @@ export function UpsertExamQuestionForm({
 			return;
 		}
 
-		if (form.questionType === 'oral' && !normalizedRubricText) {
-			setErrorMessage('구술형은 루브릭을 입력해주세요.');
-			return;
-		}
-
 		if (form.questionType === 'multiple_choice') {
-			if (normalizedAnswerOptions.length < 2) {
+			if (normalizedAnswerOptionsData.length < 2) {
 				setErrorMessage('객관식은 학생에게 보여줄 보기를 2개 이상 입력해주세요.');
 				return;
 			}
 
-			if (!normalizedCorrectAnswerText) {
-				setErrorMessage('객관식은 정확한 정답 텍스트를 입력해주세요.');
-				return;
-			}
-
-			if (!normalizedAnswerOptions.includes(normalizedCorrectAnswerText)) {
-				setErrorMessage('객관식 정답은 학생에게 보여지는 보기 중 하나와 정확히 일치해야 합니다.');
+			const correctOptions = normalizedAnswerOptionsData.filter((option) => option.is_correct);
+			if (correctOptions.length !== 1) {
+				setErrorMessage('객관식은 정답 보기를 정확히 하나 선택해주세요.');
 				return;
 			}
 		}
 
-		if (form.questionType === 'subjective' && !normalizedCorrectAnswerText) {
-			setErrorMessage('주관식은 정확한 정답을 입력해주세요.');
+		if (form.questionType === 'subjective' && !normalizedModelAnswer) {
+			setErrorMessage('주관식은 모범 답안을 입력해주세요.');
 			return;
+		}
+
+		if (form.questionType === 'oral') {
+			const expectedPoints = parseListText(form.expectedPointsText);
+			const rubricCriteria = parseRubricCriteria(form.rubricCriteriaText);
+			if (expectedPoints.length === 0 && rubricCriteria.length === 0) {
+				setErrorMessage('구술형은 기대 답변 포인트 또는 루브릭 기준 중 하나를 입력해주세요.');
+				return;
+			}
 		}
 
 		const payload = {
@@ -116,9 +126,9 @@ export function UpsertExamQuestionForm({
 			difficulty: form.difficulty,
 			question_text: form.questionText.trim(),
 			intent_text: form.intentText.trim(),
-			rubric_text: form.questionType === 'oral' ? normalizedRubricText : null,
-			answer_options: form.questionType === 'multiple_choice' ? normalizedAnswerOptions : [],
-			correct_answer_text: form.questionType === 'oral' ? null : normalizedCorrectAnswerText || null,
+			answer_options_data: normalizedAnswerOptionsData,
+			answer_key_data: buildAnswerKeyData(form, normalizedAnswerOptionsData),
+			rubric_data: buildRubricData(form),
 			source_material_ids: form.sourceMaterialIds,
 			...(form.questionType !== initialQuestionType && form.questionType !== 'none'
 				? { question_type: form.questionType }
@@ -154,36 +164,67 @@ export function UpsertExamQuestionForm({
 			)}
 
 			<UpsertExamQuestionFormFields
+				acceptableAnswersId={acceptableAnswersId}
 				answerOptionsId={answerOptionsId}
-				correctAnswerTextId={correctAnswerTextId}
+				evidencePolicyId={evidencePolicyId}
+				expectedPointsId={expectedPointsId}
+				followUpQuestionsId={followUpQuestionsId}
 				form={form}
 				intentTextId={intentTextId}
 				maxScoreId={maxScoreId}
+				modelAnswerId={modelAnswerId}
 				onChange={setForm}
 				onQuestionTypeChange={(questionType) => {
 					setForm((prev) => {
 						if (questionType === 'multiple_choice') {
-							return { ...prev, questionType };
+							const answerOptions =
+								prev.answerOptions.length > 0
+									? prev.answerOptions
+									: createDefaultMultipleChoiceOptions();
+							return {
+								...prev,
+								questionType,
+								answerOptions,
+								correctOptionId: answerOptions[0]?.id ?? '1',
+								modelAnswer: '',
+								acceptableAnswersText: '',
+								requiredKeywordsText: '',
+								expectedPointsText: '',
+								followUpQuestionsText: '',
+								rubricCriteriaText: '',
+								evidencePolicy: '',
+								rubricText: '',
+							};
 						}
 
 						if (questionType === 'oral') {
 							return {
 								...prev,
 								questionType,
-								answerOptionsText: '',
-								correctAnswerText: '',
+								answerOptions: [],
+								correctOptionId: '',
+								modelAnswer: '',
+								acceptableAnswersText: '',
+								requiredKeywordsText: '',
 							};
 						}
 
 						return {
 							...prev,
 							questionType,
-							answerOptionsText: '',
+							answerOptions: [],
+							correctOptionId: '',
+							expectedPointsText: '',
+							followUpQuestionsText: '',
+							evidencePolicy: '',
+							rubricText: '',
 						};
 					});
 				}}
 				questionNumberId={questionNumberId}
 				questionTextId={questionTextId}
+				requiredKeywordsId={requiredKeywordsId}
+				rubricCriteriaId={rubricCriteriaId}
 				rubricTextId={rubricTextId}
 			/>
 

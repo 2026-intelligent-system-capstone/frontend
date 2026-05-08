@@ -4,10 +4,11 @@ import { type Classroom, useClassroomDetail } from '@/entities/classroom';
 import { type ClassroomMaterial, useClassroomMaterials } from '@/entities/classroom-material';
 import { type Exam, useClassroomExams } from '@/entities/exam';
 import { type User, useUsers } from '@/entities/user';
-import { PageHeader, PageShell, StateBlock, SurfaceCard } from '@/shared/ui';
+import { LinkButton, PageHeader, PageShell, StateBlock, SurfaceCard } from '@/shared/ui';
 import { Skeleton } from '@heroui/react';
 
 import { ClassroomOverviewCard } from './detail/overview-card';
+import { ClassroomProgressOverviewCard } from './detail/progress-overview-card';
 import { ClassroomWeekSections } from './detail/week-sections';
 import { ClassroomStudentsPanel } from './students/panel';
 
